@@ -1,7 +1,9 @@
 2.0.98 29-Mar-2009
 	- Preparation for version 3.0
 	- refactoring code to use with ExtUtilis::MakeMaker and install a proper
-	Perl module 
+	  Perl module 
+	- updated README
+	- fixed sandbox_action to support 'send_kill'
 2.0.18 22-Mar-2009
 	- added change_port script to installed sandboxes
 	- added 'port' operation to sbtool

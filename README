@@ -13,6 +13,26 @@ PURPOSE
    non-standard data directory, ports and sockets, so they won't interfere
    with existing MYSQL installations.
 
+INSTALLATION
+   MySQL Sandbox installs as a normal Perl Module. Since its purpose is to
+   install side servers in user space, you can install it as roo (default) 
+   or as an unprivileged user. in this case, you need to set the PERL5LIB 
+   variable.
+
+   # as root
+   perl Makefile.PL 
+   make
+   make test
+   make install
+
+   # as normal user
+   export PERL5LIB=$HOME/usr/local/lib/perl5/site_perl/5.8.8
+   perl Makefile.PL PREFIX=$HOME/usr/local
+   make
+   make test
+   make install
+
+
 MAKING SANDBOXES
 
 SINGLE SERVER SANDBOX
@@ -23,7 +43,7 @@ SINGLE SERVER SANDBOX
     2. download a MySQL binary tarball
     3. run this command
 
-$ ./make_sandbox /path/to/mysql-X.X.XX-osinfo.tar.gz
+$ make_sandbox /path/to/mysql-X.X.XX-osinfo.tar.gz
 
    That's all it takes to get started. The Sandbox will ask you for
    confirmation, and then it will tell you where it has installed your
@@ -34,7 +54,7 @@ $ ./make_sandbox /path/to/mysql-X.X.XX-osinfo.tar.gz
 
 MAKING A REPLICATION SANDBOX
 
-   It's as easy as making a single sandbox $ ./make_replication_sandbox
+   It's as easy as making a single sandbox $ make_replication_sandbox
    /path/to/mysql-X.X.XX-osinfo.tar.gz
 
    This will create a new instance of one master and two slaves under
@@ -44,7 +64,7 @@ CIRCULAR REPLICATION
 
     It requires an appropriate option when you start a replication sandbox
 
-      $ ./make_replication_sandbox --topology=circular /path/to/mysql-X.X.XX-osinfo.tar.gz
+      $ make_replication_sandbox --topology=circular /path/to/mysql-X.X.XX-osinfo.tar.gz
 
    This will create a replication system with three servers connected by
     circular replication. A handy shortcut is --master_master, which will
@@ -54,12 +74,12 @@ CIRCULAR REPLICATION
     You can create a group of sandboxes without any replication among its
     members. If you need three servers of the same version, you can use
 
-     $ ./make_multiple_sandbox /path/to/tarball 
+     $ make_multiple_sandbox /path/to/tarball 
     
     If you need servers of different versions in the same group, you may
     like
 
-     $ ./make_multiple_custom_sandbox /path/to/tarball1 path/to/tarball2 /path/to/tb3 
+     $ make_multiple_custom_sandbox /path/to/tarball1 path/to/tarball2 /path/to/tb3 
 
     Assuming that each tarball is from a different version, you will group
     three servers under one directory, with the handy sandbox scripts to
@@ -76,9 +96,9 @@ CIRCULAR REPLICATION
     If you have such an organization, then you can invoke every sandbox
     script with this abridged syntax:
 
-      ./make_sandbox 5.0.64
-      ./make_replication_sandbox 5.1.25
-      ./make_multiple_custom_sandbox 5.0.64 5.1.25
+      make_sandbox 5.0.64
+      make_replication_sandbox 5.1.25
+      make_multiple_custom_sandbox 5.0.64 5.1.25
 
     If you use some options frequently, it would make sense to add them to
     the default option file, which is $HOME/.msandboxrc
