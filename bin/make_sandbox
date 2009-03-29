@@ -1,0 +1,207 @@
+#!/usr/bin/perl 
+#    The MySQL Sandbox
+#    Copyright (C) 2006, 2007, 2008, 2009 Giuseppe Maxia
+#    Contacts: http://datacharmer.org
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; version 2 of the License
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+use strict;
+use warnings;
+# use Data::Dumper;
+use English qw( -no_match_vars ); 
+use MySQL::Sandbox;
+ 
+#my $install_dir = $PROGRAM_NAME;
+#$install_dir =~ s{/\w+(\.pl)?$}{};
+
+#unless ( $ENV{SANDBOX_HOME} ) { 
+#    $ENV{SANDBOX_HOME} = "$ENV{HOME}/sandboxes";
+#}
+
+# eval "use lib q($install_dir)";
+
+my $msb = MySQL::Sandbox->new();
+
+my $where_to_install = shift
+    or die "syntax $PROGRAM_NAME {VERSION|tarball_full_name} [options]\n";
+
+my $default_binary_base = $ENV{SANDBOX_BINARY} || ($ENV{HOME} . '/opt/mysql');
+unless ( -d  $default_binary_base ) {
+    $default_binary_base = '/opt/mysql';
+}
+my $binary_base = $ENV{'BINARY_BASE'} || $default_binary_base;
+
+my $version;
+
+my ($major, $minor, $release);
+
+$where_to_install =~ s{ / \s* $ }{}x;
+
+$where_to_install =~ s/^\s*\~/$ENV{HOME}/x;
+
+# current directory
+if  ( $where_to_install =~ m{^mysql\D+\d+\.\d+\.\d+.*\.tar\.gz$ }x ) { 
+    $where_to_install = $ENV{PWD} . '/' . $where_to_install;
+    unless ( -f $where_to_install ) {
+        die "file not found ($where_to_install)\n";
+    }
+}
+
+# bare version directory under $HOME/opt/bin
+if  ( $where_to_install =~ /^(\d+)\.(\d+)\.(\d+)/x ) { 
+    ($major, $minor, $release) =  ($1, $2, $3);
+    $version = $where_to_install;
+}
+# absolute version directory
+elsif  ( $where_to_install =~ m{^(/.+)/(\d+)\.(\d+)\.(\d+)$}x ) { 
+    ($binary_base, $major, $minor, $release) =  ($1, $2, $3, $4);
+    $version = "$major.$minor.$release";
+    unless ( -d $where_to_install ) {
+        die "directory not found ($where_to_install)\n";
+    }
+}
+# full path to tarball
+elsif  ( $where_to_install =~ m{^(/.+)/(mysql\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.gz$ }x ) { 
+    my $new_dir;
+    unless ( -f $where_to_install ) {
+        die "file not found ($where_to_install)\n";
+    }
+    ($binary_base, $new_dir, $major, $minor, $release) =  ($1, $2, $3, $4, $5);
+    print "unpacking $where_to_install\n";
+    $version = "$major.$minor.$release";
+    my $tar_executable='no_such_program';
+    my $full_new_dir = "$binary_base/$version";
+    if ( -d $full_new_dir ) {
+        $where_to_install = $full_new_dir;
+    }
+    else {
+        my $original_dir = $ENV{PWD};
+        my $which_tar = qx(which gtar);
+        unless ($which_tar) {
+            $which_tar = qx(which tar );
+        }
+        if ($which_tar) {
+            chomp $which_tar;
+            $tar_executable = $which_tar;
+            my $tar_version = qx($tar_executable --help)
+                or die "can't find tar program\n";
+            unless ($tar_version =~ /GNU/i) {
+                die "this version of tar is not supported\n";
+            }
+        }
+        else {
+            die "tar program not found\n";
+        }
+        chdir $binary_base 
+            or die "can't change directory to $binary_base\n";
+        my $tar_file = $where_to_install;
+        $tar_file =~ s{^.*/}{};
+        my $result = system("gunzip -c $tar_file | $tar_executable -xf -");
+        if ($result) {
+            die "error unpacking $tar_file ($!)\n";
+        }
+        rename $new_dir, $version
+            or die "can't rename $new_dir to $version";
+
+        system "chmod -R ogu+r $version "; # Not sandbox related.
+                                           # It is needed if the user wants 
+                                           # to run the test suite
+
+        $where_to_install = $full_new_dir;
+        chdir $original_dir;
+    }
+}
+# not a full path
+elsif ($where_to_install =~ m{[^/].*\.tar\.gz$} ) {
+    get_help( "You must enter a full path to the tarball. Relative paths are not supported.\n");
+}
+# not a tarball
+elsif ($where_to_install =~ m{^/.*(?<!\.tar\.gz)$} ) {
+    get_help( "Not a tarball ($where_to_install).\n"
+            . "Accepted paramethers are: {VERSION|tarball_full_name} [options].\n");
+}
+# nothing was recognized. Print help
+else {
+    get_help();
+}
+
+
+sub get_help {
+    my ($msg) = @_;
+    print $msb->credits(), "\n"; 
+    if ($msg) {
+        my $len = length($msg);
+        $len = 80 if $len > 80;
+        print '*' x $len, "\n",
+              $msg,
+              '*' x $len, "\n";
+    }
+    print <<SYNTAX;
+usage: ./make_sandbox version [options] {VERSION|tarball_full_name}.
+You can pass any option accepted by "low_level_make_sandbox"
+SYNTAX
+
+    print "You should provide either a version from '$binary_base' \n",
+          "or an absolute path to the tarball to extract.\n",
+          "See (below) ./low_level_make_sandbox --help for more detail\n";
+    die "version should be provided as #.#.#\n";
+    #print q{-} x 50, "\n";
+    #exec "$install_dir/low_level_make_sandbox --help ";
+}
+
+my ($bare_basedir) = (split /\//, $where_to_install)[-1];
+
+# print "<$bare_basedir>\n";exit;
+
+unless ( -d $binary_base ) {
+    die "$binary_base does not exist\n";
+}
+
+my @supported_versions = @{ MySQL::Sandbox::supported_versions() };
+
+my $simple_version = "$major.$minor";
+
+unless ( grep { $simple_version eq $_ } @supported_versions) {
+    die "unsupported version $simple_version\n";
+}
+
+my $port = ($major . $minor. $release) ;
+
+if ($port < 1024) {
+    $port .= '0';
+}
+
+if ( -d "$binary_base/$bare_basedir" ) {
+
+    my $text_version = $version;
+    $text_version =~ tr/./_/d; ## no critic
+    my @install_options = (
+                "--basedir=$binary_base/$bare_basedir", 
+                "--sandbox_directory=msb_$text_version",
+                "--install_version=$simple_version",
+                "--sandbox_port=$port",
+                "--no_ver_after_name",
+                @ARGV
+            );
+    if ($major >=5) {
+        push(@install_options, qq(--my_clause=log-error=msandbox.err));
+    }
+    print "Executing low_level_make_sandbox ", join( " \\\n\t", @install_options ), "\n";
+    exec "low_level_make_sandbox", @install_options;
+}
+else {
+    die "there is no $bare_basedir directory under $binary_base\n";
+}
+
+

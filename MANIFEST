@@ -1,0 +1,17 @@
+bin/low_level_make_sandbox
+bin/make_multiple_custom_sandbox
+bin/make_multiple_sandbox
+bin/make_replication_sandbox
+bin/make_sandbox
+bin/sandbox
+bin/sbtool
+bin/test_sandbox
+Changelog
+COPYING
+lib/MySQL/Sandbox.pm
+lib/MySQL/Sandbox/Scripts.pm
+Makefile.PL
+MANIFEST
+README
+t/MySQL-Sandbox.t
+META.yml                                 Module meta-data (added by MakeMaker)

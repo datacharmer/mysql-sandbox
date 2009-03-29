@@ -1,0 +1,333 @@
+2.0.98 29-Mar-2009
+	- Preparation for version 3.0
+	- refactoring code to use with ExtUtilis::MakeMaker and install a proper
+	Perl module 
+2.0.18 22-Mar-2009
+	- added change_port script to installed sandboxes
+	- added 'port' operation to sbtool
+	- added --new_port option to sbtool
+2.0.17 15-Mar-2009
+	- improved sbtool error checking
+	- improved sbtool built-in help
+	- added "report-port" to replication slave setup
+2.0.16 14-Mar-2009
+	- added 'copy' option to sbtool, to clone a sandbox data directory into another.
+2.0.15 09-Mar-2009
+	- added "report-host" option to slave creation
+	- fixed server_id for values larger than 10. Instead of folding from 109
+	  to 100, it was doing 109 to 1010.
+2.0.15 19-Feb-2009
+	- added sbtool, a multi purpose program to do administrative tasks
+	  with the sandbox. Supported operations: port list, replication tree,
+	  moving single and multiple sandboxes
+2.0.14 08-Feb-2009
+	- added code to the "clear" script to truncate the table logs if they
+	  exist
+	- improved error messages when using wrong directories or tarballs
+	- added a "change_paths" script to change the sandbox paths quickly
+	  when moving the sandbox to a new location.
+2.0.13 27-Jan-2009
+	- added parameters to "start" and "restart" scripts. If you pass an option,
+	  it will be passed directly to mysqld_safe. e.g. "start --log=mylog.log"
+	- fixed bug in test_sandbox.pl. Using "ls -d /path/*/" doesn't work on
+	  Solaris. Replaced with a more robust routine.
+	- Allow the unpacking of tarballs to work on Solaris if "gtar" is found.
+2.0.12 16-Oct-2008
+	- Fixed small bug in 'clear' script. When the server is not responsive,
+	  it was calling the wrong 'kill' script
+	- Applied Greg Haase patch to fix a bug in --datadir_from=dir:xxxx
+2.0.11 05-Oct-2008
+	- Fixed bug#278394, "character '-' in database names" (added backticks to
+	'clear' script)
+	- added a command to change read attributes inside expanded tarballs
+	  to avoid a possible failure in MySQL test suite, should a user run it
+2.0.10 27-Aug-2008
+	- fixed minor bug in make_multiple_sandbox and make_replication_sandbox
+	  when passing additional parameters. No space were added at the end.
+	  Further parameters were glued together, resulting in a startup error.
+	- added NODE_OPTIONS to work in make_replication_sandbox (it adds options
+	  to both MASTER_OPTIONS and SLAVE_OPTIONS)
+2.0.9 22-Aug-2008
+	- fixed bug#260265 "installation fails with log-error option and version < 5"
+	  - removed "log-error" from default file
+	  - added this option conditionally only if major version > 4
+2.0.8 16-Aug-2008
+	- fixed problem with "~" not being expanded as $HOME
+	- fixed problem with not existent path for tarball
+	- fixed bug#258523 Mysql Sandbox looks for tar.gz in wrong location
+	  in make_replication_sandbox, make_sandbox, make_multiple_sandbox,
+	  make_multiple_custom_sandbox, and in the test suite
+	- fixed minor problem in MyScripts.pm. log-slow-queries was misspelled,
+	  although commented.
+2.0.7 06-Aug-2008
+	- added shortcut option "--circular=N" to make_replication_sandbox
+	  corresponding to "--topology=circular --how_many_nodes=N"
+	- added Falcon creation to smoke test (if version >= 6)
+2.0.6 20-Jul-2008
+	- added "check_slaves" script to replication sandboxes
+2.0.5 14-Jul-2008
+	- added named error log to configuration file
+	- add removal of *.err-old files in "clear" script
+	- Fixed bug in circular replication. Unnecessary initialization
+	  after stop_all. Added the same check used in standard replication
+	- fixed bug in circular replication. start_all and
+	  set_circular_replication.sh were not stopping and starting the
+	  slaves in the righ order.
+	- improved 'stop' script. If the server is a slave, calls "stop slave"
+	  before closing down.
+2.0.4 12-Jul-2008
+	- fixed bug in test suite. Parameter passing to check routine 
+      was often failing on negative tests. Added subroutine prototype
+	  to fix the problem.
+2.0.3 12-Jul-2008
+	- Fixed smoke test bugs in test suite.
+	  - fixed race condition while checking the pid file
+	  - added cleanup of extracted binary with smoke test
+	  - added stricter check for InnoDB tables
+	- added some replication tests to test suite
+2.0.2 6-Jul-2008
+	- Fixed minor bugs in low_level_make_sandbox. 
+	  - When started with --force and --load grants, it said that it 
+	    failed to comply. In fact, the grants were already loaded.
+	  - when started with --force, it invokes $sandbox_dir/start
+	    without checking if such script exists
+2.0.1 5-Jul-2008
+	- fixed minor bug on test suite. It fails on Solaris with "ps -ea". Changed
+	  to "ps -ef"
+	- added README.wiki
+	- added "smoke" test to test suite
+	- added --no_confirm to all single sandbox testing
+2.0.0 2-Jul-2008
+	- fixed minor bug in generated scripts. Removed bash-specific operator
+	"=="
+1.99.10 1-Jul-2008
+	- Fixed bug in test suite. Process count was not taking into account the
+	  pre-test processes.
+	- Fixed bug in test suite. Portability. ps was being used with non
+	  portable options.
+    - added --prompt_body option to low_level_make_sandbox
+	- added $SANDBOX_BINARY environment variable, to replace default
+ 	  $HOME/opt/mysql
+	- fixed error message of make_sandbox when invoked without options
+	- added a check in make_sandbox to make sure that we are using GNU tar.
+1.99.9 30-Jun-2008
+	- Fixed bug #244236 (low_level_make_sandbox accepts unnecessary arguments)
+	- Fixed bug in low_level_make_sandbox. sandbox_home was not checked
+	  for correctness. It is a simple name, and it should not accept 
+	  full paths.
+	- INCOMPATIBLE CHANGE
+	  home_directory was not supposed to be home. Its name is misleading, and
+	  thus it was changed to upper_directory.
+	- Fixed typos in README
+	- Initial fix for bug #239630 (possible failure on non-GNU tar)
+	- fixed script names in "sandbox" script
+    - (Thanks to John Embretsen for most of the reports on today's changes)
+1.99.8 29-Jun-2008
+	- INCOMPATIBLE CHANGE
+	  $HOME/sandboxes is now the default SANDBOX_HOME, which users
+	  however can override.
+	- INCOMPATIBLE CHANGE
+	  "multi_cmd" was renamed "use_all" for name consistency
+	- added a call to low_level_make_sandbox --help when 
+	  make_sandbox is invoked without the proper syntax.
+	- README has been completely rewritten
+	- added a ./docs directory with the README.pod source for README
+	- added POD to ./sandbox script, to show the documentation
+	  when called as "./sandbox manual|help"
+1.99.7 28-Jun-2008
+	- added configurable options for test suite
+	  users can now choose which versions and which tests to run
+	  from the command line
+	- removed deprecated test_sandbox.sh
+	- moved test suite to ./tests directory
+	- added tests/README
+	- improved "stop" script by combining it with the "kill" script
+	- adjusted make_dist script to use the ./test directory
+	- improved test suite with the ability of running from one or more
+	  tarballs instead of the default directories ([$HOME]/opt/mysql)
+1.99.6 28-Jun-2008
+	- enhanced the "clear" script. Now it removes all databases form the
+	  data directory, first trying via SQL, then using the OS.
+	- added tests to the test suite to check on this feature
+1.99.5 27-Jun-2008
+	- INCOMPATIBLE CHANGE
+	  make_sandbox renamed low_level_make_sandbox
+	  easy_sandbox renamed make_sandbox
+	- fixed bug in make_replication_sandbox (base port was not isolated)
+	- added test for circular replication
+	- improved testing for number of processes in the test suite
+	- added circular replication features to make_multiple_sandbox 
+	  with options --master_master and --circular (this should not be
+	  used directly)
+	- added circular replication features to make_replication_sandbox
+	  with options --master_master and --topology={standard|circular} .
+	  This feature uses make_multiple_sandbox internally. 
+	- circular replication uses a separate directory name and port
+	- fixed bug in make_multiple_sandbox. It did not use the $SANDBOX_HOME
+	  directory.
+1.99.4 21-Jun-2008
+	- added more extensive test suite in Perl 
+	- fixed bug in make_multiple_custom_sandbox (install directory was not set
+	  when calling easy_sandbox)
+1.99.3 21-Jun-2008
+	- INCOMPATIBLE CHANGE
+	  all Perl script names were changed to make them more intuitive
+		install.pl -> make_sandbox
+		express_install.pl -> easy_sandbox
+		set_replication.pl -> make_replication_sandbox
+		set_many -> make_multiple_sandbox
+		set_custom_many.pl -> make_multiple_custom_sandbox
+	- created a './sandbox' script that lists all applications and eventually
+	  executes the one that is passed as argument
+	- mapped "stop" script to faster and safer "kill" script
+	- replaced "sleep 3" with a loop + timeout in shell scripts
+	- removed "sleep" commands from Perl scripts
+	- fixed bug in get_help() : parse_options were not passed to the $msb object
+1.99.2 20-Jun-2008
+	- fixed minor bug. mysql_install_db script in some cases is
+	  found in the "bin" directory rather than "scripts"
+	- added ability to log start operations into a log file
+1.99.1 19-Jun-2008
+	- added "kill" script to each sandbox
+	- replace call to "stop" with "kill" in "clear" script
+1.99.0 15-Jun-2008
+	- Started new development branch for Sandbox 2.0
+	- added MySandbox.pm module, to use the same routines across scripts
+1.22 15-Jun-2008
+	- added support for default options file ($HOME/.msandboxrc)
+	- fixed minor bug in set_replication.pl. Added #master to multi_cmd
+      output.
+	- fixed bug related to location of sample option files. The installer
+	  was only looking under "./support-files" while recent packaging use
+	  "./share/mysql"
+    - fixed Bug#240121, with a collision between my_file and replication.
+	- added the execution of a "./clear" command when "--force" was used
+	  to avoid overwriting a running server.
+	- cleaned up current_changes to contain only not empty options
+	- created a basic test suite (not in distribution yet, only in RCS)
+1.21 09-Jun-2008
+	- added SANDBOX_HOME environmental variable to override $HOME
+	- default sandbox home is now $HOME/sandboxes (if exists) or else
+	  it is $HOME, as before
+	- added scripts to start/stop/clear/use all sandboxes at once (if
+	  $SANDBOX_HOME != $HOME)
+1.20 11-Apr-2008
+	- Added set_custom_many.pl to install different versions of the server
+	  in one go. (Thanks to Ronald Bradford for the idea)
+	- enhanced "multi_cmd" to say which server is running
+	- added support for MYCLIENT_OPTION user variable to pass
+	  options to the client (./use and ./multi_cmd)
+1.19 06-Apr-2008
+	- changed installer files so that they can be called from 
+	  outside the installation directory.
+1.18 02-Apr-2008 
+	- Fixed bug in set_many and set_replication. Undefined group directory 
+	  when setting custom port
+	- Added help to ./express_install
+1.17 16-Mar-2008 (not released)
+	- fixed minor bug in "clear: script. It did not remove subdirectories in
+	  test db
+	- fixed minor bug on the choice od source dir. If $HOME/opt/mysql exists,
+	  it is preferred to /opt/mysql
+1.16 04-Jan-2008 (not released)
+    - added stronger check on the result of mysql_install_db.
+	- added removal of general log files and falcon files with 
+	  the "clear" command.
+1.15 09-Dec-2007
+	- fixed bug in grants.mysql. Removed anonymous users 
+	  from mysql.db
+	- added $HOME/opt/mysql as possible default for binaries.
+	- added proxy_start script to start a MySQL Proxy instance
+	  using the sandboxed server
+
+1.14 24-Oct-2007
+	- added a set_many.pl command to create several servers
+	  not in replication
+	- fixed bug in replication ports assignment. Two replication
+	  systems using adjacent versions (e.g. 5.1.22 and 5.1.23) would
+	  have clashing port numbers.
+
+1.13 23-Oct-2007
+	- (INCOMPATIBLE CHANGE) removed '.sh' suffix from all scripts
+	- added version differentiation to replication port and
+	  directory. Instead of being always the same, now they 
+	  are based on the version number, unless modified by
+	  the user.
+	- added a multi_cmd script to the replication system,
+	  to send a query to each node.
+	- added a 'my' script to call mysql* tools
+	- fixed bug about using 6.0 binaries on Mac OS X (dynamic library
+	  path requires a different environment variable)
+	- fixed bug in replication. After a "clear_all", the replication
+	  did not start again. Added a "initialize_slaves" script that
+	  get called by "start_all" if a clear_all was called.
+
+1.12 17-Oct-2007
+	- hidden mysql_install_db output on successful execution
+	- fixed argument handling bug in replication scripts
+
+1.11 16-Oct-2007
+	- all shell scripts are now created from install.pl (not copied)
+	- changed default username, password, and sandbox directory name
+	- forbid using a relative path of tarball
+
+1.10 16-Oct-2007 (not released)
+	- fixed bug on mysql_install_db usage 
+
+1.9 15-Oct-2007 (not released)
+	- deprecated the 'archive' method of installation and removed
+	  the compressed data directories
+	- express_install can now expand a server tarball.
+	- added support for replicated servers (set_replication.pl)
+	  using CHANGE MASTER TO rather than replication options
+	- added 'load_grants' option to install.pl
+	- added 'prompt_prefix' option to install.pl
+	- fixed bug about client library not being available due
+	  to LD_LIBRARY_PATH not set
+
+1.8 14-Sep-2007
+	- Added support for MySQL 6.0
+
+1.7 05-Jul-2006 (not released)
+    - Added support for Mysql 5.2-alpha
+
+1.6 27-May-2006
+    - Added 'my_clause' command line option to define my.cnf file parameters;
+    - changed interactive routine to allow multi-item options;
+    - changed the shell scripts to be less bash specific. the sandbox
+      should be now more cross-platform than before.
+      During the installation, if bash is not found, then tcsh is used.
+    - new Tutorial available at http://datacharmer.org/#tutorials
+    - bugs fixed:
+        -- clear.sh was using $HOME directory instead of _HOME_DIR_
+        -- install_version calculated by express_install.pl could be lower
+           than 1024.
+        -- install_version was added twice when loading options from
+           'current_options.conf' (Thanks to Imran Chaudhry for reporting it)
+
+1.5 24-May-2006
+    - added 'back' and 'quit' keywords in interactive mode
+    - added express_install.pl, to install quickly from a binary package
+    - Bug fixed. 'start.sh' and 'stop.sh' scripts where using
+	  the actual $HOME dorectory instead of the user's defined
+	  _HOME_DIR_
+
+1.4 17-May-2006 (not released)
+    - added support for 3.23, 4.0 and 4.1 installs
+    - default install is now 5.0
+    - default addition of version to sandbox directory name
+    - added option "no_ver_after_name" to control the above change
+
+1.3 05-May-2006
+    - added "interactive" option to install through a sort of a wizard 
+    - added current_options.conf  to record the options used for installing
+    - fix bug in configuration file
+
+1.2 02-May-2006
+    - minor bug fixes 
+
+1.1 19-Apr-2006
+    - added multiple sources for data directory
+
+1.0 18-Apr-2006
+    - initial release.
