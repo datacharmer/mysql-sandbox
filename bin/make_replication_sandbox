@@ -1,0 +1,357 @@
+#!/usr/bin/perl 
+#    The MySQL Sandbox
+#    Copyright (C) 2006,2007,2008,2009 Giuseppe Maxia
+#    Contacts: http://datacharmer.org
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; version 2 of the License
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+use strict;
+use warnings;
+use English qw( -no_match_vars ); 
+use Data::Dumper;
+use Getopt::Long qw(:config no_ignore_case );
+use MySQL::Sandbox;
+use MySQL::Sandbox::Scripts;
+
+my $DEBUG = $MySQL::Sandbox::DEBUG;
+
+my %defaults = (
+    replication_base_port => $MySQL::Sandbox::default_base_port{replication},
+    circular_base_port    => $MySQL::Sandbox::default_base_port{circular},
+    replication_directory => 'rsandbox',
+);
+
+unless ( $ENV{SANDBOX_HOME} ) { 
+    $ENV{SANDBOX_HOME} = "$ENV{HOME}/sandboxes";
+}
+# 
+# $SANDBOX_HOME must be set BEFORE loading MyScripts
+#
+#if ( -d "$ENV{HOME}/sandboxes" ) {
+#    $ENV{SANDBOX_HOME} = $ENV{SANDBOX_HOME} || "$ENV{HOME}/sandboxes";
+#}
+#
+#unless ( -d $ENV{'SANDBOX_HOME'} ) {
+#    mkdir $ENV{'SANDBOX_HOME'} 
+#        or die "can't create $ENV{'SANDBOX_HOME'} ($CHILD_ERROR) \n";
+#}
+
+#my $install_dir;
+#$install_dir = $PROGRAM_NAME;
+#$install_dir =~ s{/\w+(\.pl)?$}{};
+# eval "use lib q($install_dir)";
+
+my $msb = MySQL::Sandbox->new();
+
+my %parse_options = %{ MySQL::Sandbox::Scripts::parse_options_replication() }; 
+$msb->parse_options(\%parse_options);
+
+my %options = map { $_ , $parse_options{$_}{'value'}}  keys %parse_options ;
+
+GetOptions (
+    map { $parse_options{$_}{parse}, \$options{$_} }        
+        grep { $parse_options{$_}{parse}}  keys %parse_options  
+) or $msb->get_help();
+
+$msb->get_help() if $options{'help'};
+
+unless ($options{server_version}) {
+    $options{server_version} = shift
+        or $msb->get_help('server version required');
+}
+
+my $base_version ;
+my $release_no;
+my $dashed_version ;
+my $replication_port = 0;
+my $temp_path = $options{server_version};
+$temp_path =~ s{.*/}{};
+if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
+    my ($major, $minor, $rev) = ($1, $2, $3);
+    $base_version = "${major}${minor}${rev}";
+    $release_no = $rev;
+    $dashed_version = "${major}_${minor}_${rev}";
+    $base_version =~ s/^0+//;
+    $base_version += $major + ($minor * 10) + ($rev * 100);
+}
+else {
+    $msb->get_help("No recognizable version pattern in $options{server_version}\n");
+}
+
+my @supported_topologies = qw(standard circular);
+#
+# deals with circular replication
+#
+
+if ($options{master_master}) {
+    $options{topology} = 'circular';
+    $options{how_many_slaves} = 2;
+}
+
+if ($options{circular} && ($options{circular} =~ /^\d+$/)) {
+    $options{topology} = 'circular';
+    $options{how_many_slaves} = $options{circular};
+}
+
+if ($options{'topology'} ) {
+    if ($options{'topology'} eq 'standard') {
+        # do nothing. default behavior
+    }
+    elsif ($options{'topology'} eq 'circular') {
+        make_circular_replication();
+    }
+    else {
+        die qq(unsupported topology "$options{topology}". Allowed options: {@supported_topologies}\n);
+    }
+}
+
+# print Dumper(\%options);
+
+my $replication_directory ;
+
+if ( $options{replication_directory}) {
+    $replication_directory = "$options{upper_directory}/$options{replication_directory}";
+}
+else {
+    $replication_directory = "$options{upper_directory}/$defaults{replication_directory}_$dashed_version";
+}
+
+if ( -d $replication_directory ) {
+    if ( -x "$replication_directory/clear_all") {
+        system "$replication_directory/clear_all";
+    }
+    system "rm -rf $replication_directory/*";
+}
+else {
+    print "creating replication directory $replication_directory\n" if $options{verbose};
+    mkdir $replication_directory
+}
+
+for my $dir ( 1 .. $options{how_many_slaves}) {
+    if ( -d "$replication_directory/node$dir" ) {
+        system "rm -rf $replication_directory/node$dir" 
+            and die "unable to clean $replication_directory/node$dir\n";
+    }
+}
+
+if ( -d "$replication_directory/master" ) {
+    system "rm -rf $replication_directory/master"
+        and die "unable to clean $replication_directory/master\n";
+}
+
+if ( $options{sandbox_base_port}) {
+    $replication_port = $options{sandbox_base_port};
+}
+else {
+    $replication_port = $defaults{replication_base_port} + $base_version + ($release_no * 100);
+}
+print "installing and starting master\n";
+my $additional_master_options = $ENV{MASTER_OPTIONS} || '';
+my $additional_slave_options = $ENV{SLAVE_OPTIONS} || '';
+if ($ENV{NODE_OPTIONS}) {
+    $additional_master_options .= q{ } . $ENV{NODE_OPTIONS};
+    $additional_slave_options  .= q{ } . $ENV{NODE_OPTIONS};
+}
+$additional_master_options .=  q{ };
+$additional_slave_options  .=  q{ };
+my $install_master = qx(
+   make_sandbox $options{server_version} \\
+    --datadir_from=script \\
+    --no_confirm \\
+    --upper_directory=$replication_directory \\
+    --sandbox_directory=master \\
+    --sandbox_port=$replication_port \\
+    --load_grants \\
+    --prompt_prefix=master \\
+    -c log-bin=mysql-bin \\
+    -c server-id=1 $additional_master_options
+    );
+print $install_master if $options{verbose};
+if ($CHILD_ERROR) {
+    print "error installing the master\n";
+    print "$install_master\n";
+    exit(1)
+}
+# sleep 1 ;
+
+for my $slave (1 .. $options{how_many_slaves}) {
+   my $slave_port = $replication_port+ $slave;
+   my $slave_id = 100 + $slave;
+   print "installing slave $slave\n";
+   my $install_slave = qx(
+    make_sandbox $options{server_version} \\
+    --datadir_from=script \\
+    --upper_directory=$replication_directory \\
+    --sandbox_directory=node$slave \\
+    --no_confirm \\
+    --no_load_grants \\
+    --prompt_prefix=slave$slave \\
+    --sandbox_port=$slave_port \\
+    -c server-id=$slave_id \\
+    -c report-host=SBslave$slave \\
+    -c report-port=$replication_port \\
+    -c log-bin=mysql-bin $additional_slave_options
+    );
+    print $install_slave if $options{verbose};
+    if ($CHILD_ERROR) {
+        print "error installing slave $slave\n";
+        print "$install_slave\n";
+        exit(1)
+    }
+    # sleep 1;
+}
+
+my $current_dir = $ENV{PWD};
+
+chdir $replication_directory;
+
+for my $cmd ( qw(start stop clear send_kill) ) {
+    my $cmd_fname = $cmd . '_all';
+    $msb->write_to($cmd_fname, '>', '#!/bin/sh');
+    if ($cmd eq 'start') {
+        $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on master') );
+        $msb->write_to ($cmd_fname, '>>', "$replication_directory/master/$cmd");
+    }
+    for my $slave (1 .. $options{how_many_slaves} ) {
+        $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on slave $slave'));
+        $msb->write_to ($cmd_fname, '>>', "$replication_directory/node$slave/$cmd");
+    }
+    if ($cmd ne 'start') {
+        $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on master') );
+        $msb->write_to ($cmd_fname, '>>', "$replication_directory/master/$cmd");
+    }
+    chmod 0755, $cmd_fname;
+}
+
+my $rw_splitting = '/usr/local/share/mysql-proxy/rw-splitting.lua';
+my $mysql_proxy = '/usr/local/sbin/mysql-proxy';
+if ( ( -x $mysql_proxy ) &&  ( -f $rw_splitting) ) {
+    my $port = $replication_port;
+    $msb->write_to('run_proxy',  '>',  '#!/bin/sh'); 
+    $msb->write_to('run_proxy',  '>>', "$mysql_proxy \\" ); 
+    $msb->write_to('run_proxy',  '>>', "  --proxy-backend-addresses=127.0.0.1:$port \\" ); 
+    for my $slave ( 1 .. $options{how_many_slaves}) {
+        $port++;
+        $msb->write_to('run_proxy',  '>>', "  --proxy-read-only-backend-addresses=127.0.0.1:$port \\" ); 
+    }
+    $msb->write_to('run_proxy',  '>>', "  --proxy-lua-script=$rw_splitting" ); 
+    chmod 0755, 'run_proxy';
+}
+
+$msb->write_to('clear_all', '>>', "date > $replication_directory/needs_initialization");
+
+$msb->write_to('start_all', '>>', "if [ -f $replication_directory/needs_initialization ] ");
+$msb->write_to('start_all', '>>', "then");
+$msb->write_to('start_all', '>>', "    $replication_directory/initialize_slaves");
+$msb->write_to('start_all', '>>', "    rm -f $replication_directory/needs_initialization");
+$msb->write_to('start_all', '>>', "fi");
+
+
+$msb->write_to('m',    '>',    "#!/bin/sh");
+$msb->write_to('m',    '>>',   qq($replication_directory/master/use "\$@") );
+chmod 0755, 'm';
+
+$msb->write_to('use_all', '>', '#!/bin/sh');
+my $slave_list = join(' ', (1 .. $options{how_many_slaves}) );
+
+$msb->write_to('use_all', '>>', 'if [ "$1" == "" ]');
+$msb->write_to('use_all', '>>', 'then');
+$msb->write_to('use_all', '>>', '  echo "syntax: $0 command"');
+$msb->write_to('use_all', '>>', '  exit 1');
+$msb->write_to('use_all', '>>', 'fi');
+$msb->write_to('use_all', '>>', '');
+$msb->write_to('use_all', '>>', 'echo "# master  " ' );
+$msb->write_to('use_all', '>>', 'echo "$@" | ' . $replication_directory . '/master/use  ');
+$msb->write_to('use_all', '>>', '');
+$msb->write_to('use_all', '>>', 'for SNUM in ' . $slave_list);
+$msb->write_to('use_all', '>>', 'do ' );
+$msb->write_to('use_all', '>>', '  echo "# server: $SNUM: " ' );
+$msb->write_to('use_all', '>>', '  echo "$@" | ' . $replication_directory . '/node$SNUM/use $MYCLIENT_OPTIONS ');
+$msb->write_to('use_all', '>>', 'done ' );
+chmod 0755, 'use_all';
+
+$msb->write_to('check_slaves', '>', '#!/bin/sh' );
+$msb->write_to('check_slaves', '>>', 'for NNUM in ' . $slave_list );
+$msb->write_to('check_slaves', '>>', 'do' );
+$msb->write_to('check_slaves', '>>', '  echo "slave # $NNUM"');
+$msb->write_to('check_slaves', '>>', "  $replication_directory/node\$NNUM/use -N -e "
+            . " 'show slave status\\G' | grep Running" );
+$msb->write_to('check_slaves', '>>', 'done ' );
+chmod 0755, 'check_slaves';
+
+for my $slave (1 .. $options{how_many_slaves} ) {
+    $msb->write_to("s$slave", '>', "#!/bin/sh");
+    $msb->write_to("s$slave", '>', qq($replication_directory/node$slave/use "\$@"));
+    chmod 0755, "s$slave";
+}
+
+$msb->write_to('initialize_slaves', '>', "#!/bin/sh");
+$msb->write_to('initialize_slaves', '>', "");
+$msb->write_to('initialize_slaves', '>', "# Don't use directly.");
+$msb->write_to('initialize_slaves', '>', "# This script is called by 'start_all' when needed");
+$msb->write_to('initialize_slaves', '>', "");
+for my $slave (1 .. $options{how_many_slaves} ) {
+    print "starting slave $slave\n";
+    system "./node$slave/start"
+        and die "can't execute ./node$slave/start ($CHILD_ERROR)";
+
+    $msb->write_to('initialize_slaves', '>>', qq(echo "initializing slave $slave"));
+
+    $msb->write_to('initialize_slaves', '>>',  
+      qq( echo 'CHANGE MASTER TO )
+           . qq( master_host="127.0.0.1", )
+           . qq( master_port=$replication_port, )
+           . qq( master_user="msandbox", )
+           . qq( master_password="msandbox" )
+           . qq(' | $replication_directory/node$slave/use -u root --password= ) );
+
+    $msb->write_to('initialize_slaves', '>>', 
+            qq( echo 'START SLAVE' )
+           . qq( | $replication_directory/node$slave/use -u root --password= ) );
+}
+
+chmod 0755, "initialize_slaves";
+system "./initialize_slaves"
+        and die "can't initialize slave";
+
+# 
+# For the first run, there is root without password. 
+# After the first run, a password is assigned
+#
+system q( perl -i -pe 's/(-u root) (--password=)/$1/g' initialize_slaves );
+
+chdir $current_dir;
+print "replication directory installed on $replication_directory\n";
+
+sub make_circular_replication {
+    my $cmd =  "make_multiple_sandbox --circular";
+    if ($options{how_many_slaves}) {
+        $cmd .= ' --how_many_nodes=' . $options{how_many_slaves};
+    }
+    if ($options{replication_directory} ) {
+        $cmd .= ' --group_directory=' . $options{replication_directory};
+    }        
+    else {
+        $cmd .= ' --group_directory=rcsandbox_' . $dashed_version 
+    }
+    if ($options{sandbox_base_port} ) {
+        $cmd .= ' --sandbox_base_port=' . $options{sandbox_base_port}
+    }
+    else {
+        $cmd .= ' --sandbox_base_port=' . ($defaults{circular_base_port} + ($release_no * 100));
+    }
+    exec "$cmd $options{server_version}" ;
+}
+
+__END__

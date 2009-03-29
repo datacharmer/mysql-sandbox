@@ -1,0 +1,279 @@
+#!/usr/bin/perl 
+#    The MySQL Sandbox
+#    Copyright (C) 2006,2007,2008,2009 Giuseppe Maxia
+#    Contacts: http://datacharmer.org
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; version 2 of the License
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+use strict;
+use warnings;
+use English qw( -no_match_vars ); 
+use Data::Dumper;
+use Getopt::Long qw(:config no_ignore_case );
+use MySQL::Sandbox;
+use MySQL::Sandbox::Scripts;
+
+my $DEBUG = $MySQL::Sandbox::DEBUG;
+
+#my $install_dir;
+#$install_dir = $PROGRAM_NAME;
+#$install_dir =~ s{/\w+(\.pl)?$}{};
+#eval "use lib q($install_dir)";
+#eval "use MySandbox";
+#eval "use MyScripts";
+
+my $msb = MySQL::Sandbox->new();
+
+my %defaults = (
+    circular_base_port => $MySQL::Sandbox::default_base_port{multiple},,
+    group_directory => 'multi_msb',
+);
+my %parse_options = %{ MySQL::Sandbox::Scripts::parse_options_many() };
+$msb->parse_options(\%parse_options);
+
+my %options = map { $_ , $parse_options{$_}{'value'}}  keys %parse_options ;
+
+GetOptions (
+    map { $parse_options{$_}{parse}, \$options{$_} }        
+        grep { $parse_options{$_}{parse}}  keys %parse_options  
+) or $msb->get_help();
+
+$msb->get_help() if $options{'help'};
+
+unless ($options{server_version}) {
+    $options{server_version} = shift
+        or $msb->get_help('server version required');
+}
+
+my $base_version ;
+my $release_no;
+my $dashed_version ;
+my $replication_port = 0;
+
+my $temp_path = $options{server_version};
+$temp_path =~ s{.*/}{};
+if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
+    $base_version = "$1$2$3";
+    $release_no = $3;
+    $dashed_version = "$1_$2_$3";
+    $base_version =~ s/^0+//;
+}
+else {
+    $msb->get_help("No recognizable version pattern in $options{server_version}\n");
+}
+
+#print Dumper(\%options);
+
+my $group_directory ;
+
+if ( $options{group_directory}) {
+    $group_directory = "$options{upper_directory}/$options{group_directory}";
+}
+else {
+    $group_directory = "$options{upper_directory}/$defaults{group_directory}_$dashed_version";
+}
+
+if ( -d $group_directory ) {
+    if ( -x "$group_directory/clear_all" ) {
+        system "$group_directory/clear_all";
+    }
+    system "rm -rf $group_directory/*";
+}
+else {
+    print "creating group directory $group_directory\n" if $options{verbose};
+    mkdir $group_directory
+}
+
+if ( -f "$group_directory/needs_initialization" ) {
+    system "rm -f $group_directory/needs_initialization" ;
+}
+
+if ($options{'master_master'}) {
+    $options{'how_many_nodes'} = 2;
+    $options{'circular'} = 1;
+}
+
+for my $dir ( 1 .. $options{how_many_nodes}) {
+    if ( -d "$group_directory/node$dir" ) {
+        system "rm -rf $group_directory/node$dir" 
+            and die "unable to clean $group_directory/node$dir\n";
+    }
+}
+
+if ( $options{sandbox_base_port}) {
+    $replication_port = $options{sandbox_base_port};
+}
+else {
+    $replication_port = $defaults{circular_base_port} + $base_version + ($release_no * 100);
+}
+
+my $circular_replication_script = "$group_directory/set_circular_replication.sh";
+
+if ($options{'circular'}) {
+$msb->write_to($circular_replication_script, '>', 
+q(
+#!/bin/bash
+TMPL1="change master to master_host='127.0.0.1',"
+TMPL2="master_user='msandbox',"
+TMPL3="master_password='msandbox',"
+TMPL4="master_port"
+TMPL="$TMPL1 $TMPL2 $TMPL3 $TMPL4"
+));
+$msb->write_to($circular_replication_script, '>>', "$group_directory/use_all 'stop slave' ");
+}
+
+for my $node (1 .. $options{how_many_nodes}) {
+    my $additional_node_options = $ENV{NODE_OPTIONS} || '';
+    my $node_port = $replication_port+ $node;
+    if ($options{'circular'}) {
+        my $master_node_port = $node == 1 
+                ? $node_port + $options{how_many_nodes} 
+                : $node_port -1;
+        $additional_node_options .= '-c log-slave-updates '
+            . '-c replicate-same-server-id=0 '
+            . '-c auto_increment_increment=' . $options{'how_many_nodes'} 
+            . ' '
+            . '-c auto_increment_offset=' . $node 
+            . ' '
+            . '-c report-host=SBnode' . $node 
+            . ' '
+            . "-c report-port=$master_node_port" ;
+    } 
+    $additional_node_options .=  q{ };
+    my $node_id = 100 + $node;
+    print "installing node $node\n";
+    my $install_node = qx(
+    make_sandbox $options{server_version} \\
+    --datadir_from=script \\
+    --upper_directory=$group_directory \\
+    --sandbox_directory=node$node \\
+    --no_confirm \\
+    --prompt_prefix=node$node \\
+    --sandbox_port=$node_port \\
+    -c server-id=$node_id \\
+    -c log-bin=mysql-bin $additional_node_options
+    );
+    print $install_node if $options{verbose};
+    if ($CHILD_ERROR) {
+        print "error installing node $node\n";
+        print "$install_node\n";
+        exit(1)
+    }
+    #sleep 1;
+    if ($options{'circular'}) {
+        my $master_node = $node + 1 ;
+        if ($master_node >  $options{'how_many_nodes'} ) {
+            $master_node = 1;
+        }
+        $msb->write_to($circular_replication_script, '>>',
+            sprintf(q(echo "$TMPL=%d" | %s/node%d/use -u root ),
+                $node_port,
+                $group_directory,
+                $master_node
+            )
+        ); 
+    }
+}
+
+if ($options{'circular'}) {
+    $msb->write_to($circular_replication_script, '>>', "$group_directory/use_all 'start slave' ");
+    chmod 0755, $circular_replication_script;
+}
+
+my $current_dir = $ENV{PWD};
+
+chdir $group_directory;
+
+for my $cmd ( qw(start stop clear send_kill) ) {
+    my $cmd_fname = $cmd . '_all';
+    $msb->write_to($cmd_fname, '>', '#!/bin/sh');
+    if ($cmd =~ /stop|clear|send_kill/ && $options{'circular'}) {
+        $msb->write_to ($cmd_fname, 
+                '>>', 
+                qq($group_directory/use_all "slave stop"));
+    } 
+    for my $node (1 .. $options{how_many_nodes} ) {
+        $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on node $node'));
+        $msb->write_to ($cmd_fname, '>>', "$group_directory/node$node/$cmd");
+        if (($cmd eq 'start') and $options{'circular'}) {
+            $msb->write_to ($cmd_fname, '>>', 
+                      "if [ -f $group_directory/node$node/data/master.info ] \n"
+                    . "then\n"
+                    . "  echo 'stop slave' | $group_directory/n$node -u root\n"
+                    . "fi");
+        }
+    }
+    chmod 0755, $cmd_fname;
+}
+
+$msb->write_to('use_all', '>', '#!/bin/sh');
+my $node_list = join(' ', (1 .. $options{how_many_nodes}) );
+
+$msb->write_to('use_all', '>>', 'if [ "$1 " == " " ]');
+$msb->write_to('use_all', '>>', 'then');
+$msb->write_to('use_all', '>>', '  echo "syntax: $0 command"');
+$msb->write_to('use_all', '>>', '  exit 1');
+$msb->write_to('use_all', '>>', 'fi');
+$msb->write_to('use_all', '>>', '');
+$msb->write_to('use_all', '>>', 'for SNUM in ' . $node_list);
+$msb->write_to('use_all', '>>', 'do ' );
+$msb->write_to('use_all', '>>', '  echo "# server: $SNUM: " ' );
+$msb->write_to('use_all', '>>', '  echo "$@" | ' . $group_directory . '/node$SNUM/use $MYCLIENT_OPTIONS ');
+$msb->write_to('use_all', '>>', 'done ' );
+chmod 0755, 'use_all';
+
+$msb->write_to('check_slaves', '>', '#!/bin/sh' );
+$msb->write_to('check_slaves', '>>', 'for NNUM in ' . $node_list );
+$msb->write_to('check_slaves', '>>', 'do' );
+$msb->write_to('check_slaves', '>>', '  echo "node # $NNUM"');
+$msb->write_to('check_slaves', '>>', "  $group_directory/node\$NNUM/use -N -e "
+            . " 'show slave status\\G' | grep Running" );
+$msb->write_to('check_slaves', '>>', 'done ' );
+chmod 0755, 'check_slaves';
+
+
+
+
+for my $node (1 .. $options{how_many_nodes} ) {
+    $msb->write_to("n$node", '>', "#!/bin/sh");
+    $msb->write_to("n$node", '>', qq($group_directory/node$node/use "\$@"));
+    chmod 0755, "n$node";
+}
+
+if ($options{'circular'}) {
+
+    $msb->write_to(
+        "$group_directory/clear_all", '>>', 
+                "date > $group_directory/needs_initialization");
+    $msb->write_to("$group_directory/start_all", '>>', 
+                  "if [ -f $group_directory/needs_initialization ] \n"
+                . "then\n"
+                . "  $circular_replication_script\n"
+                . "  rm -f $group_directory/needs_initialization\n"
+                . "else\n"
+                . "  $group_directory/use_all 'start slave' \n"
+                . "fi"); 
+    
+    my $result = system($circular_replication_script);
+    if ($result) {
+        die ("error starting up circular replication ($!)\n");       
+    }
+    else {
+        print "Circular replication activated\n";
+    }
+}
+
+chdir $current_dir;
+print "group directory installed on $group_directory\n";
+__END__

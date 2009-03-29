@@ -1,0 +1,649 @@
+#!/usr/bin/perl 
+#    The MySQL Sandbox
+#    Copyright (C) 2006,2007,2008 Giuseppe Maxia, MySQL AB
+#    Contacts: http://datacharmer.org
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; version 2 of the License
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+use strict;
+use warnings;
+use English qw( -no_match_vars ); 
+use Data::Dumper;
+use Getopt::Long qw(:config no_ignore_case );
+use MySQL::Sandbox;
+use MySQL::Sandbox::Scripts;
+
+my $DEBUG = $MySQL::Sandbox::DEBUG;
+
+#my $install_dir;
+#$install_dir = $PROGRAM_NAME;
+#$install_dir =~ s{/\w+(\.pl)?$}{};
+
+my $msb = MySQL::Sandbox->new();
+
+check_sandbox_dir();
+my %scripts_in_code = %{ MySQL::Sandbox::Scripts::scripts_in_code() };
+my $license_text = MySQL::Sandbox::Scripts::license_text();
+
+my %parse_options = %{ MySQL::Sandbox::Scripts::parse_options_low_level_make_sandbox() } ;
+
+$msb->parse_options(\%parse_options);
+# print Dumper $msb;exit;
+
+my %options = map { $_ ,  $parse_options{$_}{'value'}}  keys %parse_options;
+my %default_values = %options;
+my %user_values;
+#print Dumper \%options; exit;
+
+GetOptions (
+    map { $parse_options{$_}{parse}, \$options{$_} }        
+        grep { $parse_options{$_}{parse}}  keys %parse_options 
+) or $msb->get_help();
+
+# 
+# We are not expecting bare arguments
+#
+if (@ARGV){
+    die "unexpected arguments <@ARGV>\n";
+}
+
+$msb->get_help() if $options{'help'};
+
+# print Dumper(\%options, \@ARGV); exit;
+
+for my $opt (keys %options ) {
+    if ($default_values{$opt} ne $options{$opt} ) {
+        $user_values{$opt} = $options{$opt};
+    }
+}
+%default_values = ();
+
+$options{'my_clause'} = [] unless $options{'my_clause'} ;
+# print Dumper($options{'my_clause'});exit;
+
+if ($options{'interactive'}) {
+    $options{no_confirm} = 0;
+    select_interactively() if $options{'interactive'};
+}
+
+$options{'my_clause'} = [] unless $options{'my_clause'} ;
+
+$DEBUG = 1 if $options{'verbose'};
+$options{'verbose'} = 1 if $DEBUG;
+
+if ( -f "$ENV{'HOME'}/.msandboxrc") {
+    if ( $options{'conf_file'}) {
+        # conf file given. Neet to concatenate default file and 
+        # rc file
+        my $tmp_conf_file = '/tmp/msandboxrc.cnf';
+        my $result = system (qq( cat $ENV{'HOME'}/.msandboxrc $options{'conf_file'} > $tmp_conf_file ));
+        if ($result) {
+            die "can't create $tmp_conf_file ($CHILD_ERROR)\n";
+        }
+        $options{'conf_file'} = $tmp_conf_file;
+    }
+    else {
+        $options{'conf_file'} = "$ENV{'HOME'}/.msandboxrc";
+    }
+}
+
+if ( $options{'conf_file'}) {
+    open my $CONF, q{<}, $options{'conf_file'}
+        or die "error opening $options{'conf_file'}. ($ERRNO)\n";
+
+    print "reading configuration file ($options{'conf_file'})\n" if $DEBUG;
+
+    while (<$CONF>) {
+        next if / ^ \s* $ /x;
+        next if / ^ \s* [#] /x;
+        chomp;
+        my ($key, $value);
+        if  ( /^ \s* (\S+) \s* = \s* (.+)?/x) {
+           ($key, $value) = ($1,  $2);
+        }
+        elsif ( /^ \s* ( \S+ ) \s* $/x) {
+           ($key, $value) = ($1,  '');
+            next unless $parse_options{$key};
+            # print "++ $parse_options{$key}{'value'} \n";
+            if ($parse_options{$key}{'value'} =~ /^\d+$/) {
+                $value = $parse_options{$key}{'value'} ? 0 : 1 ;
+            }    
+        }
+        else {
+            next;
+        }
+        # print ">>> $key ($value)\n";
+        if (exists $user_values{$key}) {
+            # skipping file options if they have been entered in the command line
+            # print "skipping option $key\n";
+            next;
+        }
+        elsif (exists $options{$key} ) {
+            $value = q{} unless defined $value;
+            if ( $value =~ s/^\$//x ) {
+                $value = $ENV{$value}; 
+            }
+            if ( $parse_options{ $key }{'parse'} =~ /\@/) {
+                $options{ $key } = [ split /\s*;\s*/, $value ];
+            }
+            else {
+                # print "assigning <$key> = '$value'\n";
+                $options{$key} = $value;
+            }
+        }
+        else {
+            die "Option '$key' not recognized - File $options{'conf_file'} - Line $.\n";
+        }
+    }
+    close $CONF;
+}
+
+
+# 
+# options to skip from the imported my.cnf file
+#
+my %skip_options = (
+    'user'       => 1,
+    'port'       => 1,
+    'socket'     => 1,
+    'datadir'    => 1,
+    'basedir'    => 1,
+    'pid-file'   => 1,
+    'server-id'  => 1,
+);
+
+#
+# placeholders used in the installation files
+# with their corresponding values in %options
+#
+my %replace_options = (
+    _INSTALL_VERSION_   => 'install_version',
+    _DBUSER_            => 'db_user',
+    _DBPASSWORD_        => 'db_password',
+    _OSUSER_            => 'operating_system_user',
+    _BASEDIR_           => 'basedir',
+    _BINBASH_           => 'binbash',
+    _HOME_DIR_          => 'upper_directory',
+    _SANDBOXDIR_        => 'sandbox_directory',
+    _SERVERPORT_        => 'sandbox_port',
+    _MORE_OPTIONS_      => 'more_options',
+    _MYSQL_PROMPT_      => 'mysql_prompt',
+    _MYSQLDSAFE_        => 'mysqld_safe',
+);
+
+unless ($options{'sandbox_port'} =~ /^ \d{3,} $ /x  && $options{'sandbox_port'} > 1024 ) {
+    $msb->get_help( "sandbox_port option must be a port number higher than 1024 (currently requested $options{'sandbox_port'} ) \n");
+}
+
+if ($options{datadir_from} eq 'archive') {
+    print "You have chosen to install with the 'archive' method.\n";
+    print "This option is now DEPRECATED.\n";
+    print "It will be removed soon. Use the 'script' method instead\n";
+    
+    #chdir $sandbox_directory;
+    #system "tar -xzf $curdir/datadir.$options{'install_version'}.tar.gz ";
+    #chdir $curdir;
+}
+
+if ($options{datadir_from} eq 'script' and  (not $options{no_load_grants} )  ) {
+    $options{load_grants} = 1;
+}
+
+if ( @{ $options{'my_clause'} } ) {
+    $options{'more_options'} .= qq(#\n# additional options passed through 'my_clause' \n#\n);
+    for my $clause ( @{ $options{'my_clause'} }) {
+        $options{'more_options'} .= $clause . "\n";
+    }
+}
+
+if ($options{my_file} ) {
+    my $fname = $options{'my_file'};
+    unless ( -f $fname ) {
+        $fname = sprintf 'my-%s.cnf', $options{my_file};
+    }
+    my $extended_fname = sprintf '%s/support-files/%s', $options{basedir}, $fname;
+    my $share_extended_fname = sprintf '%s/share/mysql/%s', $options{basedir}, $fname;
+    if ( -f $fname ) {
+        $options{more_options} .= get_more_options($fname);
+    }
+    elsif ( -f $extended_fname ) { 
+        $options{more_options} .= get_more_options($extended_fname);
+    }
+    elsif ( -f $share_extended_fname ) { 
+        $options{more_options} .= get_more_options($share_extended_fname);
+    }
+    else {
+        die "configuration file $fname not found\n";
+    }
+}
+
+# print Dumper(\%options); exit;
+
+my $bash = 'bash';
+
+unless (exists_in_path($bash)) {
+    $bash = 'tcsh';
+}
+
+for my $cmd ( ($bash, 'tar', 'gzip') ) {
+    unless ( exists_in_path($cmd) ) {
+        die "$cmd not found. Can't continue\n";
+    }
+}
+
+my $bin_bash = `which $bash`; ## no critic
+chomp $bin_bash;
+$options{'binbash'} = $bin_bash;
+my @supported_versions = @{ MySQL::Sandbox::supported_versions() };
+
+#$options{'install_version'} = '5.0' unless $options{'install_version'};
+die "server version required.\n" unless $options{'install_version'};
+
+unless (grep {$_ eq $options{'install_version'} } @supported_versions ) {
+    get_help( "specified version ($options{'install_version'}) not allowed. Currently accepted are [@supported_versions] ");
+}
+
+if ($options{ 'install_version' } eq '3.23' ) {
+    $options{'mysql_prompt'} = q{};
+    $options{'mysqld_safe'} = q{safe_mysqld};
+} 
+else {
+    $options{'mysql_prompt'} = q/prompt='/ . $options{prompt_prefix} . $options{prompt_body};
+    $options{'mysqld_safe'} = q{mysqld_safe};
+}
+
+if ( $options{'sandbox_directory'} ) {
+    if ($options{'sandbox_directory'} =~ m{/} ) {
+        die "<sandbox_directory> can't be a full path. " 
+            . "It's only the name of the directory "
+            . "to create inside $options{'upper_directory'}\n";
+    }
+    unless ( $options{ 'no_ver_after_name' } ) {
+        my $ver = $options{ 'install_version' };
+        $ver =~ tr/./_/d; ## no critic
+        unless ($options{ 'sandbox_directory'} =~ /$ver$/) {
+            $options{'sandbox_directory'} .= $ver;
+            $options{ 'no_ver_after_name' } = 1; # 1.6 it will prevent 
+                                                 # side effects when loading
+                                                 # options from defaults file
+        }
+    }
+}
+else {
+    get_help ('sandbox directory not specified');
+}
+
+print $msb->credits(),
+      "installing with the following parameters:\n";
+
+#open my $CURRENT_CONF , q{>}, "$install_dir/current_options.conf"
+#    or die "error creating current_options.conf ($ERRNO)\n";
+
+for my $key (
+                sort { $parse_options{$a}{so} <=> $parse_options{$b}{so} } 
+                grep { $parse_options{$_}{parse}}  keys %parse_options ) {
+    next if grep { $key eq $_ } qw/more_options help interactive conf_file no_confirm /;
+    my $is_array = ref($options{$key}) && ref($options{$key}) eq 'ARRAY';
+    printf "%-30s = %s\n", $key, $is_array ? join q{ ; }, @{ $options{$key} } : $options{$key};
+    next unless $options{$key};
+    next if $options{$key} =~ /^ \s* $/x;
+    #printf $CURRENT_CONF "%-30s = %s\n", $key, $is_array ? join q{ ; }, @{ $options{$key} } : $options{$key};
+}
+#close $CURRENT_CONF;
+
+my $answer = 'y';
+
+unless ($options{no_confirm}) {
+    print 'do you agree? ([Y],n) ';
+    $answer = <>;
+    chomp $answer;
+    if ($answer =~ / ^ \s* $ /x) {
+        $answer = 'y';
+    }
+}
+
+if (lc($answer) eq 'n') {
+    print "Installation interrupted at user's request\n",
+          # "To repeat this installation with the same options,\n"
+          # "use $PROGRAM_NAME --conf_file=current_options.conf\n";
+    exit;
+}
+
+my @file_list = ();
+# my @doc_file_list = ( ['README'], ['COPYING'], ['VERSION'] );
+
+my @MANIFEST = MySQL::Sandbox::Scripts::manifest();
+
+#open my $MANIFEST, q{<}, "$install_dir/MANIFEST"
+#    or die "file MANIFEST not found\n";
+
+my $install_section = 0;
+
+print "reading MANIFEST files \n" if $DEBUG;
+for  my $filename ( @MANIFEST) {
+    chomp $filename;
+    next if $filename =~ /^ \s* $/x;
+    unless ($install_section) {
+        $install_section = 1 if  $filename =~ /^ \s* [#] \s* INSTALL \s* FILES /x;
+    }
+    next if $filename =~ /^ \s* [#] /x;
+    print "($install_section) ", $filename, qq(\n) if $DEBUG;
+    my $destination = $filename;
+
+    if ( ( $scripts_in_code{$filename} ) ) {
+        unless ($install_section) {
+            push @file_list, [$filename, $destination];
+        }
+    }
+    else {
+        die "listed file $filename not found. Package is not complete\n"
+    }
+}
+
+#close $MANIFEST;
+
+set_sandbox_dir_scripts();
+
+my $sandbox_directory = sprintf('%s/%s', $options{'upper_directory'}, $options{'sandbox_directory'});
+
+#if ($curdir eq $sandbox_directory) {
+#    die "installation directory and destination directory are the same. Can't install\n";
+#}
+
+if ( -d $sandbox_directory ) {
+    if ($options{'force'} ) {
+        warn "$sandbox_directory already exists. Overwriting its contents\n" if $DEBUG;
+        if ( -f "$sandbox_directory/clear") {
+            system("$sandbox_directory/clear");
+        }
+        if ( -d "$sandbox_directory/data/mysql") {
+            system("rm -rf $sandbox_directory/data/mysql");
+        }
+    }
+    else {
+        die "$sandbox_directory already exists.\n'--force' option not specified.\nInstallation halted\n";
+    }
+}
+else {
+    print "creating $sandbox_directory\n" if $DEBUG;
+    my $result = mkdir $sandbox_directory;
+    if (! $result ) {
+        die "error creating $sandbox_directory\n";
+    }
+}
+
+for my $file_spec ( @file_list) {  #, @doc_file_list) {
+    copy_and_replace($file_spec->[0], $sandbox_directory, $file_spec->[1]);
+}
+
+if ($options{datadir_from} eq 'script' ) {
+    my $script = sprintf '%s/scripts/mysql_install_db', $options{basedir} ;
+    unless ( -x $script ) {
+        $script = sprintf '%s/bin/mysql_install_db', $options{basedir} ;
+    }
+    if ( -x $script ) {
+        
+        my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data', 
+            $script,
+            $options{operating_system_user},
+            $options{basedir},
+            $sandbox_directory;
+        my $result = qx($cmd);
+        if ($CHILD_ERROR) {
+            die "error while creating grant tables\n$result\n";
+        }
+        for my $table_name (qw(host user db tables_priv columns_priv)) {
+            die "table $table_name not installed\n"
+                unless -f "$sandbox_directory/data/mysql/$table_name.frm";
+        }
+    }
+    else {
+        die "$script not found\n";
+    }
+}
+elsif ($options{datadir_from} =~ /dir: (.+) /x ) {
+    my $origin = $1;
+    if (-d $origin ) {
+        if  ( -f sprintf '%s/mysql/user.MYD', $origin) {
+            my $sandbox_datadir = sprintf '%s/data', $sandbox_directory;
+            if (-d $sandbox_datadir) {
+                if ($options{'force'}) {
+                    warn "directory $sandbox_datadir already exists. Overwriting its contents\n" if $DEBUG;
+                }
+                else {
+                    die "directory $sandbox_datadir already exists. Option --force not specified. Installation halted\n"
+                }
+            }
+            else {
+                mkdir $sandbox_datadir
+                    or die "error creating $sandbox_datadir ($!)\n";
+            } 
+            system sprintf 'cp %s %s/* %s/', $options{'verbose'} ? q{-vr} : q{-r},  $origin, $sandbox_datadir;
+        }
+        else {
+            die "mysql user table not found in $origin\n";
+        }
+    }
+    else {
+        die "directory $origin not found\n";
+    }
+}
+else {
+    die "unrecognized value for option 'datadir_from' ($options{datadir_from})\n";
+}
+
+if ($options{load_grants}) {
+    print "loading grants\n";
+    system "$sandbox_directory/start"
+        and die "can't start server\n";
+    # sleep command replaced by internal timeout in the "start" script
+    # sleep 3;
+    system "$sandbox_directory/load_grants"
+        and die "can't load grants\n";
+}
+
+print 
+      # "installation options saved to current_options.conf.\n",    
+      #"To repeat this installation with the same options,\n",
+      #"use $PROGRAM_NAME --conf_file=current_options.conf\n",
+      #('-' x 40), "\n",
+      "Your sandbox server was installed in $sandbox_directory\n";
+
+
+sub copy_and_replace {
+    my ($filename,  $destination_dir, $destination_filename) = @_ ;
+    $destination_filename = $filename unless $destination_filename;
+    my $newname = sprintf('%s/%s', $destination_dir, $destination_filename);
+    #unless ( $scripts_in_code{$filename} ) {
+    #    $scripts_in_code{$filename} = '';
+    #    unless ( -f $filename) {
+    #        $filename = "$install_dir/$filename";
+    #    }
+    #    open my $FROM, q{<}, $filename
+    #        or die "error opening $filename ($ERRNO)\n";
+    #    while (<$FROM>) {
+    #        for my $key ( keys %replace_options) {
+    #            s/ $key /$options{$replace_options{$key}}/xg;
+    #        }        
+    #        $scripts_in_code{$filename} .= $_ ;
+    #    }
+    #    close $FROM;
+    #}
+    open my $TO, q{>}, $newname
+        or die "error creating $newname ($ERRNO)\n";
+    print "copying $filename into $destination_dir\n" if $DEBUG;
+    my $script_content = $scripts_in_code{$filename} 
+        or die "invalid script content for <$filename>\n";
+    
+    $script_content =~ s/__LICENSE__/$license_text/;
+    for my $key ( keys %replace_options) {
+        $script_content =~ s/ $key /$options{$replace_options{$key}}/xg;
+    }        
+    print $TO $script_content;
+    close $TO;
+    if ($newname =~ / \. (?: sh | pl ) $ /x) {
+        print "changing attributes to $newname\n" if $DEBUG;
+        chmod 0755, $newname;  ## no critic
+        my $better_name = $newname;
+        $better_name =~ s/\.(?:sh|pl)$//;
+        rename $newname, $better_name;
+    }
+    return;
+}
+
+sub exists_in_path {
+    my ($cmd) = @_;
+    my @path_directories = split /:/, $ENV{PATH}; ## no critic
+    for my $dir (@path_directories) {
+        if ( -x "$dir/$cmd") {
+            return 1;
+        } 
+    }
+    return 0;
+}
+
+sub get_more_options {
+    my ($fname) = @_;
+    my $text = qq(#\n# additional options from $fname \n#\n);
+    open my $MYFILE, q{<}, $fname
+        or die "can't open $fname ($!)\n";
+    my $start = 0;
+    while (<$MYFILE>) {
+        if ($start ) {
+            last if m/ ^ \s* \[ /x;
+
+            my ($var) = m/^ \s* (\S+) \s* = /x;
+            next if ( $var && exists ($skip_options{$var} )); 
+            $text .= $_;
+        }
+        else {
+            $start = m/ ^ \[mysqld\] /x;
+        }
+    }
+    close $MYFILE; 
+    return $text;
+}
+
+sub select_interactively {
+
+    print "Enter the values for each option\n",
+          "* To leave the interactive choice and accept default values \n",
+          "     for the remaining options, enter 'default'\n",
+          "* To go to the previous item, enter 'back'\n",
+          "* To quit the installation without any action, enter 'quit'\n\n";
+
+    my @options_list = 
+                sort { $parse_options{$a}{'so'} <=> $parse_options{$b}{'so'} } 
+                grep { $_ ne 'interactive'}
+                grep { $parse_options{$_}{'parse'}}  keys %parse_options  ;
+
+    my $opnum =0;
+    OPTION_CHOICE:
+    while( $opnum < @options_list ) {
+        my $op = $options_list[$opnum];
+        my $default = $options{$op} ;
+        $default = $parse_options{$op}{'value'} unless defined $default;
+        my $is_array = 0;
+        if (ref($default) && ref($default) eq 'ARRAY') {
+            $default = join(q{ ; } , @{$default});
+            $is_array=1;
+        }
+        my $chosen  = q{};
+
+        my ($number_wanted)   = $parse_options{$op}{'parse'} =~ m/ = (i) /x;
+
+        print q{-} x 65;
+        print "\n$op\n";
+        my $text_items = $parse_options{$op}{help};
+        for my $titem (@{$text_items}) {
+            print "   $titem \n" if $titem;
+        }
+        print "Your choice: (current value [$default]) ";
+        if ($is_array) {
+            print "(You can enter multiple values separated by ';') ";
+        }
+        $chosen = <>;
+        chomp($chosen);
+        if ($chosen eq 'quit') {
+            exit;
+        }
+        elsif ($chosen eq 'back') {
+            $opnum--;
+            if ($opnum < 0 ) {
+                $opnum = 0;
+            }
+            redo OPTION_CHOICE;
+        }
+        elsif ($chosen eq 'default') {
+            last;
+        }
+        elsif ($chosen =~ m/ ^ \s* $ /x) {
+            $options{$op} = $default;
+        }
+        elsif ($number_wanted) {
+            if ($chosen =~ m/ ^ \d+ $ /x ) {
+                $options{$op} = $chosen;
+            }
+            else {
+                print q{*} x 65, 
+                      "\n" , 
+                      "**** option $op requires a numeric value\n" , 
+                       q{*} x 65,
+                       "\n";
+                redo OPTION_CHOICE;
+            }
+        }
+        else {
+            if($is_array){
+                $options{$op} = [ split /\s*;\s*/, $chosen ] ;
+            }
+            else {
+                $options{$op} = $chosen;
+            }
+        }
+        $opnum++;
+   }
+   return;
+}
+
+
+sub check_sandbox_dir {
+    my $sandboxdir = $ENV{'SANDBOX_HOME'} || $ENV{'HOME'};
+    if (! -d $sandboxdir) {
+        mkdir $sandboxdir;
+        if ( $CHILD_ERROR) {
+            die ("can't set sandbox directory $sandboxdir ($CHILD_ERROR)\n");    
+        }
+    }
+}
+
+sub set_sandbox_dir_scripts {
+    my $sandboxdir = $ENV{'SANDBOX_HOME'} 
+        or return;
+    if ( $ENV{'SANDBOX_HOME'} eq $ENV{'HOME'} ) {
+        return;
+    }
+    copy_and_replace('sandbox_action.pl', $sandboxdir);
+    for my $name (qw(start stop clear use send_kill)) {
+        open my $FH, q{>}, "$sandboxdir/${name}_all"
+            or die "can't create ${name}_all in $sandboxdir\n";
+        print $FH "#!$options{'binbash'}\n";
+        print $FH qq($sandboxdir/sandbox_action $name "\$\@"\n);
+        close $FH;
+        chmod 0755, "$sandboxdir/${name}_all";
+    }
+}
+
+
+
