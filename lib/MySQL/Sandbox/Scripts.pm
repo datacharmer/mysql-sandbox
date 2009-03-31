@@ -35,6 +35,12 @@ sub manifest {
     return @MANIFEST;
 }
 my %parse_options_low_level_make_sandbox = (
+    query_analyzer         => {
+                                value => 0,
+                                parse=> 'query_analyzer',
+                                so  => 5,
+                                help => ['solves your tuning problems at once']
+    },
     upper_directory        => {
                                 value => $ENV{'SANDBOX_HOME'} || $ENV{'HOME'},       
                                 parse => 'upper_directory=s',         
