@@ -49,6 +49,22 @@ GetOptions (
         grep { $msb->{parse_options}{$_}{parse}}  keys %{$msb->{parse_options}} 
 ) or $msb->get_help();
 
+if ( $msb->{options}{query_analyzer}) {
+my $QA = <<'ENDFISH';
+  o         
+  o
+o
+  o  ___/|__
+o  _/       \  /|
+ o/  @ \\    \/ |
+  \_   //    /\ |
+    \_______/  \|
+
+ENDFISH
+print $QA, "Thanks for having so much faith in my skills\n";
+exit 1;
+}
+
 # 
 # We are not expecting bare arguments
 #

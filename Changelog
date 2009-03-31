@@ -3,6 +3,8 @@
 	- implemented --check_port for single sandboxes
 	- fixed bug#352222 "report-port incorrect with --master-master"
 	- cleaned up code for parse_options in all scripts
+	- enhanced test case with some tests for the script correctness
+	- added query_analyzer option
 2.0.98 29-Mar-2009
 	- Preparation for version 3.0
 	- refactoring code to use with ExtUtilis::MakeMaker and install a proper
