@@ -155,7 +155,8 @@ SYNTAX
     print "You should provide either a version from '$binary_base' \n",
           "or an absolute path to the tarball to extract.\n",
           "See (below) ./low_level_make_sandbox --help for more detail\n";
-    die "version should be provided as #.#.#\n";
+    print "version should be provided as #.#.#\n";
+    exit 1;
     #print q{-} x 50, "\n";
     #exec "$install_dir/low_level_make_sandbox --help ";
 }

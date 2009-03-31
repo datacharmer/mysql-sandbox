@@ -10,6 +10,8 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
+our $VERSION = '2.0.98b';
+
 our @MANIFEST = (
 'clear.sh',
 'my.sandbox.cnf',
@@ -23,25 +25,10 @@ our @MANIFEST = (
 'my.sh',
 'change_paths.sh',
 'change_ports.sh',
-#'COPYING',
-#'README',
 'USING',
 'grants.mysql',
-# 'current_options.conf',
 '# INSTALL FILES',
-# 'sandbox',
-##'make_sandbox',
-##'low_level_make_sandbox',
-##'make_replication_sandbox',
-##'make_multiple_sandbox',
-##'make_multiple_custom_sandbox',
-##'sbtool',
 'sandbox_action.pl',
-#'tests/test_sandbox.pl',
-#'tests/README',
-#'sandbox.conf',
-##'Changelog',
-
 );
 
 sub manifest {
@@ -72,6 +59,16 @@ my %parse_options_low_level_make_sandbox = (
                                 help  => [
                                             'The port number to use for the sandbox server.', 
                                             '(Default: 3310)',
+                                         ]
+                            },
+    check_port            => {
+                                value => 0,               
+                                parse => 'check_port',           
+                                so    =>  35,
+                                help  => [
+                                            'Check whether the provided port is free,', 
+                                            'and determine the next available one if it is not.',
+                                            '(Default: disabled)',
                                          ]
                             },
     datadir_from          => {
@@ -231,8 +228,14 @@ my %parse_options_low_level_make_sandbox = (
                                             'Use this option to be guided through the installation process (default: disabled)'
                                          ] 
                             },
-    more_options          => {value => q{},                 parse => undef,                        so => 20},
-    help                  => {value => q{},                 parse => 'help',                       so => 25},
+    more_options          => {
+                                value => q{},                 
+                                parse => undef,                        
+                                so => 20},
+    help                  => {
+                                value => q{},                 
+                                parse => 'help',                       
+                                so => 25},
     no_confirm            => {
                                 value => 0, 
                                 parse => 'no_confirm',
@@ -471,6 +474,131 @@ my %parse_options_custom_many = (
                                          ] 
                             },
 ); 
+
+our %sbtool_supported_operations = (
+    ports => 'lists ports used by the Sandbox',
+    range => 'finds N consecutive ports not yet used by the Sandbox',
+    info  => 'returns configuration options from a Sandbox',
+    tree  => 'creates a replication tree',
+    copy  => 'copies data from one Sandbox to another',
+    move  => 'moves a Sandbox to a different location',
+    port  => 'Changes a Sandbox port',
+);
+
+our %sbtool_supported_formats = (
+    text => 'plain text dump of requested information',
+    perl => 'fully structured information in Perl code',
+);
+
+
+my %parse_options_sbtool = (
+    operation => {
+        so       => 10,
+        parse    => 'o|operation=s',
+        value    => undef,
+        accepted => \%sbtool_supported_operations,
+        help     => 'what task to perform',
+    },
+    source_dir => {
+        so    => 20,
+        parse => 's|source_dir=s',
+        value => undef,
+        help  => 'source directory for move,copy',
+    },
+    dest_dir => {
+        so    => 30,
+        parse => 'd|dest_dir=s',
+        value => undef,
+        help  => 'destination directory for move,copy',
+    },
+    new_port  => {
+        so    => 40,
+        parse => 'n|new_port=s',
+        value => undef,
+        help  => 'new port while moving a sandbox',
+    },
+    only_used => {
+        so    => 50,
+        parse => 'u|only_used',
+        value => 0,
+        help  => 'for "ports" operation, shows only the used ones',
+    },
+    min_range => {
+        so    => 60,
+        parse => 'i|min_range=i',
+        value => 5000,
+        help  => 'minimum port when searching for available ranges',
+    },
+    max_range => {
+        so    => 70,
+        parse => 'x|max_range=i',
+        value => 32000,
+        help  => 'maximum port when searching for available ranges',
+    },
+    range_size => {
+        so    => 80,
+        parse => 'z|range_size=i',
+        value => 10,
+        help  => 'size of range when searching for available port range',
+    },
+    format => {
+        so       => 90,
+        parse    => 'f|format=s',
+        value    => 'text',
+        accepted => \%sbtool_supported_formats,
+        help     => 'format for "ports" and "info"',
+    },
+    search_path => {
+        so    => 100,
+        parse => 'p|search_path=s',
+        value => $ENV{SANDBOX_HOME},
+        help  => 'search path for ports and info',
+    },
+    all_info => {
+        so    => 110,
+        parse => 'a|all_info',
+        value => 0,
+        help  => 'print more info for "ports" operation'
+    },
+    tree_nodes => {
+        so    => 120,
+        parse => 'tree_nodes=s',
+        value => '',
+        help  => 'description of the tree (x-x x x-x x|x x x|x x)',
+    },
+    mid_nodes => {
+        so    => 130,
+        parse => 'mid_nodes=s',
+        value => '',
+        help  => 'description of the middle nodes (x x x)',
+    },
+    leaf_nodes => {
+        so    => 140,
+        parse => 'leaf_nodes=s',
+        value => '',
+        help  => 'description of the leaf nodes (x x|x x x|x x)',
+    },
+    tree_dir => {
+        so    => 150,
+        parse => 'tree_dir=s',
+        value => '',
+        help  => 'which directory contains the tree nodes',
+    },
+    verbose => {
+        so    => 160,
+        parse => 'v|verbose',
+        value => 0,
+        help  => 'prints more info on some operations'
+    },
+    help => {
+        so    => 999,
+        parse => 'h|help',
+        value => undef,
+        help  => 'this screen',
+    },
+);
+
+
 
 my %scripts_in_code = (
     'start.sh' => <<'START_SCRIPT',
@@ -900,6 +1028,10 @@ sub parse_options_replication {
 
 sub parse_options_many {
     return \%parse_options_many;
+}
+
+sub parse_options_sbtool {
+    return \%parse_options_sbtool;
 }
 
 sub parse_options_custom_many {

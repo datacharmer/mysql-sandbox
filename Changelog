@@ -1,9 +1,15 @@
+2.0.98b 31-Mar-2009
+	- taken most function from sbtool to MySQL::Sandbox module
+	- implemented --check_port for single sandboxes
+	- fixed bug#352222 "report-port incorrect with --master-master"
+	- cleaned up code for parse_options in all scripts
 2.0.98 29-Mar-2009
 	- Preparation for version 3.0
 	- refactoring code to use with ExtUtilis::MakeMaker and install a proper
 	  Perl module 
 	- updated README
 	- fixed sandbox_action to support 'send_kill'
+	- added $VERSION to both modules 
 2.0.18 22-Mar-2009
 	- added change_port script to installed sandboxes
 	- added 'port' operation to sbtool
