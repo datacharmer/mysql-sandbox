@@ -16,7 +16,6 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-
 use strict;
 use warnings;
 use Carp;
@@ -26,328 +25,98 @@ use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
 use File::Copy qw/cp/;
 use File::Find;
-use MySQL::Sandbox;
+use MySQL::Sandbox qw( 
+                is_a_sandbox 
+                is_sandbox_running
+                get_sandbox_params 
+                get_ports
+                get_ranges
+                get_option_file_contents 
+                get_sb_info);
+
+use MySQL::Sandbox::Scripts;
+
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
 
-my $sandbox_options_file    = "my.sandbox.cnf";
-my $sandbox_current_options = "current_options.conf";
+my $sandbox_options_file    = $MySQL::Sandbox::sandbox_options_file;
+my $sandbox_current_options = $MySQL::Sandbox::sandbox_current_options;
 
-my %supported_operations = (
-    ports => 'lists ports used by the Sandbox',
-    range => 'finds N consecutive ports not yet used by the Sandbox',
-    info  => 'returns configuration options from a Sandbox',
-    tree  => 'creates a replication tree',
-    copy  => 'copies data from one Sandbox to another',
-    move  => 'moves a Sandbox to a different location',
-    port  => 'Changes a Sandbox port',
-);
+my %supported_operations = %MySQL::Sandbox::Scripts::sbtool_supported_operations;
+#    ports => 'lists ports used by the Sandbox',
+#    range => 'finds N consecutive ports not yet used by the Sandbox',
+#    info  => 'returns configuration options from a Sandbox',
+#    tree  => 'creates a replication tree',
+#    copy  => 'copies data from one Sandbox to another',
+#    move  => 'moves a Sandbox to a different location',
+#    port  => 'Changes a Sandbox port',
+#);
 
-my %supported_formats = (
-    text => 'plain text dump of requested information',
-    perl => 'fully structured information in Perl code',
-);
+my %supported_formats = %MySQL::Sandbox::Scripts::sbtool_supported_formats;
+#    text => 'plain text dump of requested information',
+#    perl => 'fully structured information in Perl code',
+#);
 
-my %parse_options = (
-    operation => {
-        so       => 10,
-        parse    => 'o|operation=s',
-        value    => undef,
-        accepted => \%supported_operations,
-        help     => 'what task to perform',
-    },
-    source_dir => {
-        so    => 20,
-        parse => 's|source_dir=s',
-        value => undef,
-        help  => 'source directory for move,copy',
-    },
-    dest_dir => {
-        so    => 30,
-        parse => 'd|dest_dir=s',
-        value => undef,
-        help  => 'destination directory for move,copy',
-    },
-    new_port  => {
-        so    => 40,
-        parse => 'n|new_port=s',
-        value => undef,
-        help  => 'new port while moving a sandbox',
-    },
-    only_used => {
-        so    => 50,
-        parse => 'u|only_used',
-        value => 0,
-        help  => 'for "ports" operation, shows only the used ones',
-    },
-    min_range => {
-        so    => 60,
-        parse => 'i|min_range=i',
-        value => 5000,
-        help  => 'minimum port when searching for available ranges',
-    },
-    max_range => {
-        so    => 70,
-        parse => 'x|max_range=i',
-        value => 32000,
-        help  => 'maximum port when searching for available ranges',
-    },
-    range_size => {
-        so    => 80,
-        parse => 'z|range_size=i',
-        value => 10,
-        help  => 'size of range when searching for available port range',
-    },
-    format => {
-        so       => 90,
-        parse    => 'f|format=s',
-        value    => 'text',
-        accepted => \%supported_formats,
-        help     => 'format for "ports" and "info"',
-    },
-    search_path => {
-        so    => 100,
-        parse => 'p|search_path=s',
-        value => $ENV{SANDBOX_HOME},
-        help  => 'search path for ports and info',
-    },
-    all_info => {
-        so    => 110,
-        parse => 'a|all_info',
-        value => 0,
-        help  => 'print more info for "ports" operation'
-    },
-    tree_nodes => {
-        so    => 120,
-        parse => 'tree_nodes=s',
-        value => '',
-        help  => 'description of the tree (x-x x x-x x|x x x|x x)',
-    },
-    mid_nodes => {
-        so    => 130,
-        parse => 'mid_nodes=s',
-        value => '',
-        help  => 'description of the middle nodes (x x x)',
-    },
-    leaf_nodes => {
-        so    => 140,
-        parse => 'leaf_nodes=s',
-        value => '',
-        help  => 'description of the leaf nodes (x x|x x x|x x)',
-    },
-    tree_dir => {
-        so    => 150,
-        parse => 'tree_dir=s',
-        value => '',
-        help  => 'which directory contains the tree nodes',
-    },
-    verbose => {
-        so    => 160,
-        parse => 'v|verbose',
-        value => 0,
-        help  => 'prints more info on some operations'
-    },
-    help => {
-        so    => 999,
-        parse => 'h|help',
-        value => undef,
-        help  => 'this screen',
-    },
-);
+my $msb = MySQL::Sandbox->new();
 
-my %options = map { $_, $parse_options{$_}{value} } keys %parse_options;
+$msb->parse_options(MySQL::Sandbox::Scripts::parse_options_sbtool());
+# my %{$msb->{options}} = map { $_, $msb->{parse_options}{$_}{value} } keys %{$msb->{parse_options}};
 
-GetOptions( map { $parse_options{$_}{parse}, \$options{$_} }
-      keys %parse_options )
+GetOptions( map { $msb->{parse_options}{$_}{parse}, \$msb->{options}{$_} }
+      keys %{$msb->{parse_options}} )
   or get_help();
 
-get_help() if $options{help} or ! $options{operation};
+get_help() if $msb->{options}{help} or ! $msb->{options}{operation};
 
-if ($options{verbose}) {
-    $DEBUG = $options{verbose} unless $DEBUG;
+if ($msb->{options}{verbose}) {
+    $DEBUG = $msb->{options}{verbose} unless $DEBUG;
 }
 
-for my $op ( keys %parse_options ) {
-    if ( $parse_options{$op}{accepted} ) {
-        my %accepted = %{ $parse_options{$op}{accepted} };
+for my $op ( keys %{$msb->{parse_options}} ) {
+    if ( $msb->{parse_options}{$op}{accepted} ) {
+        my %accepted = %{ $msb->{parse_options}{$op}{accepted} };
         for my $ak ( keys %accepted ) {
-            unless ( exists $accepted{ $options{$op} } ) {
-                croak "invalid value '$options{$op}' for option <$op>\n";
+            unless ( exists $accepted{ $msb->{options}{$op} } ) {
+                croak "invalid value '$msb->{options}{$op}' for option <$op>\n";
             }
         }
     }
 }
 
 for my $dir (qw(source_dir dest_dir tree_dir search_path)) {
-    if ($options{$dir}) {
-        $options{$dir} =~ s/^\s*~/$ENV{HOME}/;
+    if ($msb->{options}{$dir}) {
+        $msb->{options}{$dir} =~ s/^\s*~/$ENV{HOME}/;
     }
 }
 
-if ( $options{operation} eq 'ports' ) {
-    get_ports();
+if ( $msb->{options}{operation} eq 'ports' ) {
+    get_ports(\%{$msb->{options}});
 }
-elsif ( $options{operation} eq 'info' ) {
-    $options{all_info} = 1;
-    $options{format} = 'perl';
-    get_ports();
+elsif ( $msb->{options}{operation} eq 'info' ) {
+    $msb->{options}{all_info} = 1;
+    $msb->{options}{format} = 'perl';
+    get_ports(\%{$msb->{options}});
 }
-elsif ( $options{operation} eq 'range' ) {
-    get_ranges()
+elsif ( $msb->{options}{operation} eq 'range' ) {
+    get_ranges(\%{$msb->{options}})
 }
-elsif ( $options{operation} eq 'tree' ) {
-    make_tree($options{tree_dir} )
+elsif ( $msb->{options}{operation} eq 'tree' ) {
+    make_tree($msb->{options}{tree_dir} )
 }
-elsif ( $options{operation} eq 'move' ) {
-    move_sandbox( $options{source_dir}, $options{dest_dir} );
+elsif ( $msb->{options}{operation} eq 'move' ) {
+    move_sandbox( $msb->{options}{source_dir}, $msb->{options}{dest_dir} );
 }
-elsif ( $options{operation} eq 'port' ) {
-    unless ($options{new_port}) {
+elsif ( $msb->{options}{operation} eq 'port' ) {
+    unless ($msb->{options}{new_port}) {
         croak "operation 'port' requires new_port option\n";
     }
-    move_sandbox( $options{source_dir}, $options{source_dir}, 'alreday_moved' );
+    move_sandbox( $msb->{options}{source_dir}, $msb->{options}{source_dir}, 'alreday_moved' );
 }
-elsif ( $options{operation} eq 'copy' ) {
-    copy_single_sandbox( $options{source_dir}, $options{dest_dir} );
+elsif ( $msb->{options}{operation} eq 'copy' ) {
+    copy_single_sandbox( $msb->{options}{source_dir}, $msb->{options}{dest_dir} );
 }
 else {
-    croak "unsupported operation ($options{operation})\n";
-}
-
-sub get_ranges {
-    my ( $ports, $all_info ) = get_sb_info();
-    my $minimum_port = $options{min_range};
-    my $maximum_port = $options{max_range};
-    my $range_size   = $options{range_size};
-    if ( $minimum_port >= $maximum_port ) {
-        croak "minimum range must be lower than the maximum range\n";
-    }
-    if ( ( $minimum_port + $range_size ) > $maximum_port ) {
-        croak "range too wide for given boundaries\n";
-    }
-    my $range_found = 0;
-  range_search:
-    while ( !$range_found ) {
-        if ( $minimum_port >= $maximum_port ) {
-            croak "can't find a range of $range_size "
-              . "free ports between "
-              . "$options{min_range} and $options{max_range}\n";
-        }
-        for my $i ( $minimum_port .. $minimum_port + $range_size ) {
-            if ( exists $ports->{$i} or ( $i >= $maximum_port ) ) {
-                $minimum_port = $i + 1;
-                next range_search;
-            }
-        }
-        $range_found = 1;
-    }
-    printf "%5d - %5d\n", $minimum_port , $minimum_port + $range_size;
-}
-
-sub get_ports {
-    my ( $ports, $all_info ) = get_sb_info();
-
-    if ( $options{format} eq 'perl' ) {
-        print Data::Dumper->Dump( [$ports], ['ports'] );
-        print Data::Dumper->Dump( [$all_info], ['all_info'] )
-          if $options{all_info};
-    }
-    elsif ( $options{format} eq 'text' ) {
-        for my $port ( sort { $a <=> $b } keys %$ports ) {
-            printf "%5d %2d\n", $port, $ports->{$port};
-        }
-    }
-    else {
-        croak "unrecognized format -> $options{format}\n";
-    }
-    return ( $ports, $all_info );
-}
-
-sub get_sb_info {
-    my ($search_path) = @_;
-    my %ports         = ();
-    my %all_info      = ();
-    my $seen_dir      = '';
-
-    find(
-        {
-            no_chdir => 1,
-            wanted   => sub {
-                if ( $seen_dir eq $File::Find::dir ) {
-                    return;
-                }
-                my $params;
-                if ( $params = get_sandbox_params($File::Find::dir, 1) ) {
-                    $seen_dir = $File::Find::dir;
-                    my $port = $params->{opt}{port};
-                    if (   -f $params->{opt}{pid_file}
-                        && -e $params->{opt}{socket} )
-                    {
-                        $ports{$port} = 1;
-                        $all_info{$port} = $params if $options{all_info};
-                    }
-                    else {
-                        unless ( $options{only_used} ) {
-                            $ports{$port} = 0;
-                            $all_info{$port} = $params if $options{all_info};
-                        }
-                    }
-                }
-              }
-        },
-        $search_path || $options{search_path}
-    );
-    return ( \%ports, \%all_info );
-}
-
-sub get_sandbox_params {
-    my ($dir, $skip_strict) = @_;
-    confess "directory name required\n" unless $dir;
-    confess "directory $dir doesn't exist\n" unless -d $dir;
-    unless (is_a_sandbox($dir)) {
-        confess "directory <$dir> must be a sandbox\n" unless $skip_strict;
-    }
-    my %params = (
-        opt  => undef,
-        conf => undef
-    );
-    if ( -f "$dir/$sandbox_options_file" ) {
-        $params{opt} = get_option_file_contents("$dir/$sandbox_options_file");
-    }
-    else {
-        # warn "options file $dir not found\n";
-        return;
-    }
-    if ( -f "$dir/$sandbox_current_options" ) {
-        $params{conf} =
-          get_option_file_contents("$dir/$sandbox_current_options");
-    }
-    else {
-        # warn "current conf file not found\n";
-        return;
-    }
-    return \%params;
-}
-
-sub get_option_file_contents {
-    my ($file) = @_;
-    confess "file name required\n" unless $file;
-    confess "file $file doesn't exist\n" unless -f $file;
-    my %options;
-    open my $RFILE, q{<}, $file
-      or confess "can't open file $file\n";
-    while ( my $line = <$RFILE> ) {
-        next if $line =~ /^\s*$/;
-        next if $line =~ /^\s*#/;
-        next if $line =~ /^\s*\[/;
-        chomp $line;
-        my ( $key, $val ) = split /\s*=\s*/, $line;
-        $key =~ s/-/_/g;
-        $options{$key} = $val;
-    }
-    close $RFILE;
-    # print Dumper(\%options) ; exit;
-    return \%options;
+    croak "unsupported operation ($msb->{options}{operation})\n";
 }
 
 sub get_help {
@@ -359,11 +128,11 @@ sub get_help {
         print "\n";
     }
     print "usage: $PROGRAM_NAME [options] \n";
-    for my $op ( sort { $parse_options{$a}{so} <=> $parse_options{$b}{so} }
-        keys %parse_options )
+    for my $op ( sort { $msb->{parse_options}{$a}{so} <=> $msb->{parse_options}{$b}{so} }
+        keys %{$msb->{parse_options}} )
     {
-        my $val      = $options{$op};
-        my $parse    = $parse_options{$op}{parse};
+        my $val      = $msb->{options}{$op};
+        my $parse    = $msb->{parse_options}{$op}{parse};
         my $expected = '-';
         if ( $parse =~ s/=(.+)// ) {
             $expected = $1;
@@ -379,9 +148,9 @@ sub get_help {
                 $long, 
                 $expected, 
                 $val || '',
-                $parse_options{$op}{help} || '';
-        if ( $parse_options{$op}{accepted} ) {
-            my %accepted = %{ $parse_options{$op}{accepted} };
+                $msb->{parse_options}{$op}{help} || '';
+        if ( $msb->{parse_options}{$op}{accepted} ) {
+            my %accepted = %{ $msb->{parse_options}{$op}{accepted} };
             for my $ao ( keys %accepted ) {
                 printf "\t\t %-10s %s\n", "'$ao'", $accepted{$ao};
             }
@@ -399,8 +168,8 @@ sub make_tree {
         croak "directory ($dir) does not exist\n";
     }
     my $master = 1;
-    if ($options{tree_nodes} ) {
-        my ($m, $mid, $leaf) = split /-/, $options{tree_nodes};
+    if ($msb->{options}{tree_nodes} ) {
+        my ($m, $mid, $leaf) = split /-/, $msb->{options}{tree_nodes};
         if ($m) {
             $master = $m;
         }
@@ -408,27 +177,27 @@ sub make_tree {
             croak " master not defined in tree_nodes\n";
         } 
         if ($mid) {
-            $options{mid_nodes} = $mid;
+            $msb->{options}{mid_nodes} = $mid;
         }
         else {
             croak " middle nodes not defined in tree_nodes\n";
         } 
         if ($leaf) {
-            $options{leaf_nodes} = $leaf;
+            $msb->{options}{leaf_nodes} = $leaf;
         }
         else {
             croak " leaf nodes not defined in tree_nodes\n";
         } 
     
     }
-    my @MID_NODES = split ' ', $options{mid_nodes}
+    my @MID_NODES = split ' ', $msb->{options}{mid_nodes}
         or croak "no mid nodes selected. Use the --mid_nodes option\n"; 
     for my $mid (@MID_NODES) {
         croak "middle nodes must be numeric" unless $mid =~ /^\d+$/;
     }
     my @LEAF_NODES = ();
     
-    my @chunks = split /\|/, $options{leaf_nodes}
+    my @chunks = split /\|/, $msb->{options}{leaf_nodes}
         or croak "no leaf nodes selected. Use the --leaf_nodes option\n"; 
     # print Data::Dumper->Dump([\@chunks], ['chunks']);
     for my $c (@chunks) {
@@ -565,7 +334,7 @@ sub move_sandbox {
         croak "directory $source does not exist\n";
     }
     if ( -x "$source/start") {
-        if (( $source eq $dest) and $options{new_port}) {
+        if (( $source eq $dest) and $msb->{options}{new_port}) {
             move_single_sandbox($source, $dest, "already_moved");
         }
         else {
@@ -671,7 +440,7 @@ sub move_single_sandbox {
             . "Please get it from any Sandbox installed with version 2.0.15+\n";
     }
     if ($already_moved) {
-        if (is_running($new_dir)) {
+        if (is_sandbox_running($new_dir)) {
             stop_sandbox($new_dir);
         }
     }
@@ -686,19 +455,19 @@ sub move_single_sandbox {
     unless ( $old_dir eq $new_dir) {
         system "./change_paths $old_dir $new_dir";
     }
-    if ($options{new_port}) {
-        unless ($options{new_port} =~ /^\d+$/) {
-            croak "new port must be numerical ($options{new_port})\n";
+    if ($msb->{options}{new_port}) {
+        unless ($msb->{options}{new_port} =~ /^\d+$/) {
+            croak "new port must be numerical ($msb->{options}{new_port})\n";
         }
-        if (($options{new_port} <= 1024) or ( $options{new_port} > 32000)) {
-            croak   "new port out of range ($options{new_port}) - "
+        if (($msb->{options}{new_port} <= 1024) or ( $msb->{options}{new_port} > 32000)) {
+            croak   "new port out of range ($msb->{options}{new_port}) - "
                   . "it must be between 1025 and 32000\n";
         }
         unless ( -e "$new_dir/change_ports" ) {
             croak   "script 'change_ports' not found. "
                 . "Please get it from any Sandbox installed with version 2.0.18+\n";
         }
-        system "./change_ports $options{new_port}";
+        system "./change_ports $msb->{options}{new_port}";
     }
 }
 
@@ -804,30 +573,9 @@ sub print_debug {
     }
 }
 
-sub is_running {
-    my ($sandbox) = @_;
-    unless ( -d $sandbox ) {
-        confess "Can't see if it's running. <$sandbox> is not a sandbox\n";
-    }
-    my $sboptions = get_sandbox_params($sandbox);
-    unless ($sboptions->{opt} 
-            && $sboptions->{opt}{'pid_file'} 
-            && $sboptions->{opt}{'socket'}) {
-        # print Dumper($sboptions);
-        confess "<$sandbox> is not a single sandbox\n";
-    }
-    if (   ( -f $sboptions->{opt}{'pid_file'} )
-        && ( -e $sboptions->{opt}{'socket'}) ) {
-        return (1, $sboptions);
-    }  
-    else {
-        return (0, $sboptions);
-    }
-}
-
 sub copy_single_sandbox {
     my ($source_dir, $dest_dir) = @_;
-    if ($options{new_port}) {
+    if ($msb->{options}{new_port}) {
         croak "option 'new_port' is not supported with 'copy'\n";
     }
     unless ( $source_dir) {
@@ -842,8 +590,8 @@ sub copy_single_sandbox {
     unless ( -d $dest_dir) {
         croak " destination directory <$dest_dir> not found\n";
     }
-    my ($srunning, $ssboptions) = is_running($source_dir);
-    my ($drunning, $dsboptions) = is_running($dest_dir);
+    my ($srunning, $ssboptions) = is_sandbox_running($source_dir);
+    my ($drunning, $dsboptions) = is_sandbox_running($dest_dir);
     unless ($ssboptions->{conf}{install_version}) {
         croak "unable to determine version for <$source_dir>\n";
     } 
@@ -866,22 +614,5 @@ sub copy_single_sandbox {
         }
     }
     clone_sandbox_data( "$source_dir/data", "$dest_dir/data");
-}
-
-sub is_a_sandbox {
-    my ($dir) = @_;
-    unless ($dir) {
-        confess "directory missing\n";
-    }
-    $dir =~ s{/$}{};
-    my %sandbox_files = map {s{.*/}{}; $_, 1 } glob("$dir/*");
-    my @required = (qw(data start stop send_kill clear use restart), 
-         $sandbox_current_options, $sandbox_options_file );
-    for my $req (@required) {
-        unless (exists $sandbox_files{$req}) {
-            return;
-        }
-    } 
-    return 1;
 }
 

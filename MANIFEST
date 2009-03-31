@@ -14,4 +14,5 @@ Makefile.PL
 MANIFEST
 README
 t/MySQL-Sandbox.t
+t/test_bin.t
 META.yml                                 Module meta-data (added by MakeMaker)

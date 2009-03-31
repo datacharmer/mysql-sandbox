@@ -40,27 +40,25 @@ my %defaults = (
 
 my $msb = MySQL::Sandbox->new();
 
-my %parse_options = %{ MySQL::Sandbox::Scripts::parse_options_many() };
-$msb->parse_options(\%parse_options);
+$msb->parse_options (MySQL::Sandbox::Scripts::parse_options_many() );
 
-my %options = map { $_ , $parse_options{$_}{'value'}}  keys %parse_options ;
 
 GetOptions (
-    map { $parse_options{$_}{parse}, \$options{$_} }        
-        grep { $parse_options{$_}{parse}}  keys %parse_options  
+    map { $msb->{parse_options}{$_}{parse}, \$msb->{options}{$_} }        
+        grep { $msb->{parse_options}{$_}{parse}}  keys %{$msb->{parse_options}}  
 ) or $msb->get_help();
 
-$msb->get_help() if $options{'help'};
+$msb->get_help() if $msb->{options}{'help'};
 
-unless ($options{server_version}) {
-    $options{server_version} = join(':', @ARGV);
+unless ($msb->{options}{server_version}) {
+    $msb->{options}{server_version} = join(':', @ARGV);
     @ARGV > 0 or $msb->get_help('server version required');
 }
 
 my $replication_port = 0;
 my @base_version ;
 my @dashed_version ;
-my @versions= split /[,:;]/, $options{server_version};
+my @versions= split /[,:;]/, $msb->{options}{server_version};
 my $counter =0;
 for my $ver (@versions) {
     my $temp_path = $ver;
@@ -72,17 +70,17 @@ for my $ver (@versions) {
         $counter++;
     }
     else {
-        $msb->get_help("No recognizable version pattern in $options{server_version}\n");
+        $msb->get_help("No recognizable version pattern in $msb->{options}{server_version}\n");
     }
 }
 
 my $group_directory ;
 
-if ( $options{group_directory}) {
-    $group_directory = "$options{upper_directory}/$options{group_directory}";
+if ( $msb->{options}{group_directory}) {
+    $group_directory = "$msb->{options}{upper_directory}/$msb->{options}{group_directory}";
 }
 else {
-    $group_directory = "$options{upper_directory}/" 
+    $group_directory = "$msb->{options}{upper_directory}/" 
         . make_group_dir( $defaults{group_directory}, \@dashed_version);
 }
 
@@ -90,7 +88,7 @@ if ( -d $group_directory ) {
     system "$group_directory/clear_all";
 }
 else {
-    print "creating replication directory $group_directory\n" if $options{verbose};
+    print "creating replication directory $group_directory\n" if $msb->{options}{verbose};
     mkdir $group_directory
 }
 
@@ -103,8 +101,8 @@ for my $dir ( 1 .. @versions ) {
 
 for my $ver_counter (0 .. $#versions) {
 
-    if ( $options{sandbox_base_port}) {
-        $replication_port = $options{sandbox_base_port};
+    if ( $msb->{options}{sandbox_base_port}) {
+        $replication_port = $msb->{options}{sandbox_base_port};
     }
     else {
         $replication_port = $defaults{custom_base_port} + $base_version[$ver_counter];
@@ -126,7 +124,7 @@ for my $ver_counter (0 .. $#versions) {
      -c server-id=10$node \\
      -c log-bin=mysql-bin $additional_node_options
      );
-     print $install_node if $options{verbose};
+     print $install_node if $msb->{options}{verbose};
      if ($CHILD_ERROR) {
          print "error installing node $node\n";
          print "$install_node\n";

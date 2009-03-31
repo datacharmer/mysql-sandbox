@@ -54,20 +54,17 @@ unless ( $ENV{SANDBOX_HOME} ) {
 
 my $msb = MySQL::Sandbox->new();
 
-my %parse_options = %{ MySQL::Sandbox::Scripts::parse_options_replication() }; 
-$msb->parse_options(\%parse_options);
-
-my %options = map { $_ , $parse_options{$_}{'value'}}  keys %parse_options ;
+$msb->parse_options( MySQL::Sandbox::Scripts::parse_options_replication() ); 
 
 GetOptions (
-    map { $parse_options{$_}{parse}, \$options{$_} }        
-        grep { $parse_options{$_}{parse}}  keys %parse_options  
+    map { $msb->{parse_options}{$_}{parse}, \$msb->{options}{$_} }        
+        grep { $msb->{parse_options}{$_}{parse}}  keys %{$msb->{parse_options}}  
 ) or $msb->get_help();
 
-$msb->get_help() if $options{'help'};
+$msb->get_help() if $msb->{options}{'help'};
 
-unless ($options{server_version}) {
-    $options{server_version} = shift
+unless ($msb->{options}{server_version}) {
+    $msb->{options}{server_version} = shift
         or $msb->get_help('server version required');
 }
 
@@ -75,7 +72,7 @@ my $base_version ;
 my $release_no;
 my $dashed_version ;
 my $replication_port = 0;
-my $temp_path = $options{server_version};
+my $temp_path = $msb->{options}{server_version};
 $temp_path =~ s{.*/}{};
 if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     my ($major, $minor, $rev) = ($1, $2, $3);
@@ -86,7 +83,7 @@ if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     $base_version += $major + ($minor * 10) + ($rev * 100);
 }
 else {
-    $msb->get_help("No recognizable version pattern in $options{server_version}\n");
+    $msb->get_help("No recognizable version pattern in $msb->{options}{server_version}\n");
 }
 
 my @supported_topologies = qw(standard circular);
@@ -94,37 +91,37 @@ my @supported_topologies = qw(standard circular);
 # deals with circular replication
 #
 
-if ($options{master_master}) {
-    $options{topology} = 'circular';
-    $options{how_many_slaves} = 2;
+if ($msb->{options}{master_master}) {
+    $msb->{options}{topology} = 'circular';
+    $msb->{options}{how_many_slaves} = 2;
 }
 
-if ($options{circular} && ($options{circular} =~ /^\d+$/)) {
-    $options{topology} = 'circular';
-    $options{how_many_slaves} = $options{circular};
+if ($msb->{options}{circular} && ($msb->{options}{circular} =~ /^\d+$/)) {
+    $msb->{options}{topology} = 'circular';
+    $msb->{options}{how_many_slaves} = $msb->{options}{circular};
 }
 
-if ($options{'topology'} ) {
-    if ($options{'topology'} eq 'standard') {
+if ($msb->{options}{'topology'} ) {
+    if ($msb->{options}{'topology'} eq 'standard') {
         # do nothing. default behavior
     }
-    elsif ($options{'topology'} eq 'circular') {
+    elsif ($msb->{options}{'topology'} eq 'circular') {
         make_circular_replication();
     }
     else {
-        die qq(unsupported topology "$options{topology}". Allowed options: {@supported_topologies}\n);
+        die qq(unsupported topology "$msb->{options}{topology}". Allowed options: {@supported_topologies}\n);
     }
 }
 
-# print Dumper(\%options);
+# print Dumper(\%{$msb->{options}});
 
 my $replication_directory ;
 
-if ( $options{replication_directory}) {
-    $replication_directory = "$options{upper_directory}/$options{replication_directory}";
+if ( $msb->{options}{replication_directory}) {
+    $replication_directory = "$msb->{options}{upper_directory}/$msb->{options}{replication_directory}";
 }
 else {
-    $replication_directory = "$options{upper_directory}/$defaults{replication_directory}_$dashed_version";
+    $replication_directory = "$msb->{options}{upper_directory}/$defaults{replication_directory}_$dashed_version";
 }
 
 if ( -d $replication_directory ) {
@@ -134,11 +131,11 @@ if ( -d $replication_directory ) {
     system "rm -rf $replication_directory/*";
 }
 else {
-    print "creating replication directory $replication_directory\n" if $options{verbose};
+    print "creating replication directory $replication_directory\n" if $msb->{options}{verbose};
     mkdir $replication_directory
 }
 
-for my $dir ( 1 .. $options{how_many_slaves}) {
+for my $dir ( 1 .. $msb->{options}{how_many_slaves}) {
     if ( -d "$replication_directory/node$dir" ) {
         system "rm -rf $replication_directory/node$dir" 
             and die "unable to clean $replication_directory/node$dir\n";
@@ -150,8 +147,8 @@ if ( -d "$replication_directory/master" ) {
         and die "unable to clean $replication_directory/master\n";
 }
 
-if ( $options{sandbox_base_port}) {
-    $replication_port = $options{sandbox_base_port};
+if ( $msb->{options}{sandbox_base_port}) {
+    $replication_port = $msb->{options}{sandbox_base_port};
 }
 else {
     $replication_port = $defaults{replication_base_port} + $base_version + ($release_no * 100);
@@ -166,7 +163,7 @@ if ($ENV{NODE_OPTIONS}) {
 $additional_master_options .=  q{ };
 $additional_slave_options  .=  q{ };
 my $install_master = qx(
-   make_sandbox $options{server_version} \\
+   make_sandbox $msb->{options}{server_version} \\
     --datadir_from=script \\
     --no_confirm \\
     --upper_directory=$replication_directory \\
@@ -177,7 +174,7 @@ my $install_master = qx(
     -c log-bin=mysql-bin \\
     -c server-id=1 $additional_master_options
     );
-print $install_master if $options{verbose};
+print $install_master if $msb->{options}{verbose};
 if ($CHILD_ERROR) {
     print "error installing the master\n";
     print "$install_master\n";
@@ -185,12 +182,12 @@ if ($CHILD_ERROR) {
 }
 # sleep 1 ;
 
-for my $slave (1 .. $options{how_many_slaves}) {
+for my $slave (1 .. $msb->{options}{how_many_slaves}) {
    my $slave_port = $replication_port+ $slave;
    my $slave_id = 100 + $slave;
    print "installing slave $slave\n";
    my $install_slave = qx(
-    make_sandbox $options{server_version} \\
+    make_sandbox $msb->{options}{server_version} \\
     --datadir_from=script \\
     --upper_directory=$replication_directory \\
     --sandbox_directory=node$slave \\
@@ -203,7 +200,7 @@ for my $slave (1 .. $options{how_many_slaves}) {
     -c report-port=$replication_port \\
     -c log-bin=mysql-bin $additional_slave_options
     );
-    print $install_slave if $options{verbose};
+    print $install_slave if $msb->{options}{verbose};
     if ($CHILD_ERROR) {
         print "error installing slave $slave\n";
         print "$install_slave\n";
@@ -223,7 +220,7 @@ for my $cmd ( qw(start stop clear send_kill) ) {
         $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on master') );
         $msb->write_to ($cmd_fname, '>>', "$replication_directory/master/$cmd");
     }
-    for my $slave (1 .. $options{how_many_slaves} ) {
+    for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
         $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on slave $slave'));
         $msb->write_to ($cmd_fname, '>>', "$replication_directory/node$slave/$cmd");
     }
@@ -241,7 +238,7 @@ if ( ( -x $mysql_proxy ) &&  ( -f $rw_splitting) ) {
     $msb->write_to('run_proxy',  '>',  '#!/bin/sh'); 
     $msb->write_to('run_proxy',  '>>', "$mysql_proxy \\" ); 
     $msb->write_to('run_proxy',  '>>', "  --proxy-backend-addresses=127.0.0.1:$port \\" ); 
-    for my $slave ( 1 .. $options{how_many_slaves}) {
+    for my $slave ( 1 .. $msb->{options}{how_many_slaves}) {
         $port++;
         $msb->write_to('run_proxy',  '>>', "  --proxy-read-only-backend-addresses=127.0.0.1:$port \\" ); 
     }
@@ -263,9 +260,9 @@ $msb->write_to('m',    '>>',   qq($replication_directory/master/use "\$@") );
 chmod 0755, 'm';
 
 $msb->write_to('use_all', '>', '#!/bin/sh');
-my $slave_list = join(' ', (1 .. $options{how_many_slaves}) );
+my $slave_list = join(' ', (1 .. $msb->{options}{how_many_slaves}) );
 
-$msb->write_to('use_all', '>>', 'if [ "$1" == "" ]');
+$msb->write_to('use_all', '>>', 'if [ "$1" = "" ]');
 $msb->write_to('use_all', '>>', 'then');
 $msb->write_to('use_all', '>>', '  echo "syntax: $0 command"');
 $msb->write_to('use_all', '>>', '  exit 1');
@@ -290,7 +287,7 @@ $msb->write_to('check_slaves', '>>', "  $replication_directory/node\$NNUM/use -N
 $msb->write_to('check_slaves', '>>', 'done ' );
 chmod 0755, 'check_slaves';
 
-for my $slave (1 .. $options{how_many_slaves} ) {
+for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
     $msb->write_to("s$slave", '>', "#!/bin/sh");
     $msb->write_to("s$slave", '>', qq($replication_directory/node$slave/use "\$@"));
     chmod 0755, "s$slave";
@@ -301,7 +298,7 @@ $msb->write_to('initialize_slaves', '>', "");
 $msb->write_to('initialize_slaves', '>', "# Don't use directly.");
 $msb->write_to('initialize_slaves', '>', "# This script is called by 'start_all' when needed");
 $msb->write_to('initialize_slaves', '>', "");
-for my $slave (1 .. $options{how_many_slaves} ) {
+for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
     print "starting slave $slave\n";
     system "./node$slave/start"
         and die "can't execute ./node$slave/start ($CHILD_ERROR)";
@@ -336,22 +333,22 @@ print "replication directory installed on $replication_directory\n";
 
 sub make_circular_replication {
     my $cmd =  "make_multiple_sandbox --circular";
-    if ($options{how_many_slaves}) {
-        $cmd .= ' --how_many_nodes=' . $options{how_many_slaves};
+    if ($msb->{options}{how_many_slaves}) {
+        $cmd .= ' --how_many_nodes=' . $msb->{options}{how_many_slaves};
     }
-    if ($options{replication_directory} ) {
-        $cmd .= ' --group_directory=' . $options{replication_directory};
+    if ($msb->{options}{replication_directory} ) {
+        $cmd .= ' --group_directory=' . $msb->{options}{replication_directory};
     }        
     else {
         $cmd .= ' --group_directory=rcsandbox_' . $dashed_version 
     }
-    if ($options{sandbox_base_port} ) {
-        $cmd .= ' --sandbox_base_port=' . $options{sandbox_base_port}
+    if ($msb->{options}{sandbox_base_port} ) {
+        $cmd .= ' --sandbox_base_port=' . $msb->{options}{sandbox_base_port}
     }
     else {
         $cmd .= ' --sandbox_base_port=' . ($defaults{circular_base_port} + ($release_no * 100));
     }
-    exec "$cmd $options{server_version}" ;
+    exec "$cmd $msb->{options}{server_version}" ;
 }
 
 __END__

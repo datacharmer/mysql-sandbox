@@ -39,20 +39,19 @@ my %defaults = (
     circular_base_port => $MySQL::Sandbox::default_base_port{multiple},,
     group_directory => 'multi_msb',
 );
-my %parse_options = %{ MySQL::Sandbox::Scripts::parse_options_many() };
-$msb->parse_options(\%parse_options);
+$msb->parse_options ( MySQL::Sandbox::Scripts::parse_options_many() );
 
-my %options = map { $_ , $parse_options{$_}{'value'}}  keys %parse_options ;
+# my %{$msb->{options}} = map { $_ , $msb->{parse_options}{$_}{'value'}}  keys %{$msb->{parse_options}} ;
 
 GetOptions (
-    map { $parse_options{$_}{parse}, \$options{$_} }        
-        grep { $parse_options{$_}{parse}}  keys %parse_options  
+    map { $msb->{parse_options}{$_}{parse}, \$msb->{options}{$_} }        
+        grep { $msb->{parse_options}{$_}{parse}}  keys %{$msb->{parse_options}}  
 ) or $msb->get_help();
 
-$msb->get_help() if $options{'help'};
+$msb->get_help() if $msb->{options}{'help'};
 
-unless ($options{server_version}) {
-    $options{server_version} = shift
+unless ($msb->{options}{server_version}) {
+    $msb->{options}{server_version} = shift
         or $msb->get_help('server version required');
 }
 
@@ -61,7 +60,7 @@ my $release_no;
 my $dashed_version ;
 my $replication_port = 0;
 
-my $temp_path = $options{server_version};
+my $temp_path = $msb->{options}{server_version};
 $temp_path =~ s{.*/}{};
 if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     $base_version = "$1$2$3";
@@ -70,18 +69,18 @@ if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     $base_version =~ s/^0+//;
 }
 else {
-    $msb->get_help("No recognizable version pattern in $options{server_version}\n");
+    $msb->get_help("No recognizable version pattern in $msb->{options}{server_version}\n");
 }
 
-#print Dumper(\%options);
+#print Dumper(\%{$msb->{options}});
 
 my $group_directory ;
 
-if ( $options{group_directory}) {
-    $group_directory = "$options{upper_directory}/$options{group_directory}";
+if ( $msb->{options}{group_directory}) {
+    $group_directory = "$msb->{options}{upper_directory}/$msb->{options}{group_directory}";
 }
 else {
-    $group_directory = "$options{upper_directory}/$defaults{group_directory}_$dashed_version";
+    $group_directory = "$msb->{options}{upper_directory}/$defaults{group_directory}_$dashed_version";
 }
 
 if ( -d $group_directory ) {
@@ -91,7 +90,7 @@ if ( -d $group_directory ) {
     system "rm -rf $group_directory/*";
 }
 else {
-    print "creating group directory $group_directory\n" if $options{verbose};
+    print "creating group directory $group_directory\n" if $msb->{options}{verbose};
     mkdir $group_directory
 }
 
@@ -99,20 +98,20 @@ if ( -f "$group_directory/needs_initialization" ) {
     system "rm -f $group_directory/needs_initialization" ;
 }
 
-if ($options{'master_master'}) {
-    $options{'how_many_nodes'} = 2;
-    $options{'circular'} = 1;
+if ($msb->{options}{'master_master'}) {
+    $msb->{options}{'how_many_nodes'} = 2;
+    $msb->{options}{'circular'} = 1;
 }
 
-for my $dir ( 1 .. $options{how_many_nodes}) {
+for my $dir ( 1 .. $msb->{options}{how_many_nodes}) {
     if ( -d "$group_directory/node$dir" ) {
         system "rm -rf $group_directory/node$dir" 
             and die "unable to clean $group_directory/node$dir\n";
     }
 }
 
-if ( $options{sandbox_base_port}) {
-    $replication_port = $options{sandbox_base_port};
+if ( $msb->{options}{sandbox_base_port}) {
+    $replication_port = $msb->{options}{sandbox_base_port};
 }
 else {
     $replication_port = $defaults{circular_base_port} + $base_version + ($release_no * 100);
@@ -120,7 +119,7 @@ else {
 
 my $circular_replication_script = "$group_directory/set_circular_replication.sh";
 
-if ($options{'circular'}) {
+if ($msb->{options}{'circular'}) {
 $msb->write_to($circular_replication_script, '>', 
 q(
 #!/bin/bash
@@ -133,16 +132,16 @@ TMPL="$TMPL1 $TMPL2 $TMPL3 $TMPL4"
 $msb->write_to($circular_replication_script, '>>', "$group_directory/use_all 'stop slave' ");
 }
 
-for my $node (1 .. $options{how_many_nodes}) {
+for my $node (1 .. $msb->{options}{how_many_nodes}) {
     my $additional_node_options = $ENV{NODE_OPTIONS} || '';
     my $node_port = $replication_port+ $node;
-    if ($options{'circular'}) {
+    if ($msb->{options}{'circular'}) {
         my $master_node_port = $node == 1 
-                ? $node_port + $options{how_many_nodes} 
+                ? $node_port + $msb->{options}{how_many_nodes} -1
                 : $node_port -1;
         $additional_node_options .= '-c log-slave-updates '
             . '-c replicate-same-server-id=0 '
-            . '-c auto_increment_increment=' . $options{'how_many_nodes'} 
+            . '-c auto_increment_increment=' . $msb->{options}{'how_many_nodes'} 
             . ' '
             . '-c auto_increment_offset=' . $node 
             . ' '
@@ -154,7 +153,7 @@ for my $node (1 .. $options{how_many_nodes}) {
     my $node_id = 100 + $node;
     print "installing node $node\n";
     my $install_node = qx(
-    make_sandbox $options{server_version} \\
+    make_sandbox $msb->{options}{server_version} \\
     --datadir_from=script \\
     --upper_directory=$group_directory \\
     --sandbox_directory=node$node \\
@@ -164,16 +163,16 @@ for my $node (1 .. $options{how_many_nodes}) {
     -c server-id=$node_id \\
     -c log-bin=mysql-bin $additional_node_options
     );
-    print $install_node if $options{verbose};
+    print $install_node if $msb->{options}{verbose};
     if ($CHILD_ERROR) {
         print "error installing node $node\n";
         print "$install_node\n";
         exit(1)
     }
     #sleep 1;
-    if ($options{'circular'}) {
+    if ($msb->{options}{'circular'}) {
         my $master_node = $node + 1 ;
-        if ($master_node >  $options{'how_many_nodes'} ) {
+        if ($master_node >  $msb->{options}{'how_many_nodes'} ) {
             $master_node = 1;
         }
         $msb->write_to($circular_replication_script, '>>',
@@ -186,7 +185,7 @@ for my $node (1 .. $options{how_many_nodes}) {
     }
 }
 
-if ($options{'circular'}) {
+if ($msb->{options}{'circular'}) {
     $msb->write_to($circular_replication_script, '>>', "$group_directory/use_all 'start slave' ");
     chmod 0755, $circular_replication_script;
 }
@@ -198,15 +197,15 @@ chdir $group_directory;
 for my $cmd ( qw(start stop clear send_kill) ) {
     my $cmd_fname = $cmd . '_all';
     $msb->write_to($cmd_fname, '>', '#!/bin/sh');
-    if ($cmd =~ /stop|clear|send_kill/ && $options{'circular'}) {
+    if ($cmd =~ /stop|clear|send_kill/ && $msb->{options}{'circular'}) {
         $msb->write_to ($cmd_fname, 
                 '>>', 
                 qq($group_directory/use_all "slave stop"));
     } 
-    for my $node (1 .. $options{how_many_nodes} ) {
+    for my $node (1 .. $msb->{options}{how_many_nodes} ) {
         $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on node $node'));
         $msb->write_to ($cmd_fname, '>>', "$group_directory/node$node/$cmd");
-        if (($cmd eq 'start') and $options{'circular'}) {
+        if (($cmd eq 'start') and $msb->{options}{'circular'}) {
             $msb->write_to ($cmd_fname, '>>', 
                       "if [ -f $group_directory/node$node/data/master.info ] \n"
                     . "then\n"
@@ -218,9 +217,9 @@ for my $cmd ( qw(start stop clear send_kill) ) {
 }
 
 $msb->write_to('use_all', '>', '#!/bin/sh');
-my $node_list = join(' ', (1 .. $options{how_many_nodes}) );
+my $node_list = join(' ', (1 .. $msb->{options}{how_many_nodes}) );
 
-$msb->write_to('use_all', '>>', 'if [ "$1 " == " " ]');
+$msb->write_to('use_all', '>>', 'if [ "$1 " = " " ]');
 $msb->write_to('use_all', '>>', 'then');
 $msb->write_to('use_all', '>>', '  echo "syntax: $0 command"');
 $msb->write_to('use_all', '>>', '  exit 1');
@@ -245,13 +244,13 @@ chmod 0755, 'check_slaves';
 
 
 
-for my $node (1 .. $options{how_many_nodes} ) {
+for my $node (1 .. $msb->{options}{how_many_nodes} ) {
     $msb->write_to("n$node", '>', "#!/bin/sh");
     $msb->write_to("n$node", '>', qq($group_directory/node$node/use "\$@"));
     chmod 0755, "n$node";
 }
 
-if ($options{'circular'}) {
+if ($msb->{options}{'circular'}) {
 
     $msb->write_to(
         "$group_directory/clear_all", '>>', 
