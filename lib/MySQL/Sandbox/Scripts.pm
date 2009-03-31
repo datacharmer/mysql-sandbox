@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION = '2.0.98b';
+our $VERSION = '2.0.98c';
 
 our @MANIFEST = (
 'clear.sh',
