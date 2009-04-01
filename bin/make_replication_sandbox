@@ -166,6 +166,7 @@ my $install_master = qx(
    make_sandbox $msb->{options}{server_version} \\
     --datadir_from=script \\
     --no_confirm \\
+    --no_check_port \\
     --upper_directory=$replication_directory \\
     --sandbox_directory=master \\
     --sandbox_port=$replication_port \\

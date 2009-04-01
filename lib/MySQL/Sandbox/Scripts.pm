@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION = '2.0.98c';
+our $VERSION = '2.0.98d';
 
 our @MANIFEST = (
 'clear.sh',
@@ -35,12 +35,15 @@ sub manifest {
     return @MANIFEST;
 }
 my %parse_options_low_level_make_sandbox = (
-    query_analyzer         => {
-                                value => 0,
-                                parse=> 'query_analyzer',
-                                so  => 5,
-                                help => ['solves your tuning problems at once']
-    },
+##
+# DEPRECATED and removed 
+# (April fool's edition)
+#    query_analyzer         => {
+#                                value => 0,
+#                                parse=> 'query_analyzer',
+#                                so  => 5,
+#                                help => ['solves your tuning problems at once']
+#    },
     upper_directory        => {
                                 value => $ENV{'SANDBOX_HOME'} || $ENV{'HOME'},       
                                 parse => 'upper_directory=s',         
@@ -74,6 +77,16 @@ my %parse_options_low_level_make_sandbox = (
                                 help  => [
                                             'Check whether the provided port is free,', 
                                             'and determine the next available one if it is not.',
+                                            '(Default: disabled)',
+                                         ]
+                            },
+    no_check_port         => {
+                                value => 0,               
+                                parse => 'no_check_port',           
+                                so    =>  36,
+                                help  => [
+                                            'Ignores requests of checking ports.', 
+                                            'To be used by group sandbox scripts.',
                                             '(Default: disabled)',
                                          ]
                             },

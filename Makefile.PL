@@ -18,7 +18,8 @@ WriteMakefile(
                             'bin/make_multiple_custom_sandbox',
                          ],
     ($] >= 5.005 ?     
-      (ABSTRACT       => 'The MySQL Sandbox - A MySQL server installer',
-       AUTHOR         => 'Giuseppe Maxia <g.maxia@gmail.com>'
+      (#ABSTRACT       => 'The MySQL Sandbox - A MySQL server installer',
+       ABSTRACT_FROM  => 'lib/MySQL/Sandbox.pm',
+       AUTHOR         => 'Giuseppe Maxia <gma@cpan.org>'
       ) : ()),
 );

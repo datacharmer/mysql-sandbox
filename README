@@ -1,73 +1,74 @@
-The MySQL Sandbox
+NAME
+    MySQL::Sandbox - Quickly installs MySQL side server, either standalone
+    or in groups
+
+SYNOPSIS
+     make_sandbox /path/to/MySQL-VERSION.tar.gz
 
 PURPOSE
+    This package is a sandbox for testing features under any version of
+    MySQL from 3.23 to 6.0.
 
-   This package is a sandbox for testing features under any version of
-   MySQL from 3.23 to 6.0.
+    It will install one node under your home directory, and it will provide
+    some useful commands to start, use and stop this sandbox.
 
-   It will install one node under your home directory, and it will provide
-   some useful commands to start, use and stop this sandbox.
-
-   With this package you can play with new MySQL releases without need of
-   using other computers. The server installed in the sandbox use
-   non-standard data directory, ports and sockets, so they won't interfere
-   with existing MYSQL installations.
+    With this package you can play with new MySQL releases without need of
+    using other computers. The server installed in the sandbox use
+    non-standard data directory, ports and sockets, so they won't interfere
+    with existing MYSQL installations.
 
 INSTALLATION
-   MySQL Sandbox installs as a normal Perl Module. Since its purpose is to
-   install side servers in user space, you can install it as roo (default) 
-   or as an unprivileged user. in this case, you need to set the PERL5LIB 
-   variable.
+MySQL Sandbox installs as a normal Perl Module. Since its purpose is to
+install side servers in user space, you can install it as root (default) 
+or as an unprivileged user. In this case, you need to set the PERL5LIB 
+and PATH variables.
+       # as root
+       perl Makefile.PL 
+       make
+       make test
+       make install
 
-   # as root
-   perl Makefile.PL 
-   make
-   make test
-   make install
-
-   # as normal user
-   export PERL5LIB=$HOME/usr/local/lib/perl5/site_perl/5.8.8
-   perl Makefile.PL PREFIX=$HOME/usr/local
-   make
-   make test
-   make install
-
+       # as normal user
+       export PATH=$HOME/usr/local/bin:$PATH
+       export PERL5LIB=$HOME/usr/local/lib/perl5/site_perl/5.8.8
+       perl Makefile.PL PREFIX=$HOME/usr/local
+       make
+       make test
+       make install
 
 MAKING SANDBOXES
+  SINGLE SERVER SANDBOX
+    The easiest way to make a sandbox is
 
-SINGLE SERVER SANDBOX
+    1 download the sandbox package and install it as instructed above
+    2 download a MySQL binary tarball
+    3 run this command
+          $ make_sandbox  /path/to/mysql-X.X.XX-osinfo.tar.gz
 
-   The easiest way to make a sandbox is
+    That's all it takes to get started. The Sandbox will ask you for
+    confirmation, and then it will tell you where it has installed your
+    server.
 
-    1. download the sandbox package and expand it somewhere
-    2. download a MySQL binary tarball
-    3. run this command
+    By default, the sandbox creates a new instance for you under
 
-$ make_sandbox /path/to/mysql-X.X.XX-osinfo.tar.gz
+       $HOME/sandboxes/msb_X_X_XX
 
-   That's all it takes to get started. The Sandbox will ask you for
-   confirmation, and then it will tell you where it has installed your
-   server.
+  MAKING A REPLICATION SANDBOX
+    It's as easy as making a single sandbox
 
-   By default, the sandbox creates a new instance for you under
-   $HOME/sandboxes/msb_X_X_XX
+       $ make_replication_sandbox /path/to/mysql-X.X.XX-osinfo.tar.gz
 
-MAKING A REPLICATION SANDBOX
+    This will create a new instance of one master and two slaves
 
-   It's as easy as making a single sandbox $ make_replication_sandbox
-   /path/to/mysql-X.X.XX-osinfo.tar.gz
+       under $HOME/sandboxes/rsandbox_X_X_XX
 
-   This will create a new instance of one master and two slaves under
-   $HOME/sandboxes/rsandbox_X_X_XX
-
-CIRCULAR REPLICATION
-
+  CIRCULAR REPLICATION
     It requires an appropriate option when you start a replication sandbox
 
-      $ make_replication_sandbox --topology=circular /path/to/mysql-X.X.XX-osinfo.tar.gz
+       $ make_replication_sandbox --circular=4 /path/to/mysql-X.X.XX-osinfo.tar.gz
 
-   This will create a replication system with three servers connected by
-    circular replication. A handy shortcut is --master_master, which will
+    This will create a replication system with three servers connected by
+    circular replication. A handy shortcut is C(--master_master), which will
     create a circular replication system of exactly two members.
 
   MULTIPLE SANDBOXES
@@ -91,8 +92,10 @@ CIRCULAR REPLICATION
     under $HOME/opt/mysql and /opt/mysql
 
     The expanded tarballs must be named with the full version. e.g.
-    $HOME/opt/mysql/5.0.64 /opt/mysql/5.1.24
 
+      $HOME/opt/mysql/5.0.64 
+      /opt/mysql/5.1.24
+    
     If you have such an organization, then you can invoke every sandbox
     script with this abridged syntax:
 
@@ -202,8 +205,8 @@ REQUIREMENTS
     * bash shell
 
 COPYRIGHT
-version 2.0
-    Copyright © 2006,2007,2008 Giuseppe Maxia Home Page
+version 3.0
+    Copyright © 2006,2007,2008,2009 Giuseppe Maxia Home Page
     http://launchpad.net/mysql-sandbox/
 
 LEGAL NOTICE
