@@ -158,6 +158,7 @@ for my $node (1 .. $msb->{options}{how_many_nodes}) {
     --upper_directory=$group_directory \\
     --sandbox_directory=node$node \\
     --no_confirm \\
+    --no_check_port \\
     --prompt_prefix=node$node \\
     --sandbox_port=$node_port \\
     -c server-id=$node_id \\

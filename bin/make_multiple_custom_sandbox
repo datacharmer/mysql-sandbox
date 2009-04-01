@@ -119,6 +119,7 @@ for my $ver_counter (0 .. $#versions) {
      --upper_directory=$group_directory \\
      --sandbox_directory=node$node \\
      --no_confirm \\
+     --no_check_port \\
      --prompt_prefix=node$node \\
      --sandbox_port=$node_port \\
      -c server-id=10$node \\

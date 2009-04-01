@@ -49,21 +49,24 @@ GetOptions (
         grep { $msb->{parse_options}{$_}{parse}}  keys %{$msb->{parse_options}} 
 ) or $msb->get_help();
 
-if ( $msb->{options}{query_analyzer}) {
-my $QA = <<'ENDFISH';
-  o         
-  o
-o
-  o  ___/|__
-o  _/       \  /|
- o/  @ \\    \/ |
-  \_   //    /\ |
-    \_______/  \|
-
-ENDFISH
-print $QA, "Thanks for having so much faith in my skills\n";
-exit 1;
-}
+##
+# DEPRECATED and removed 
+# (April fool's edition)
+#if ( $msb->{options}{query_analyzer}) {
+#my $QA = <<'ENDFISH';
+#  o         
+#  o
+#o
+#  o  ___/|__
+#o  _/       \  /|
+# o/  @ \\    \/ |
+#  \_   //    /\ |
+#    \_______/  \|
+#
+#ENDFISH
+#print $QA, "Thanks for having so much faith in my skills\n";
+#exit 1;
+#}
 
 # 
 # We are not expecting bare arguments
@@ -203,7 +206,7 @@ unless (
     $msb->get_help( "sandbox_port option must be a port number between 1025 and 32000 (currently requested $msb->{options}{'sandbox_port'} ) \n");
 }
 
-if ($msb->{options}{check_port}) {
+if ($msb->{options}{check_port} and (! $msb->{options}{no_check_port}) ) {
     
     ( $msb->{options}{'sandbox_port'}, 
       $msb->{options}{'sandbox_directory'}) = 
