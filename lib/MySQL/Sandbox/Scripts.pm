@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION = '2.0.98d';
+our $VERSION = '2.0.98e';
 
 our @MANIFEST = (
 'clear.sh',
@@ -58,7 +58,7 @@ my %parse_options_low_level_make_sandbox = (
                                 parse => 'd|sandbox_directory=s',      
                                 so    =>  20,
                                 help  => [
-                                            'Where to install the sandbox, under home-directory'
+                                            'Where to install the sandbox, under upper-directory'
                                          ] 
                              },
     sandbox_port          => {
@@ -340,6 +340,15 @@ my %parse_options_replication = (
                                          ] 
                             },
  
+    interactive           => {
+                                value => 0,                  
+                                parse => 'interactive',                  
+                                so    => 65,
+                                help  => [
+                                            'Use this option to ask interactive user ',
+                                            'confirmation for each node (default: disabled)'
+                                         ] 
+                            },
     verbose               => {
                                 value => 0,                  
                                 parse => 'v|verbose',                  
@@ -421,6 +430,16 @@ my %parse_options_many = (
                                             'set the nodes in circular replication'
                                          ] 
                             },
+
+    interactive           => {
+                                value => 0,                  
+                                parse => 'interactive',                  
+                                so    => 65,
+                                help  => [
+                                            'Use this option to ask interactive user ',
+                                            'confirmation for each node (default: disabled)'
+                                         ] 
+                            },
     verbose               => {
                                 value => 0,                  
                                 parse => 'v|verbose',                  
@@ -476,6 +495,15 @@ my %parse_options_custom_many = (
                                          ]
                             },
 
+    interactive           => {
+                                value => 0,                  
+                                parse => 'interactive',                  
+                                so    => 65,
+                                help  => [
+                                            'Use this option to ask interactive user ',
+                                            'confirmation for each node (default: disabled)'
+                                         ] 
+                            },
     verbose               => {
                                 value => 0,                  
                                 parse => 'v|verbose',                  

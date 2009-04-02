@@ -1,3 +1,7 @@
+2.0.98e 02-Apr-2009
+	- fixed error in low_level_make_sandbox --interactive. Array values
+	  were not preserved correctly wit a default
+	- implemented interactive confirmation for group sandboxes
 2.0.98d 01-Apr-2009
 	- Deprecated "query_analyzer" option :)
 	- moved the POD to MySQL::Sandbox

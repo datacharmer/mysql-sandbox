@@ -19,7 +19,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION='2.0.98d';
+our $VERSION='2.0.98e';
 our $DEBUG;
 
 BEGIN {
@@ -399,6 +399,7 @@ non-standard data directory, ports and sockets, so they won't
 interfere with existing MYSQL installations.
 
 =head1 INSTALLATION
+
 MySQL Sandbox installs as a normal Perl Module. Since its purpose is to
 install side servers in user space, you can install it as root (default) 
 or as an unprivileged user. In this case, you need to set the PERL5LIB 

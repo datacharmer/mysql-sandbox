@@ -162,7 +162,8 @@ if ($ENV{NODE_OPTIONS}) {
 }
 $additional_master_options .=  q{ };
 $additional_slave_options  .=  q{ };
-my $install_master = qx(
+my $install_master='';
+my $install_master_command  = qq(
    make_sandbox $msb->{options}{server_version} \\
     --datadir_from=script \\
     --no_confirm \\
@@ -175,19 +176,27 @@ my $install_master = qx(
     -c log-bin=mysql-bin \\
     -c server-id=1 $additional_master_options
     );
-print $install_master if $msb->{options}{verbose};
-if ($CHILD_ERROR) {
-    print "error installing the master\n";
-    print "$install_master\n";
-    exit(1)
+    if ($msb->{options}{interactive} 
+       or ($additional_master_options =~ /\binteractive\b/)) {
+    my $result = system($install_master_command);
 }
+else {
+    my $install_master = qx($install_master_command);
+    print $install_master if $msb->{options}{verbose};
+}
+    if ($CHILD_ERROR) {
+        print "error installing the master\n";
+        print "$install_master\n($CHILD_ERROR $OS_ERROR)\n";
+        exit(1)
+    }
+
 # sleep 1 ;
 
 for my $slave (1 .. $msb->{options}{how_many_slaves}) {
    my $slave_port = $replication_port+ $slave;
    my $slave_id = 100 + $slave;
    print "installing slave $slave\n";
-   my $install_slave = qx(
+   my $install_slave_command = qq(
     make_sandbox $msb->{options}{server_version} \\
     --datadir_from=script \\
     --upper_directory=$replication_directory \\
@@ -201,10 +210,18 @@ for my $slave (1 .. $msb->{options}{how_many_slaves}) {
     -c report-port=$replication_port \\
     -c log-bin=mysql-bin $additional_slave_options
     );
-    print $install_slave if $msb->{options}{verbose};
+    my $install_slave ='';
+    if ($msb->{options}{interactive} 
+       or ($additional_slave_options =~ /\binteractive\b/)) {
+        system($install_slave_command);
+    }
+    else {
+        $install_slave = qx($install_slave_command);
+        print $install_slave if $msb->{options}{verbose};
+    }
     if ($CHILD_ERROR) {
         print "error installing slave $slave\n";
-        print "$install_slave\n";
+        print "$install_slave\n ($CHILD_ERROR)\n";
         exit(1)
     }
     # sleep 1;
@@ -302,7 +319,7 @@ $msb->write_to('initialize_slaves', '>', "");
 for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
     print "starting slave $slave\n";
     system "./node$slave/start"
-        and die "can't execute ./node$slave/start ($CHILD_ERROR)";
+        and die "can't execute ./node$slave/start ($CHILD_ERROR $OS_ERROR)";
 
     $msb->write_to('initialize_slaves', '>>', qq(echo "initializing slave $slave"));
 

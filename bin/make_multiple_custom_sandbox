@@ -113,7 +113,8 @@ for my $ver_counter (0 .. $#versions) {
     my $node = $ver_counter + 1;
     my $node_port = $replication_port+ $node;
     print "installing node $node\n";
-    my $install_node = qx(
+    my $install_node = '';
+    my $install_node_command = qq(
      make_sandbox $versions[$ver_counter] \\
      --datadir_from=script \\
      --upper_directory=$group_directory \\
@@ -125,10 +126,17 @@ for my $ver_counter (0 .. $#versions) {
      -c server-id=10$node \\
      -c log-bin=mysql-bin $additional_node_options
      );
-     print $install_node if $msb->{options}{verbose};
-     if ($CHILD_ERROR) {
+    if ($msb->{options}{interactive} 
+        or ($additional_node_options =~ /\binteractive\b/)) {
+        system($install_node_command);
+    }
+    else {
+        $install_node = qx($install_node_command);
+    }
+    print $install_node if $msb->{options}{verbose};
+    if ($CHILD_ERROR) {
          print "error installing node $node\n";
-         print "$install_node\n";
+         print "$install_node\n($CHILD_ERROR $OS_ERROR)\n";
          exit(1)
      }
      # sleep 1;
