@@ -152,7 +152,8 @@ for my $node (1 .. $msb->{options}{how_many_nodes}) {
     $additional_node_options .=  q{ };
     my $node_id = 100 + $node;
     print "installing node $node\n";
-    my $install_node = qx(
+    my $install_node = '';
+    my $install_node_command = qq(
     make_sandbox $msb->{options}{server_version} \\
     --datadir_from=script \\
     --upper_directory=$group_directory \\
@@ -164,10 +165,17 @@ for my $node (1 .. $msb->{options}{how_many_nodes}) {
     -c server-id=$node_id \\
     -c log-bin=mysql-bin $additional_node_options
     );
+    if ($msb->{options}{interactive} 
+        or ($additional_node_options =~ /\binteractive\b/)) {
+        system($install_node_command);
+    }
+    else {
+        $install_node = qx($install_node_command);
+    }
     print $install_node if $msb->{options}{verbose};
     if ($CHILD_ERROR) {
         print "error installing node $node\n";
-        print "$install_node\n";
+        print "$install_node\n($CHILD_ERROR $OS_ERROR)\n";
         exit(1)
     }
     #sleep 1;

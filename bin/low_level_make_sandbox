@@ -576,14 +576,15 @@ sub select_interactively {
 
     my @options_list = 
                 sort { $msb->{parse_options}{$a}{'so'} <=> $msb->{parse_options}{$b}{'so'} } 
-                grep { $_ ne 'interactive'}
+                grep { $_ !~ /(?:interactive|help|no_check_port|no_load_grants)/}
                 grep { $msb->{parse_options}{$_}{'parse'}}  keys %{$msb->{parse_options}}  ;
 
     my $opnum =0;
     OPTION_CHOICE:
     while( $opnum < @options_list ) {
         my $op = $options_list[$opnum];
-        my $default = $msb->{options}{$op} ;
+        my $original_default = $msb->{options}{$op} ;
+        my $default = $original_default;
         $default = $msb->{parse_options}{$op}{'value'} unless defined $default;
         my $is_array = 0;
         if (ref($default) && ref($default) eq 'ARRAY') {
@@ -620,7 +621,7 @@ sub select_interactively {
             last;
         }
         elsif ($chosen =~ m/ ^ \s* $ /x) {
-            $msb->{options}{$op} = $default;
+            $msb->{options}{$op} = $original_default;
         }
         elsif ($number_wanted) {
             if ($chosen =~ m/ ^ \d+ $ /x ) {
