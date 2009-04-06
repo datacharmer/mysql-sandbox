@@ -69,8 +69,10 @@ sub ok_shell {
 
 sub ok_shell_result {
     my ($command, $search_items, $description) = @_;
+    $? = 0;
+    $! = undef;
     my $result = qx($command); 
-    ok($? >=0 , $description);
+    ok($? >= 0 , $description);
     for my $item (@{ $search_items}) {
         ok( $result =~ /$item/ , "$description - $item" );
     }

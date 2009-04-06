@@ -36,6 +36,13 @@ my $msb = MySQL::Sandbox->new();
 my $where_to_install = shift
     or die "syntax $PROGRAM_NAME {VERSION|tarball_full_name} [options]\n";
 
+my %options;
+if ( $ARGV[0] && ($ARGV[0] eq '--export_binaries')) {
+    shift;
+    $options{export_binaries}++;
+}
+
+
 my $default_binary_base = $ENV{SANDBOX_BINARY} || ($ENV{HOME} . '/opt/mysql');
 unless ( -d  $default_binary_base ) {
     $default_binary_base = '/opt/mysql';
@@ -111,12 +118,24 @@ elsif  ( $where_to_install =~ m{^(/.+)/(mysql\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.
         if ($result) {
             die "error unpacking $tar_file ($!)\n";
         }
-        rename $new_dir, $version
-            or die "can't rename $new_dir to $version";
+        my $new_name = $version;
+        if ($options{export_binaries} && ( -d $default_binary_base)) {
+            $new_name = "$default_binary_base/$version";
+            if ( -d $new_name) {
+                warn "can't export to $binary_base. Directory $version already exists!\n";
+                $new_name = $version;
+            }
+            else {
+                $full_new_dir = $new_name;
+                $binary_base = $default_binary_base;
+            }
+        }
+        rename $new_dir, $new_name
+            or die "can't rename $new_dir to $new_name";
 
-        system "chmod -R ogu+r $version "; # Not sandbox related.
-                                           # It is needed if the user wants 
-                                           # to run the test suite
+        system "chmod -R ogu+r $new_name "; # Not sandbox related.
+                                            # It is needed if the user wants 
+                                            # to run the test suite
 
         $where_to_install = $full_new_dir;
         chdir $original_dir;
@@ -149,7 +168,10 @@ sub get_help {
     }
     print <<SYNTAX;
 usage: ./make_sandbox version [options] {VERSION|tarball_full_name}.
-You can pass any option accepted by "low_level_make_sandbox"
+
+  --export_binaries    exports the new binary to $binary_base
+
+Additionally, you can pass any option accepted by "low_level_make_sandbox"
 SYNTAX
 
     print "You should provide either a version from '$binary_base' \n",
