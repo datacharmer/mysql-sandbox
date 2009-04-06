@@ -1,3 +1,12 @@
+2.0.98f 06-Apr-2009
+    - added 'delete' action to sbtool
+	- introduced --export_binaries to make_sandbox
+	- added 03_test_sandbox.t, which uses test_sandbox within
+	  the test suite
+	- fixed bug in sbtool. Moving sandbox failed becaus of wrong regular
+      expression
+	- added a test suite for sbtool to test_sandbox 
+	  test_sandbox --tests=sbtool
 2.0.98e 02-Apr-2009
 	- fixed error in low_level_make_sandbox --interactive. Array values
 	  were not preserved correctly wit a default

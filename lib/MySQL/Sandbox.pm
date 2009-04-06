@@ -19,7 +19,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION='2.0.98e';
+our $VERSION='2.0.98f';
 our $DEBUG;
 
 BEGIN {
@@ -36,7 +36,7 @@ BEGIN {
 my @supported_versions = qw( 3.23 4.0 4.1 5.0 5.1 5.2 6.0);
 
 our $sandbox_options_file    = "my.sandbox.cnf";
-our $sandbox_current_options = "current_options.conf";
+# our $sandbox_current_options = "current_options.conf";
 
 our %default_base_port = (
     replication => 11000,
@@ -215,14 +215,14 @@ sub get_sandbox_params {
         # warn "options file $dir not found\n";
         return;
     }
-    if ( -f "$dir/$sandbox_current_options" ) {
-        $params{conf} =
-          get_option_file_contents("$dir/$sandbox_current_options");
-    }
-    else {
-        # warn "current conf file not found\n";
-        return;
-    }
+#    if ( -f "$dir/$sandbox_current_options" ) {
+#        $params{conf} =
+#          get_option_file_contents("$dir/$sandbox_current_options");
+#    }
+#    else {
+#        # warn "current conf file not found\n";
+#        return;
+#    }
     return \%params;
 }
 
@@ -292,7 +292,8 @@ sub is_a_sandbox {
     $dir =~ s{/$}{};
     my %sandbox_files = map {s{.*/}{}; $_, 1 } glob("$dir/*");
     my @required = (qw(data start stop send_kill clear use restart), 
-         $sandbox_current_options, $sandbox_options_file );
+         # $sandbox_current_options, 
+         $sandbox_options_file );
     for my $req (@required) {
         unless (exists $sandbox_files{$req}) {
             return;
@@ -603,16 +604,104 @@ figure, to avoid clashing with single installations.
 All programs in the Sandbox suite recognize and uses the following variables:
 
  * HOME the user's home directory
+ * SANDBOX_HOME the place where the sandboxes are going to be built
  * USER the operating system user
  * PATH the execution path
- * DEBUG if set, the programs will print debugging messages
+ * SBDEBUG if set, the programs will print debugging messages
 
 In addition to the above, make_sandbox will use
- * BINARY_BASE the directory containing the installation server binaries
+ * SANDBOX_BINARY or BINARY_BASE 
+   the directory containing the installation server binaries
 
 make_replication_sandbox will recognize the following
    * MASTER_OPTIONS additional options to be passed to the master
    * SLAVE_OPTIONS additional options to be passed to each slave
+   * NODE_OPTIONS additional options to be passed to each node
+
+The latter is also recognized by 
+make_multiple_custom_sandbox and make_multiple_sandbox 
+
+PRESERVE_TESTS
+TEST_SANDBOX_HOME
+PWD
+
+=head1 SBTool the Sandbox helper
+
+    usage: sbtool [options] 
+	-o     --operation       (s) <> - what task to perform
+		 'info'     returns configuration options from a Sandbox
+		 'copy'     copies data from one Sandbox to another
+		 'ports'    lists ports used by the Sandbox
+		 'tree'     creates a replication tree
+		 'move'     moves a Sandbox to a different location
+		 'range'    finds N consecutive ports not yet used by the Sandbox
+		 'port'     Changes a Sandbox port
+	-s     --source_dir      (s) <> - source directory for move,copy
+	-d     --dest_dir        (s) <> - destination directory for move,copy
+	-n     --new_port        (s) <> - new port while moving a sandbox
+	-u     --only_used       (-) <> - for "ports" operation, shows only the used ones
+	-i     --min_range       (i) <5000> - minimum port when searching for available ranges
+	-x     --max_range       (i) <32000> - maximum port when searching for available ranges
+	-z     --range_size      (i) <10> - size of range when searching for available port range
+	-f     --format          (s) <text> - format for "ports" and "info"
+		 'perl'     fully structured information in Perl code
+		 'text'     plain text dump of requested information
+	-p     --search_path     (s) </Users/gmax/sandboxes> - search path for ports and info
+	-a     --all_info        (-) <> - print more info for "ports" operation
+	       --tree_nodes      (s) <> - description of the tree (x-x x x-x x|x x x|x x)
+	       --mid_nodes       (s) <> - description of the middle nodes (x x x)
+	       --leaf_nodes      (s) <> - description of the leaf nodes (x x|x x x|x x)
+	       --tree_dir        (s) <> - which directory contains the tree nodes
+	-v     --verbose         (-) <> - prints more info on some operations
+	-h     --help            (-) <1> - this screen
+
+
+=head1 TESTING
+
+=head2 test_sandbox
+
+The MySQL Sandbox comes with a test suite, called test_sandbox, which by
+default tests single,replicated, multiple, and custom installations of MySQL
+version 5.0.77 and 5.1.32.You can override the version being tested by means
+of command line options:
+
+ test_sandbox --versions=5.0.67,5.1.30
+
+or you can specify a tarball
+
+ test_sandbox --versions=/path/to/mysql-tarball-5.1.31.tar.gz
+ test_sandbox --tarball=/path/to/mysql-tarball-5.1.31.tar.gz
+
+You can also define which tests you want to run:
+
+  test_sandbox --tests=single,replication
+
+=head2 Test isolation
+
+The tests are not performed in the common c($SANDBOX_HOME) directory, but 
+on a separate directory, which by default is c($HOME/test_sb). To avoid 
+interferences, before the tests start, the application runs the 
+c($SANDBOX_HOME/stop_all) command.
+The test directory is considered to exist purely for testing purposes, and
+it is erased several times while running the suite. Using this directory 
+to store valuable data is higly risky.
+
+
+=head2 Tests during installation
+
+When you build the package and run 
+
+  make test
+
+test_sandbox is called, and the tests are performed on a temporary directory
+under c($INSTALLATION_DIRECTORY/t/test_sb). By default, version 5.0.77 is used.
+If this version is not found in c($HOME/opt/mysql/), the test is skipped.
+You can override this option by setting the TEST_VERSION environment variable.
+
+  TEST_VERSION=5.1.30 make test
+  TEST_VERSION=$HOME/opt/mysql/5.1.30 make test
+  TEST_VERSION=/path/to/myswl-tarball-5.1.30.tar.gz make test
+
 
 =head1 REQUIREMENTS
 

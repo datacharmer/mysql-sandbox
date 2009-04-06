@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION = '2.0.98e';
+our $VERSION = '2.0.98f';
 
 our @MANIFEST = (
 'clear.sh',
@@ -530,6 +530,7 @@ our %sbtool_supported_operations = (
     copy  => 'copies data from one Sandbox to another',
     move  => 'moves a Sandbox to a different location',
     port  => 'Changes a Sandbox port',
+    delete => 'removes a sandbox completely',
 );
 
 our %sbtool_supported_formats = (
@@ -550,7 +551,7 @@ my %parse_options_sbtool = (
         so    => 20,
         parse => 's|source_dir=s',
         value => undef,
-        help  => 'source directory for move,copy',
+        help  => 'source directory for move, copy, delete',
     },
     dest_dir => {
         so    => 30,
@@ -664,7 +665,7 @@ then
 else
     CURDIR=`pwd`
     cd $BASEDIR
-    if [ "$DEBUG" = "" ]
+    if [ "$SBDEBUG" = "" ]
     then
         $MYSQLD_SAFE --defaults-file=$SBDIR/my.sandbox.cnf $@ > /dev/null 2>&1 &
     else
@@ -938,7 +939,7 @@ PERL_SCRIPT3='s/\b$old\b/$new/'
 PERL_SCRIPT="$PERL_SCRIPT1 $PERL_SCRIPT2 $PERL_SCRIPT3"
 
 SCRIPTS1="start stop send_kill clear restart my.sandbox.cnf "
-SCRIPTS2="load_grants my use current_options.conf $0"
+SCRIPTS2="load_grants my use $0"
 SCRIPTS="$SCRIPTS1 $SCRIPTS2"
 for SCRIPT in $SCRIPTS
 do
@@ -979,11 +980,11 @@ then
 fi
 
 PERL_SCRIPT1='BEGIN{$old=shift;$new=shift};'
-PERL_SCRIPT2='s/\b$old\b/$new/g' 
+PERL_SCRIPT2='s/$old/$new/g' 
 PERL_SCRIPT="$PERL_SCRIPT1 $PERL_SCRIPT2"
 
 SCRIPTS1="start stop send_kill clear restart my.sandbox.cnf "
-SCRIPTS2="load_grants my use current_options.conf $0"
+SCRIPTS2="load_grants my use $0"
 SCRIPTS="$SCRIPTS1 $SCRIPTS2"
 
 for SCRIPT in $SCRIPTS

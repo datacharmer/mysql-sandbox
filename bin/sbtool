@@ -40,7 +40,7 @@ use MySQL::Sandbox::Scripts;
 my $DEBUG = $MySQL::Sandbox::DEBUG;
 
 my $sandbox_options_file    = $MySQL::Sandbox::sandbox_options_file;
-my $sandbox_current_options = $MySQL::Sandbox::sandbox_current_options;
+# my $sandbox_current_options = $MySQL::Sandbox::sandbox_current_options;
 
 my %supported_operations = %MySQL::Sandbox::Scripts::sbtool_supported_operations;
 #    ports => 'lists ports used by the Sandbox',
@@ -50,6 +50,7 @@ my %supported_operations = %MySQL::Sandbox::Scripts::sbtool_supported_operations
 #    copy  => 'copies data from one Sandbox to another',
 #    move  => 'moves a Sandbox to a different location',
 #    port  => 'Changes a Sandbox port',
+#    delete => 'removes a sandbox completely',
 #);
 
 my %supported_formats = %MySQL::Sandbox::Scripts::sbtool_supported_formats;
@@ -114,6 +115,14 @@ elsif ( $msb->{options}{operation} eq 'port' ) {
 }
 elsif ( $msb->{options}{operation} eq 'copy' ) {
     copy_single_sandbox( $msb->{options}{source_dir}, $msb->{options}{dest_dir} );
+}
+elsif ( $msb->{options}{operation} eq 'delete' ) {
+    for my $opt (qw(dest_dir new_port only_used all_info )) {
+        if ( $msb->{options}{$opt} ) {
+            die "option <$opt> is incompatible with the requested operation (delete)\n";
+        }
+    }
+    delete_sandbox( $msb->{options}{source_dir});
 }
 else {
     croak "unsupported operation ($msb->{options}{operation})\n";
@@ -592,27 +601,78 @@ sub copy_single_sandbox {
     }
     my ($srunning, $ssboptions) = is_sandbox_running($source_dir);
     my ($drunning, $dsboptions) = is_sandbox_running($dest_dir);
-    unless ($ssboptions->{conf}{install_version}) {
-        croak "unable to determine version for <$source_dir>\n";
-    } 
-    unless ($dsboptions->{conf}{install_version}) {
-        croak "unable to determine version for <$dest_dir>\n";
-    } 
-    if ($ssboptions->{conf}{install_version} ne $dsboptions->{conf}{install_version}) {
+    my ($source_version, $dest_version);
+    unless ($srunning) {
+        system "$source_dir/start";
+        unless ( -e $ssboptions->{opt}{'pid_file'} ) {
+            croak "unable to start source sandbox\n";
+        }
+    }
+    $source_version = `$source_dir/use -B -N -e "select version()"`;
+    system "$source_dir/stop";
+    if ( -e $ssboptions->{opt}{'pid_file'} ) {
+        system "$source_dir/send_kill";
+    }
+    unless ($drunning) {
+        system "$dest_dir/start";
+        unless ( -e $ssboptions->{opt}{'pid_file'} ) {
+            croak "unable to start destination sandbox\n";
+        }
+    }
+    $dest_version = `$dest_dir/use -B -N -e "select version()"`;
+    system "$dest_dir/stop";
+    if ( -e $dsboptions->{opt}{'pid_file'} ) {
+        system "$dest_dir/send_kill";
+    }
+    if (substr($source_version, 0,3) ne substr($dest_version,0,3)) {
         croak "can't copy from $source_dir to $dest_dir. Not the same major version\n";
     }
-    if ($srunning) {
-        system "$source_dir/stop";
-        if ( -e $ssboptions->{opt}{'pid_file'} ) {
-            system "$source_dir/send_kill";
-        }
-    }
-    if ($drunning) {
-        system "$dest_dir/stop";
-        if ( -e $dsboptions->{opt}{'pid_file'} ) {
-            system "$dest_dir/send_kill";
-        }
-    }
     clone_sandbox_data( "$source_dir/data", "$dest_dir/data");
+}
+
+sub delete_sandbox {
+    my ($source) = @_;
+    unless ($source) {
+        croak "Need a source directory (--source_dir)\n";
+    }
+    $source =~ s/^\s//;
+    $source =~ s/\s*$//;
+    $source =~ s/^\s*~/$ENV{HOME}/;
+    unless ($source =~ m{^/} ) {
+        croak "Source directory must be an absolute path.\n"; 
+    }
+    unless ( -d $source )  {
+        croak "directory $source does not exist\n";
+    }
+    my $cmd1 = undef;
+    my $cmd2 = undef;
+    if ( (-x "$source/clear") && (-x "$source/stop" )) {
+        $cmd1 = "$source/stop";
+        $cmd2 = "$source/clear";
+    }
+    elsif ( (-x "$source/clear_all") && (-x "$source/stop_all")) {
+        $cmd1 = "$source/stop_all";
+        $cmd2 = "$source/clear_all";
+    }
+    else {
+        croak "directory $source does not seem to be a sandbox\n";
+    }
+    $OS_ERROR       = undef;
+    $CHILD_ERROR    = 0;
+    print "$cmd1\n" if $msb->{options}{verbose}; 
+    system($cmd1);
+    if ($CHILD_ERROR or $OS_ERROR) {
+        die "error stopping sandbox at $source\n ($CHILD_ERROR - $OS_ERROR)";        
+    }
+    print "$cmd2\n" if $msb->{options}{verbose}; 
+    system($cmd2);
+    if ($CHILD_ERROR or $OS_ERROR) {
+        die "error clearing sandbox at $source\n ($CHILD_ERROR - $OS_ERROR)";        
+    }
+    system("rm -rf $source");
+    if ($CHILD_ERROR or $OS_ERROR) {
+        die "error deleting sandbox at $source\n ($CHILD_ERROR - $OS_ERROR)";        
+    }
+    print "sandbox at <$source> has been removed\n";
 }
 

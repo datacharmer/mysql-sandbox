@@ -4,13 +4,15 @@ use warnings;
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
 use MySQL::Sandbox;
+use English qw( -no_match_vars );
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
 
 for my $prog (qw( make_sandbox 
                 make_replication_sandbox 
                 make_multiple_sandbox 
-                make_multiple_custom_sandbox ) ) {
+                make_multiple_custom_sandbox
+                sbtool ) ) {
     unless ( exists_in_path ($prog) ) {
         die "script <$prog> not found\n";
     } 
@@ -20,7 +22,7 @@ for my $prog (qw( make_sandbox
 # defaults
 #
 # my @versions = ( '5.0.51', '5.0.64', '5.1.23', '5.1.24', '5.1.25', '5.1.26', '6.0.6' );
-my @versions = ( '5.0.67', '5.1.30');
+my @versions = ( '5.0.77', '5.1.32');
 my $verbose = $DEBUG || $ENV{'VERBOSE'} || 0;
 
 my %tests = (
@@ -30,18 +32,20 @@ my %tests = (
     multiple    => 1,
     custom      => 1,
     tuning      => 1,
+    sbtool      => 0,
     smoke       => 0,
 );
 
-my %custom_tests = ();
+# my %custom_tests = ();
 
-my ($user_tests, $user_versions, $get_help);
+my ($user_tests, $user_versions, $get_help, $preserve_tests);
 
 
 GetOptions( 
    "tarball|versions=s" => \$user_versions,
    "tests=s"    => \$user_tests, 
    "verbose"    => \$verbose,
+   "preserve_tests" => \$preserve_tests,
    "help|h"     => \$get_help,
 ) or help();
 
@@ -119,12 +123,16 @@ if ( -x $sh_stop_all ) {
 # 
 # setting the current sandbox directory for this test
 #
-$sandbox_home = "$ENV{'HOME'}/test_sb";
+$sandbox_home = $ENV{TEST_SANDBOX_HOME} || "$ENV{'HOME'}/test_sb";
 $ENV{'SANDBOX_HOME'} = $sandbox_home;
 $sh_stop_all = "$sandbox_home/stop_all";
 my $sh_clear_all = "$sandbox_home/clear_all";
 my $sh_start_all = "$sandbox_home/start_all";
 my $sh_use_all = "$sandbox_home/use_all";
+
+if ($tests{smoke} and $tests{sbtool}) {
+    die "test <smoke> and test <sbtool> should not run together\n";
+}
 
 # 
 # cleaning up the test directory if exists
@@ -174,7 +182,7 @@ if ($tests{'custom'}) {
 
 my $summaries  = 0;
 for my $test (keys %tests) {
-    if ($tests{$test} && ($test ne 'tuning') && ($test ne 'smoke' )) {
+    if ($tests{$test} && ($test !~ /^(?:tuning|smoke|sbtool)$/)) {
         $summaries = 1;
         last;
     }
@@ -198,6 +206,16 @@ if ($tests{smoke}) {
     }
 }
 
+if ($tests{sbtool}) {
+    for my $ver (@versions) {
+        if ( -d $sandbox_home ) {
+            system "$sandbox_home/stop_all";
+            system "rm -rf $sandbox_home";
+        }
+        run_sbtool_test ($ver);
+    }
+}
+
 
 printf "*** Executed %d tests. Passed %d (%5.2f%%). Failed %d (%5.2f%%)\n",
         $test_results{run},
@@ -206,6 +224,10 @@ printf "*** Executed %d tests. Passed %d (%5.2f%%). Failed %d (%5.2f%%)\n",
         $test_results{failed},
         $test_results{failed} / $test_results{run} * 100
         ;
+
+if ($test_results{failed}) {
+    exit 1;
+}
 
 # 
 # ROUTINES
@@ -290,6 +312,9 @@ usage: $0 [options]
     --tests=testname[,testname,testname]
       executes specific tests.
       currently: (@{[join ",", grep {$tests{$_}} keys %tests]})
+
+    --preserve_tests
+      does not remove tests at the end of the suite. 
 
     --verbose
       shows the commands executed during tests
@@ -520,7 +545,7 @@ sub run_summary_tests {
     ok( $expected_processes == ($new_mysqld_safe_procs - $how_many_mysqld_safe), 
             "expected processes ($expected_processes)" );
 
-    unless ($ENV{PRESERVE_TESTS}) { 
+    unless ($ENV{PRESERVE_TESTS} or $preserve_tests) { 
         print "** cleaning up - please wait\n";
         my $clear_all = get_exec_result("$sandbox_home/clear_all", $verbose);
 
@@ -837,6 +862,154 @@ sub run_smoke_test {
     print "\n[VISUAL IDENTIFICATION]\n";
     print "\tcheck version: <$visual_version>\n";
     print "\tcheck comment: <$visual_comment>\n\n";
+}
+
+
+sub run_sbtool_test {
+    my ($ver) = @_;
+
+    # 
+    # preparing sandboxes
+    #
+    my $first_sandbox = get_exec_result(
+            "make_sandbox $ver --no_confirm --sandbox_port=5100 --sandbox_directory=first_sb", 
+            $verbose);
+    ok( $first_sandbox =~ /sandbox server started/,
+            "first SB (5100) started" );
+    my $second_sandbox = get_exec_result(
+            "make_sandbox $ver --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb", 
+            $verbose);
+    ok( $second_sandbox =~ /sandbox server started/,
+            "second SB (5200) started" );
+
+    #
+    # sbtool -o move
+    #
+    my $move_sandbox = get_exec_result("sbtool -o move -s $sandbox_home/first_sb -d $sandbox_home/xxx");
+    ok( $move_sandbox =~ /The old scripts have been saved/, 'first SB moved to xxx');
+
+    $first_sandbox = get_exec_result("$sandbox_home/xxx/start", $verbose);
+    ok( $first_sandbox =~ /sandbox server started/, "moved sandbox started");
+
+    $move_sandbox = get_exec_result("sbtool -o move -d $sandbox_home/first_sb -s $sandbox_home/xxx");
+    ok( $move_sandbox =~ /The old scripts have been saved/, 'xxx moved back to first SB');
+
+    $first_sandbox = get_exec_result("$sandbox_home/first_sb/start", $verbose);
+    ok( $first_sandbox =~ /sandbox server started/, "moved back sandbox started");
+    
+    #
+    # sbtool -o copy
+    #
+    my $sql_result = get_sql_result(
+            "$sandbox_home/first_sb",
+           q{drop table if exists test.t1; create table test.t1 (id int); show tables from test},
+          $verbose); 
+    ok( ($sql_result =~ /t1/) , 
+            "first SB - table created" );
+
+    my $copy_sandbox = get_exec_result("sbtool -o copy -s $sandbox_home/first_sb -d $sandbox_home/second_sb");
+    ok( $CHILD_ERROR == 0 , 'first SB copied to second SB');
+
+    $second_sandbox = get_exec_result("$sandbox_home/second_sb/start", $verbose);
+    ok( $second_sandbox =~ /sandbox server started/, "copied sandbox started");
+
+    $sql_result = get_sql_result(
+            "$sandbox_home/second_sb",
+           q{show tables from test},
+          $verbose); 
+    ok( ($sql_result =~ /t1/) , 
+            "second SB - table copied" );
+
+    # 
+    # sbtool -o ports
+    #
+    my $get_ports = get_exec_result("sbtool -o ports");
+    ok ($get_ports =~ /5100\s+0/ && $get_ports =~ /5200\s+1/, 'get ports');
+    $get_ports = get_exec_result("sbtool --only_used -o ports");
+    ok ($get_ports !~ /5100\s+0/ && $get_ports =~ /5200\s+1/, 'get used ports');
+
+    $get_ports = get_exec_result("sbtool --format=perl -o ports");
+    # print $get_ports, "\n";
+    my $ports = undef;
+    eval "$get_ports";
+    ok ( $ports && !$ports->{5100} && $ports->{5200}, 'get ports (perl format)');
+
+    # 
+    # sbtool -o info
+    #
+    my $get_info = get_exec_result("sbtool -o info");
+    my $all_info = undef;
+    eval "$get_info";
+    ok($all_info && $all_info->{5100}{opt}{port} == 5100, 'get info 1');
+    ok($all_info && $all_info->{5200}{opt}{port} == 5200, 'get info 2');
+
+    # 
+    # sbtool -o port 
+    # (change port)
+    #
+    my $change_ports = get_exec_result("sbtool -o port --new_port=9000 -s $sandbox_home/first_sb");
+    
+    ok( $change_ports =~ /The old scripts have been saved/, 'port changed to first SB');
+
+    $change_ports = get_exec_result("$sandbox_home/first_sb/start");
+    ok( $change_ports =~ /sandbox server started/, 'first SB restarted after port changed');
+
+    $sql_result = get_sql_result( "$sandbox_home/first_sb", q{show variables like 'port'});
+    ok($sql_result =~ /\b9000\b/, 'wanted port assigned to first SB');
+
+    # 
+    # sbtool -o range
+    #
+    my $ports_range = get_exec_result("sbtool -o range");
+    ok ($ports_range =~ /5010/, 'ports range');
+    $ports_range = get_exec_result("sbtool -o range -i 5200");
+    ok ($ports_range =~ /5201/, 'ports range 2');
+    system("$sandbox_home/stop_all > /dev/null 2>&1");
+    system("$sandbox_home/second_sb/start");
+
+    # 
+    # sbtool -o delete
+    #
+    my $delete_sandbox = get_exec_result("sbtool -o delete -s $sandbox_home/first_sb");
+    ok($delete_sandbox =~ /has been removed/, 'delete stopped sandbox');
+    $delete_sandbox = get_exec_result("sbtool -o delete -s $sandbox_home/second_sb");
+    ok($delete_sandbox =~ /has been removed/, 'delete active sandbox');
+
+    # 
+    # sbtool -o tree
+    #
+    my $group_sandbox = get_exec_result(
+            "make_multiple_sandbox --group_directory=tree_sb --how_many_nodes=9 $ver", 
+            $verbose);
+
+    ok( $group_sandbox =~ /installing node 9/,
+            "group SB (node 9) installed" );
+
+    ok( $group_sandbox =~ /group directory installed/,
+            "group SB installed" );
+
+    my $tree_sandbox = get_exec_result("sbtool -o tree --tree_dir=$sandbox_home/tree_sb"
+            . " --tree_nodes='1-2 3 4-5 6|7|8 9'" );
+    ok($tree_sandbox =~ 'node 1 is master', 'tree SB master');
+    ok($tree_sandbox =~ 'node 2 is slave of node 1', 'tree SB - level 1');
+    ok($tree_sandbox =~ 'node 7 is slave of node 3', 'tree SB - level 2');
+
+    $sql_result = get_sql_result(
+            "$sandbox_home/tree_sb/node1",
+           q{drop table if exists test.t1; create table test.t1 (id int); show tables from test},
+          $verbose); 
+    ok( ($sql_result =~ /t1/) , 
+            "tree SB - table created" );
+
+    $sql_result = get_sql_result(
+            "$sandbox_home/tree_sb/node8",
+           q{show tables from test},
+          $verbose); 
+    ok( ($sql_result =~ /t1/) , 
+            "tree SB - table replicated to level 3" );
+
+    system("$sandbox_home/send_kill_all");
+    system("$sandbox_home/clear_all");
 }
 
 sub get_pid {
