@@ -531,6 +531,8 @@ our %sbtool_supported_operations = (
     move  => 'moves a Sandbox to a different location',
     port  => 'Changes a Sandbox port',
     delete => 'removes a sandbox completely',
+    preserve => 'makes a sandbox permanent',
+    unpreserve => 'makes a sandbox NOT permanent',
 );
 
 our %sbtool_supported_formats = (
@@ -607,6 +609,12 @@ my %parse_options_sbtool = (
         parse => 'a|all_info',
         value => 0,
         help  => 'print more info for "ports" operation'
+    },
+    master_node => {
+        so    => 115,
+        parse => 'master_node=i',
+        value => '1',
+        help  => 'which node should be master (default: 1)',
     },
     tree_nodes => {
         so    => 120,

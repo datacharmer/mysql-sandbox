@@ -20,7 +20,7 @@ if (   ( -d $test_version)
     or (( -f $test_version ) && ($test_version =~ /\.tar\.gz$/) )
     or ( -d "$ENV{HOME}/opt/mysql/$test_version")) {
     warn "Testing <$test_version>. Please wait. This will take a few minutes\n";
-    print "1..39\n";
+    print "1..19\n";
 }
 else {
     print "1..1\n";
@@ -30,5 +30,5 @@ else {
 }
 
 $ENV{TAP_MODE} =1;
-system ("test_sandbox --versions=$test_version ");
+system("test_sandbox --versions=$test_version --tests=smoke");
 

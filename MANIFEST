@@ -17,3 +17,5 @@ META.yml                                 Module meta-data (added by MakeMaker)
 t/01_modules.t
 t/02_test_binaries.t
 t/03_test_sandbox.t
+t/04_test_sbtool.t
+t/05_test_smoke.t
