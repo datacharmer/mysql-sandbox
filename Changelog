@@ -1,3 +1,9 @@
+2.0.98g 07-Apr-2009
+	- added --master_node option to sbtool
+	- added 'preserve' and 'unpreserve' options to sbtool
+	- made test_sandbox TAP compatible
+	- updated the test suite
+	- written the documentation on sbtool to MySQL::Sandbox POD
 2.0.98f 06-Apr-2009
     - added 'delete' action to sbtool
 	- introduced --export_binaries to make_sandbox

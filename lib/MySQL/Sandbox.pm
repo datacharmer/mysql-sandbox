@@ -446,7 +446,7 @@ That's all it takes to get started. The Sandbox will ask you for confirmation, a
 
 By default, the sandbox creates a new instance for you under
 
-   $HOME/sandboxes/msb_X_X_XX
+   $SANDBOX_HOME/msb_X_X_XX
 
 
 =head2 MAKING A REPLICATION SANDBOX
@@ -457,7 +457,7 @@ It's as easy as making a single sandbox
 
 This will create a new instance of one master  and two slaves
 
-   under $HOME/sandboxes/rsandbox_X_X_XX
+   under $SANDBOX_HOME/rsandbox_X_X_XX
 
 =head2 CIRCULAR REPLICATION
 
@@ -466,7 +466,7 @@ It requires an appropriate option when you start a replication sandbox
    $ make_replication_sandbox --circular=4 /path/to/mysql-X.X.XX-osinfo.tar.gz
 
 This will create a replication system with three servers connected by circular replication.
-A handy shortcut is C(--master_master), which will create a circular replication system of exactly two members.
+A handy shortcut is C<--master_master>, which will create a circular replication system of exactly two members.
 
 =head2 MULTIPLE SANDBOXES
 
@@ -522,14 +522,14 @@ directory that servers two purposes:
 further isolates the sandboxes, and keep them under easy control if you are in the habit of creating many of them;
 
 =item *
-provides a set of handy super-commands, which can be passed to all the sandboxes. Running "$HOME/sandboxes/stop_all" you will stop all servers of all sandboxes, single or groups, below that directory.
+provides a set of handy super-commands, which can be passed to all the sandboxes. Running "$SANDBOX_HOME/stop_all" you will stop all servers of all sandboxes, single or groups, below that directory.
 
 =back
 
 =head1 USING A SANDBOX
 
 Change directory to the newly created one 
-(default: $HOME/sandboxes/msb_VERSION for single sandboxes)
+(default: $SANDBOX_HOME/msb_VERSION for single sandboxes)
 
 The sandbox directory of the instance you just created contains
 some handy scripts to manage your server easily and in isolation.
@@ -604,7 +604,8 @@ figure, to avoid clashing with single installations.
 All programs in the Sandbox suite recognize and uses the following variables:
 
  * HOME the user's home directory
- * SANDBOX_HOME the place where the sandboxes are going to be built
+ * SANDBOX_HOME the place where the sandboxes are going to be built. 
+   ($HOME/sandboxes by default)
  * USER the operating system user
  * PATH the execution path
  * SBDEBUG if set, the programs will print debugging messages
@@ -621,39 +622,158 @@ make_replication_sandbox will recognize the following
 The latter is also recognized by 
 make_multiple_custom_sandbox and make_multiple_sandbox 
 
-PRESERVE_TESTS
-TEST_SANDBOX_HOME
-PWD
+The test suite, C<test_sandbox>, recognizes two environment variables
+
+ * TEST_SANDBOX_HOME, which sets the path where the sandboxes are
+   installed, if the default $HOME/test_sb is not suitable. It is used
+   when you test the package with 'make test'
+ * PRESERVE_TESTS. If set, this variable prevents the removal of test
+   sandboxes created by test_sandbox. It is useful to inspect sandboxes
+   if a test fails.
 
 =head1 SBTool the Sandbox helper
 
+The Sandbox Helper, C<sbtool>, is a tool that allows administrative operations 
+on already existing sandboxes. It does a number of important tasks that are
+not available at creation time or that would require too much manual labor.
+
     usage: sbtool [options] 
-	-o     --operation       (s) <> - what task to perform
-		 'info'     returns configuration options from a Sandbox
-		 'copy'     copies data from one Sandbox to another
-		 'ports'    lists ports used by the Sandbox
-		 'tree'     creates a replication tree
-		 'move'     moves a Sandbox to a different location
-		 'range'    finds N consecutive ports not yet used by the Sandbox
-		 'port'     Changes a Sandbox port
-	-s     --source_dir      (s) <> - source directory for move,copy
-	-d     --dest_dir        (s) <> - destination directory for move,copy
-	-n     --new_port        (s) <> - new port while moving a sandbox
-	-u     --only_used       (-) <> - for "ports" operation, shows only the used ones
-	-i     --min_range       (i) <5000> - minimum port when searching for available ranges
-	-x     --max_range       (i) <32000> - maximum port when searching for available ranges
-	-z     --range_size      (i) <10> - size of range when searching for available port range
-	-f     --format          (s) <text> - format for "ports" and "info"
-		 'perl'     fully structured information in Perl code
-		 'text'     plain text dump of requested information
-	-p     --search_path     (s) </Users/gmax/sandboxes> - search path for ports and info
-	-a     --all_info        (-) <> - print more info for "ports" operation
-	       --tree_nodes      (s) <> - description of the tree (x-x x x-x x|x x x|x x)
-	       --mid_nodes       (s) <> - description of the middle nodes (x x x)
-	       --leaf_nodes      (s) <> - description of the leaf nodes (x x|x x x|x x)
-	       --tree_dir        (s) <> - which directory contains the tree nodes
-	-v     --verbose         (-) <> - prints more info on some operations
-	-h     --help            (-) <1> - this screen
+    -o     --operation       (s) <> - what task to perform
+         'info'     returns configuration options from a Sandbox
+         'copy'     copies data from one Sandbox to another
+         'ports'    lists ports used by the Sandbox
+         'tree'     creates a replication tree
+         'move'     moves a Sandbox to a different location
+         'range'    finds N consecutive ports not yet used by the Sandbox
+         'port'     Changes a Sandbox port
+         'delete'   removes a sandbox completely
+         'preserve' makes a sandbox permanent
+         'unpreserve' makes a sandbox NOT permanent
+    -s     --source_dir      (s) <> - source directory for move,copy
+    -d     --dest_dir        (s) <> - destination directory for move,copy
+    -n     --new_port        (s) <> - new port while moving a sandbox
+    -u     --only_used       (-) <> - for "ports" operation, shows only the used ones
+    -i     --min_range       (i) <5000> - minimum port when searching for available ranges
+    -x     --max_range       (i) <32000> - maximum port when searching for available ranges
+    -z     --range_size      (i) <10> - size of range when searching for available port range
+    -f     --format          (s) <text> - format for "ports" and "info"
+         'perl'     fully structured information in Perl code
+         'text'     plain text dump of requested information
+    -p     --search_path     (s) </Users/gmax/sandboxes> - search path for ports and info
+    -a     --all_info        (-) <> - print more info for "ports" operation
+           --tree_nodes      (s) <> - description of the tree (x-x x x-x x|x x x|x x)
+           --mid_nodes       (s) <> - description of the middle nodes (x x x)
+           --leaf_nodes      (s) <> - description of the leaf nodes (x x|x x x|x x)
+           --tree_dir        (s) <> - which directory contains the tree nodes
+    -v     --verbose         (-) <> - prints more info on some operations
+    -h     --help            (-) <1> - this screen
+
+=head2 sbtool - Informational options
+
+=head3  sbtool -o info     
+
+Returns configuration options from a Sandbox (if specified) or from all sandboxes 
+under $SANDBOX_HOME (default).
+You can use C<--search_path> to tell sbtool where to start. 
+The return information is formatted as a Perl structure.
+
+=head3 sbtool -o ports
+
+Lists ports used by the Sandbox. Use C<--search_path> to tell sbtool where to 
+start looking (default is $SANDBOX_HOME). You can also use the C<--format> option
+to influence the outcome. Currently supported are only 'text' and 'perl'.
+If you add the C<--only_used> option, sbtool will return only the ports that are 
+currently open.
+
+=head3 sbtool -o range
+
+Finds N consecutive ports not yet used by the Sandbox. 
+It uses the same options used with 'ports' and 'info'. Additionally, you can
+define the low and high boundaries by means of C<--min_range> and C<--max_range>.
+The size of range to search is 10 ports by default. It can be changed 
+with C<--range_size>.
+
+=head2 sbtool - modification options
+
+=head3 sbtool -o port
+
+Changes port to an existing Sandbox.
+This requires the options C<--source_dir> and C<--new_port> to complete the task.
+If the sandbox is running, it will be stopped.  
+
+=head3 sbtool -o copy
+
+Copies data from one Sandbox to another.
+It only works on B<single> sandboxes.
+It requires the C<--source_dir> and C<--dest_dir> options to complete the task.
+Both Source and destination directory must be already installed sandboxes. If any 
+of them is still running, it will be stopped. If both source and destination directory
+point to the same directory, the command is not performed.
+At the end of the operation, all the data in the source sandbox is copied to
+the destination sandbox. Existing files will be overwritten. It is advisable, but not
+required, to run a "./clear" command on the destination directory before performing 
+this task.
+
+=head3 sbtool -o move
+
+Moves a Sandbox to a different location.
+Unlike 'copy', this operation acts on the whole sandbox, and can move both single
+and multiple sandboxes.
+It requires the C<--source_dir> and C<--dest_dir> options to complete the task.
+If the destination directory already exists, the task is not performed. If the source
+sandbox is running, it will be stopped before performing the operation.
+After the move, all paths used in the sandbox scripts will be changed.
+
+=head3 sbtool -o tree
+
+Creates a replication tree, with one master, one or more intermediate level slaves,
+and one or more leaf node slaves for each intermediate level.
+To create the tree, you need to create a multiple nodes sandbox (using C<make_multiple_sandbox>)
+and then use C<sbtool> with the following options:
+
+ * --tree_dir , containing the sandbox to convert to a tree
+ * --master_node, containing the node that will be master
+ * --mid_nodes, with a list of nodes for the intermediate level
+ * --leaf_nodes, with as many lists as how many mid_nodes
+   Each list is separated from the next by a pipe sign (|).
+
+Alternatively, you can use the C<--tree_nodes> option to describe all
+the tree at once.
+
+For example, in a sandbox with 8 nodes, to define 1 as master node, 
+nodes 2 and 3 as  middle nodes, nodes 4, 5, and 6 as slaves of node 2
+and nodes 7 and 8 as slaves of node 3, you can use either of the following:
+
+ sbtool --tree_dir=/path/to/source \
+    --master_node=1 \
+    --mid_nodes='2 3'
+    --leaf_nodes='4 5 6|7 8'
+
+ sbtool --tree_dir=/path/to/source \
+    --tree_nodes='1 - 2 3 - 4 5 6|7 8' 
+
+=head3 sbtool -o preserve
+
+Makes a sandbox permanent.
+It requires the C<--source_dir> option to complete the task.
+This command changes the 'clear' command within the requested sandbox,
+disabling its effects. The sandbox can't be erased using 'clear' or 'clear_all'.
+The 'delete' operation of sbtool will skip a sandbox that has been made permanent.
+
+=head3 sbtool -o unpreserve
+
+Makes a sandbox NOT permanent.
+It requires the C<--source_dir> option to complete the task.
+This command cancels the changes made by a 'preserve' operation, making a sandbox
+erasable with the 'clear' command. The 'delete' operation can be performed 
+successfully on an unpreserved sandbox.
+
+=head3 sbtool -o delete
+
+Removes a sandbox completely.
+It requires the C<--source_dir> option to complete the task.
+The requested sandbox will be stopped and then deleted completely. 
+WARNING! No confirmation is asked!
 
 
 =head1 TESTING

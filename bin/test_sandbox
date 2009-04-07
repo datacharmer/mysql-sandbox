@@ -18,6 +18,9 @@ for my $prog (qw( make_sandbox
     } 
 }
 
+sub tprint;
+sub tprintf;
+
 #
 # defaults
 #
@@ -117,7 +120,7 @@ else {
 my $sh_stop_all = "$sandbox_home/stop_all";
 
 if ( -x $sh_stop_all ) {
-    system($sh_stop_all)
+    system("$sh_stop_all > /dev/null 2>&1");
 }
 
 # 
@@ -138,7 +141,7 @@ if ($tests{smoke} and $tests{sbtool}) {
 # cleaning up the test directory if exists
 #
 if ( -x $sh_stop_all ) {
-    system($sh_stop_all);
+    system("$sh_stop_all > /dev/null 2>&1");
     system qq(rm -rf $sandbox_home) ;
 }
 
@@ -147,7 +150,7 @@ if ( -x $sh_stop_all ) {
 #
 my $how_many_mysqld = get_number_of_processes('mysqld');
 my $how_many_mysqld_safe = get_number_of_processes('mysqld_safe');
-printf "** currently there are (%d) mysqld processes and (%d) mysqld_safe processes\n", 
+tprintf "** currently there are (%d) mysqld processes and (%d) mysqld_safe processes\n", 
     $how_many_mysqld, 
     $how_many_mysqld_safe;
 
@@ -199,7 +202,7 @@ if ($tests{tuning}) {
 if ($tests{smoke}) {
     for my $ver ( @versions ) {
         if (-f "$sandbox_home/stop_all") {
-            system qq($sandbox_home/stop_all); 
+            system qq("$sandbox_home/stop_all > /dev/null 2>&1"); 
             system qq(rm -rf $sandbox_home/*) ;
         }
         run_smoke_test($ver);
@@ -209,7 +212,7 @@ if ($tests{smoke}) {
 if ($tests{sbtool}) {
     for my $ver (@versions) {
         if ( -d $sandbox_home ) {
-            system "$sandbox_home/stop_all";
+            system "$sandbox_home/stop_all > /dev/null 2>&1";
             system "rm -rf $sandbox_home";
         }
         run_sbtool_test ($ver);
@@ -217,7 +220,7 @@ if ($tests{sbtool}) {
 }
 
 
-printf "*** Executed %d tests. Passed %d (%5.2f%%). Failed %d (%5.2f%%)\n",
+tprintf "*** Executed %d tests. Passed %d (%5.2f%%). Failed %d (%5.2f%%)\n",
         $test_results{run},
         $test_results{passed},
         $test_results{passed} / $test_results{run} * 100,
@@ -287,7 +290,7 @@ sub get_number_of_processes {
 
     my $grep_cmd = 'ps -ef | grep -w %s | grep -v "grep -w %s" | wc -l ';
     my $cmd = sprintf($grep_cmd, $proc_name, $proc_name );
-    print "$cmd\n" if ($verbose && ($verbose > 1));
+    tprint "$cmd\n" if ($verbose && ($verbose > 1));
     my $how_many = get_exec_result($cmd, 0);
     return $how_many;
 }
@@ -504,7 +507,7 @@ sub run_summary_tests {
     my $new_mysqld_procs = get_number_of_processes('mysqld');
     my $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
 
-    printf "** created (%d) mysqld processes and (%d) mysqld_safe processes\n", 
+    tprintf "** created (%d) mysqld processes and (%d) mysqld_safe processes\n", 
         $new_mysqld_procs - $how_many_mysqld, 
         $new_mysqld_safe_procs - $how_many_mysqld_safe;
 
@@ -521,24 +524,24 @@ sub run_summary_tests {
     ok( $expected_processes == ($new_mysqld_safe_procs - $how_many_mysqld_safe), 
             "expected processes ($expected_processes)" );
 
-    print "** stopping all - please wait\n";
+    tprint "** stopping all - please wait\n";
     my $stop_all = get_exec_result("$sandbox_home/stop_all", $verbose);
 
     $new_mysqld_procs = get_number_of_processes('mysqld');
     $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
 
-    printf "** (%d) mysqld processes and (%d) mysqld_safe processes\n", 
+    tprintf "** (%d) mysqld processes and (%d) mysqld_safe processes\n", 
         $new_mysqld_procs - $how_many_mysqld, 
         $new_mysqld_safe_procs - $how_many_mysqld_safe;
     ok( ($new_mysqld_safe_procs - $how_many_mysqld_safe ) == 0,
             'expected processes (0)' );
 
-    print "** starting all - please wait\n";
+    tprint "** starting all - please wait\n";
     my $start_all = get_exec_result("$sandbox_home/start_all", $verbose);
 
     $new_mysqld_procs = get_number_of_processes('mysqld');
     $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
-    printf "** created (%d) mysqld processes and (%d) mysqld_safe processes\n", 
+    tprintf "** created (%d) mysqld processes and (%d) mysqld_safe processes\n", 
         $new_mysqld_procs - $how_many_mysqld, 
         $new_mysqld_safe_procs - $how_many_mysqld_safe;
 
@@ -546,13 +549,13 @@ sub run_summary_tests {
             "expected processes ($expected_processes)" );
 
     unless ($ENV{PRESERVE_TESTS} or $preserve_tests) { 
-        print "** cleaning up - please wait\n";
+        tprint "** cleaning up - please wait\n";
         my $clear_all = get_exec_result("$sandbox_home/clear_all", $verbose);
 
         $new_mysqld_procs = get_number_of_processes('mysqld');
         $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
 
-        printf "** (%d) mysqld processes and (%d) mysqld_safe processes\n", 
+        tprintf "** (%d) mysqld processes and (%d) mysqld_safe processes\n", 
             $new_mysqld_procs - $how_many_mysqld, 
             $new_mysqld_safe_procs - $how_many_mysqld_safe;
         ok( ($new_mysqld_safe_procs - $how_many_mysqld_safe ) == 0,
@@ -586,7 +589,7 @@ sub run_tuning_test {
             $verbose );
     ok( ($sql_result !~ /innodb\s*yes/i), 
             "single SB with option skip-innodb ($bare_version) SQL " )
-        or print "engines: $sql_result\n";
+        or tprint "engines: $sql_result\n";
      
     $sql_result = get_sql_result(
            "$sandbox_home/msb_$version", 
@@ -594,7 +597,7 @@ sub run_tuning_test {
             $verbose );
     ok( ($sql_result =~ /STRICT_ALL_TABLES/i),
             "single SB with option sql_mode ($bare_version) SQL " )
-        or print "SQL_MODE: $sql_result\n";
+        or tprint "SQL_MODE: $sql_result\n";
 
     $sql_result = get_sql_result(
            "$sandbox_home/msb_$version", 
@@ -610,7 +613,7 @@ sub run_tuning_test {
 
     ok($sandbox_dirs == 2 , "single SB ($bare_version) - effective clear ");
 
-    print "** cleaning up - please wait\n";
+    tprint "** cleaning up - please wait\n";
     my $clear_all = get_exec_result("$sandbox_home/clear_all", $verbose);
 }
 
@@ -628,7 +631,7 @@ sub get_bare_version {
 sub run_smoke_test {
     my ($ver) = @_;
     if ($ver =~ /^[34]/) {
-        print "skipping tuning test. It requires version >=5\n";
+        tprint "skipping tuning test. It requires version >=5\n";
         return;
     }
     my $bare_version = get_bare_version($ver);
@@ -685,7 +688,7 @@ sub run_smoke_test {
         $second_mysqld = get_number_of_processes('mysqld');
         $started = $second_mysqld >= $first_mysqld;
         unless ($started) {
-            print "-- waiting for mysqld to restart ($counter)\n";
+            tprint "-- waiting for mysqld to restart ($counter)\n";
             sleep 1;
         }
     }
@@ -694,7 +697,7 @@ sub run_smoke_test {
     # print "PID_TS ==== $pid_ts1 $pid_ts2\n";
     while ((!$pid_ts2) or ($pid_ts2 eq $pid_ts1)) {
         $counter++;
-        print ">> waiting for mysqld to restart ($counter)\n";
+        tprint ">> waiting for mysqld to restart ($counter)\n";
         sleep 1; 
         $pid_ts2 = get_pid($pid_file);
         if ($counter > $timeout) {
@@ -706,7 +709,7 @@ sub run_smoke_test {
         or die "can't get PID from $pid_file\n" ;
 
     chomp $secondpid;
-    print "previous pid ($pid) current pid ($secondpid)\n" if $verbose;
+    tprint "previous pid ($pid) current pid ($secondpid)\n" if $verbose;
     ok ($secondpid ne $pid, "new mysqld process created (2)");
 
     $sql_result = get_sql_result(
@@ -793,7 +796,7 @@ sub run_smoke_test {
     
     ok ( $right_engine,
             "single SB ($bare_version) - create table - check engine ($engine)")
-        or print "result:<$sql_result>\n" ;
+        or tprint "result:<$sql_result>\n" ;
 
     $sql_result = get_sql_result(
            "$sandbox_home/msb_$version", 
@@ -849,7 +852,7 @@ sub run_smoke_test {
 
     ok($sandbox_dirs == 2 , "single SB ($bare_version) - effective clean up ");
 
-    print "** cleaning up - please wait\n";
+    tprint "** cleaning up - please wait\n";
     my $clear = get_exec_result("$sandbox_home/msb_$version/clear", $verbose);
     if ($ver =~ m{(.+)/[^/]+(?:tgz|tar\.gz)$}) {
         my $bindir = $1;
@@ -859,9 +862,9 @@ sub run_smoke_test {
         } 
     }
 
-    print "\n[VISUAL IDENTIFICATION]\n";
-    print "\tcheck version: <$visual_version>\n";
-    print "\tcheck comment: <$visual_comment>\n\n";
+    tprint "\n[VISUAL IDENTIFICATION]\n";
+    tprint "\tcheck version: <$visual_version>\n";
+    tprint "\tcheck comment: <$visual_comment>\n\n";
 }
 
 
@@ -965,8 +968,8 @@ sub run_sbtool_test {
     $ports_range = get_exec_result("sbtool -o range -i 5200");
     ok ($ports_range =~ /5201/, 'ports range 2');
     system("$sandbox_home/stop_all > /dev/null 2>&1");
-    system("$sandbox_home/second_sb/start");
-
+    system("$sandbox_home/second_sb/start > /dev/null 2>&1");
+    
     # 
     # sbtool -o delete
     #
@@ -974,6 +977,23 @@ sub run_sbtool_test {
     ok($delete_sandbox =~ /has been removed/, 'delete stopped sandbox');
     $delete_sandbox = get_exec_result("sbtool -o delete -s $sandbox_home/second_sb");
     ok($delete_sandbox =~ /has been removed/, 'delete active sandbox');
+
+    $second_sandbox = get_exec_result(
+            "make_sandbox $ver --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb", 
+            $verbose);
+    ok( $second_sandbox =~ /sandbox server started/,
+            "second SB (5200) started" );
+
+    my $preserve_sandbox = get_exec_result("sbtool -o preserve -s $sandbox_home/second_sb");
+    ok($preserve_sandbox =~ /is now permanent/, 'preserve active sandbox');
+    $delete_sandbox = get_exec_result("sbtool -o delete -s $sandbox_home/second_sb");
+    ok($delete_sandbox =~ /can't be deleted/, '(not) deleting permanent sandbox');
+
+    my $unpreserve_sandbox = get_exec_result("sbtool -o unpreserve -s $sandbox_home/second_sb");
+    ok($unpreserve_sandbox =~ /is now NOT PERMANENT/, 'unpreserve active sandbox');
+
+    $delete_sandbox = get_exec_result("sbtool -o delete -s $sandbox_home/second_sb");
+    ok($delete_sandbox =~ /has been removed/, 'deleting unpreserved sandbox');
 
     # 
     # sbtool -o tree
@@ -1001,15 +1021,17 @@ sub run_sbtool_test {
     ok( ($sql_result =~ /t1/) , 
             "tree SB - table created" );
 
+    sleep 1;
     $sql_result = get_sql_result(
             "$sandbox_home/tree_sb/node8",
            q{show tables from test},
           $verbose); 
+    #print "$sql_result\n";
     ok( ($sql_result =~ /t1/) , 
             "tree SB - table replicated to level 3" );
 
-    system("$sandbox_home/send_kill_all");
-    system("$sandbox_home/clear_all");
+    system("$sandbox_home/send_kill_all > /dev/null 2>&1");
+    system("$sandbox_home/clear_all > /dev/null 2>&1");
 }
 
 sub get_pid {
@@ -1074,4 +1096,15 @@ sub exists_in_path {
     return 0;
 }
 
+sub tprint {
+    unless ($ENV{TAP_MODE}) {
+        print @_;
+    }
+}
+
+sub tprintf {
+    unless ($ENV{TAP_MODE}) {
+        printf @_;
+    }
+}
 

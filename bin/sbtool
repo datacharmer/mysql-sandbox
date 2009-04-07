@@ -51,6 +51,8 @@ my %supported_operations = %MySQL::Sandbox::Scripts::sbtool_supported_operations
 #    move  => 'moves a Sandbox to a different location',
 #    port  => 'Changes a Sandbox port',
 #    delete => 'removes a sandbox completely',
+#    preserve => 'makes a sandbox permanent',
+#    unpreserve => 'makes a sandbox not permanent',
 #);
 
 my %supported_formats = %MySQL::Sandbox::Scripts::sbtool_supported_formats;
@@ -116,6 +118,12 @@ elsif ( $msb->{options}{operation} eq 'port' ) {
 elsif ( $msb->{options}{operation} eq 'copy' ) {
     copy_single_sandbox( $msb->{options}{source_dir}, $msb->{options}{dest_dir} );
 }
+elsif ( $msb->{options}{operation} eq 'preserve' ) {
+    preserve_sandbox($msb->{options}{source_dir})
+}
+elsif ( $msb->{options}{operation} eq 'unpreserve' ) {
+    unpreserve_sandbox($msb->{options}{source_dir})
+}
 elsif ( $msb->{options}{operation} eq 'delete' ) {
     for my $opt (qw(dest_dir new_port only_used all_info )) {
         if ( $msb->{options}{$opt} ) {
@@ -176,7 +184,7 @@ sub make_tree {
     unless ( -d $dir ) {
         croak "directory ($dir) does not exist\n";
     }
-    my $master = 1;
+    my $master = $msb->{options}{master_node} || 1;
     if ($msb->{options}{tree_nodes} ) {
         my ($m, $mid, $leaf) = split /-/, $msb->{options}{tree_nodes};
         if ($m) {
@@ -646,6 +654,10 @@ sub delete_sandbox {
     }
     my $cmd1 = undef;
     my $cmd2 = undef;
+    if (( -e "$source/no_clear" ) or ( -e "$source/no_clear_all")) {
+        print "<no_clear> script found.\nDirectory <$source> can't be deleted. It's a permanent sandbox.\n";
+        exit 0;
+    }
     if ( (-x "$source/clear") && (-x "$source/stop" )) {
         $cmd1 = "$source/stop";
         $cmd2 = "$source/clear";
@@ -675,4 +687,96 @@ sub delete_sandbox {
     }
     print "sandbox at <$source> has been removed\n";
 }
+
+sub preserve_sandbox {
+    my ($source) = @_;
+    unless ($source) {
+        croak "Need a source directory (--source_dir)\n";
+    }
+    $source =~ s/^\s//;
+    $source =~ s/\s*$//;
+    $source =~ s/^\s*~/$ENV{HOME}/;
+    unless ($source =~ m{^/} ) {
+        croak "Source directory must be an absolute path.\n"; 
+    }
+    unless ( -d $source )  {
+        croak "directory $source does not exist\n";
+    }
+    if (( -e "$source/no_clear") or (-e "$source/no_clear_all" ) ) {
+        die "<no_clear> script found.\nDirectory <$source> is already a permanent sandbox.\n";
+    }
+    my $old_clear = undef;
+    if ( -x "$source/clear") {
+        $old_clear = 'clear';
+    }
+    elsif ( -x "$source/clear_all") {
+        $old_clear = 'clear_all';
+    }
+    else {
+        croak "directory $source does not seem to be a sandbox\n";
+    }
+    if ($old_clear eq "clear_all") {
+        my @dirs = grep { (-d $_)  && ( -e "$_/clear" )  } glob("$source/*");
+        for my $dir (@dirs) {
+            preserve_sandbox($dir);
+        }
+    }
+    chdir $source;
+    rename $old_clear, "no_$old_clear";
+    open my $CLEAR, q{>}, $old_clear
+        or die "can't create $old_clear";
+    print $CLEAR qq(echo "This sandbox is permanent."\n);
+    print $CLEAR qq(echo "The '$old_clear' command has been disabled."\n);
+    print $CLEAR qq(echo "The contents of the old '$old_clear' command are in the 'no_$old_clear' file"\n);
+    close $CLEAR;
+    chmod 0755, $old_clear;
+    chmod 0644, "no_$old_clear";
+    print "sandbox at <$source> is now permanent\n";
+}
+
+sub unpreserve_sandbox {
+    my ($source) = @_;
+    unless ($source) {
+        croak "Need a source directory (--source_dir)\n";
+    }
+    $source =~ s/^\s//;
+    $source =~ s/\s*$//;
+    $source =~ s/^\s*~/$ENV{HOME}/;
+    unless ($source =~ m{^/} ) {
+        croak "Source directory must be an absolute path.\n"; 
+    }
+    unless ( -d $source )  {
+        croak "directory $source does not exist\n";
+    }
+    if (( ! -e "$source/no_clear") and (! -e "$source/no_clear_all" ) ) {
+        die "<no_clear> script not found.\nDirectory <$source> is not a permanent sandbox.\n";
+    }
+    my $old_clear = undef;
+    if ( -f "$source/no_clear") {
+        $old_clear = 'no_clear';
+    }
+    elsif ( -f "$source/no_clear_all") {
+        $old_clear = 'no_clear_all';
+    }
+    else {
+        croak "directory $source does not seem to be a sandbox\n";
+    }
+    my $new_clear = $old_clear;
+    $new_clear =~ s/^no_//;
+    unless (-f "$source/$new_clear") {
+        die "Can't find the '$new_clear' script. This may not be a preserved sandbox.\n";
+    }
+    if ($old_clear eq "no_clear_all") {
+        my @dirs = grep { (-d $_)  && ( -e "$_/no_clear" )  } glob("$source/*");
+        for my $dir (@dirs) {
+            unpreserve_sandbox($dir);
+        }
+    }
+    chdir $source;
+    system "rm -f $new_clear";
+    rename $old_clear, $new_clear;
+    chmod 0755, $new_clear;
+    print "sandbox at <$source> is now NOT PERMANENT\n";
+}
+
 
