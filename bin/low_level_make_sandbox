@@ -202,8 +202,8 @@ my %replace_options = (
 unless (
         ($msb->{options}{'sandbox_port'} =~ /^ \d{3,} $ /x)  
         && ($msb->{options}{'sandbox_port'} > 1024 )
-        && ($msb->{options}{'sandbox_port'} <= 32000)) {
-    $msb->get_help( "sandbox_port option must be a port number between 1025 and 32000 (currently requested $msb->{options}{'sandbox_port'} ) \n");
+        && ($msb->{options}{'sandbox_port'} <= 64000)) {
+    $msb->get_help( "sandbox_port option must be a port number between 1025 and 64000 (currently requested $msb->{options}{'sandbox_port'} ) \n");
 }
 
 if ($msb->{options}{check_port} and (! $msb->{options}{no_check_port}) ) {

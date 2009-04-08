@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="2.0.98h";
+our $VERSION="2.0.98i";
 
 our @MANIFEST = (
 'clear.sh',
@@ -582,7 +582,7 @@ my %parse_options_sbtool = (
     max_range => {
         so    => 70,
         parse => 'x|max_range=i',
-        value => 32000,
+        value => 64000,
         help  => 'maximum port when searching for available ranges',
     },
     range_size => {
@@ -1053,7 +1053,7 @@ SANDBOX_ACTION_SCRIPT
 
 my $license_text = <<'LICENSE';
 #    The MySQL Sandbox
-#    Copyright (C) 2006,2007,2008 Giuseppe Maxia, MySQL AB
+#    Copyright (C) 2006,2007,2008,2009 Giuseppe Maxia
 #    Contacts: http://datacharmer.org
 #
 #    This program is free software; you can redistribute it and/or modify

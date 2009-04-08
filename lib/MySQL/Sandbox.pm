@@ -19,7 +19,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION="2.0.98h";
+our $VERSION="2.0.98i";
 our $DEBUG;
 
 BEGIN {
@@ -33,7 +33,7 @@ BEGIN {
     }
 }
 
-my @supported_versions = qw( 3.23 4.0 4.1 5.0 5.1 5.2 6.0);
+my @supported_versions = qw( 3.23 4.0 4.1 5.0 5.1 5.2 5.3 5.4 5.5 6.0);
 
 our $sandbox_options_file    = "my.sandbox.cnf";
 # our $sandbox_current_options = "current_options.conf";
@@ -135,7 +135,7 @@ sub credits {
     my ($self) = @_;
     my $CREDITS = 
           qq(    The MySQL Sandbox,  version $VERSION\n) 
-        . qq(    (C) 2006,2007,2008 Giuseppe Maxia, Sun Microsystems, Database Group\n);
+        . qq(    (C) 2006,2007,2008,2009 Giuseppe Maxia\n);
     return $CREDITS;
 }
 
@@ -481,6 +481,29 @@ If you need servers of different versions in the same group, you may like
 
 Assuming that each tarball is from a different version, you will group three servers under one directory, with the handy sandbox scripts to manipulate them.
 
+=head2 CREATING A SANDBOX FROM SOURCE
+
+If you want to create a sandbox from the code that you have just compiled, but you don't want to install, there is a script that makesa binary tarball for you and installs a sandbox in one go.
+
+ $ make_sandbox_from_source {SOURCE_DIRECTORY} {sandbox_type} [options]
+
+The first parameters is the directory where you have successfully run "./configure && make". 
+The second parameter is what kind of sandbox you want to create: One of the following:
+
+  * single
+  * multiple
+  * replication
+  * circular
+
+You can then add all the options you need at the end.
+For example:
+
+ $ make_sandbox_from_source $HOME/build/5.0 single --export_binaries --check_port 
+
+or
+
+ $ make_sandbox_from_source $HOME/build/5.0 replication --how_many_slaves=5
+
 =head2 DEFAULTS AND SHORTCUTS
 
 If you use sandboxes often, instead of pointing to a tarball you can set a directory containing expanded tarballs.
@@ -654,7 +677,7 @@ not available at creation time or that would require too much manual labor.
     -n     --new_port        (s) <> - new port while moving a sandbox
     -u     --only_used       (-) <> - for "ports" operation, shows only the used ones
     -i     --min_range       (i) <5000> - minimum port when searching for available ranges
-    -x     --max_range       (i) <32000> - maximum port when searching for available ranges
+    -x     --max_range       (i) <64000> - maximum port when searching for available ranges
     -z     --range_size      (i) <10> - size of range when searching for available port range
     -f     --format          (s) <text> - format for "ports" and "info"
          'perl'     fully structured information in Perl code
