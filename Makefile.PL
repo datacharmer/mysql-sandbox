@@ -16,6 +16,7 @@ WriteMakefile(
                             'bin/test_sandbox',
                             'bin/low_level_make_sandbox',
                             'bin/make_sandbox',
+                            'bin/make_sandbox_from_source',
                             'bin/make_replication_sandbox',
                             'bin/make_multiple_sandbox',
                             'bin/make_multiple_custom_sandbox',

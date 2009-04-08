@@ -34,7 +34,15 @@ my @apps = (
         {
             name => 'make_multiple_custom_sandbox',
             description  => 'create a group of sandboxes with different versions',
-        }
+        },
+        {
+            name => 'make_sandbox_from_source',
+            description  => 'create a sandbox from a build directory',
+        },
+        {
+            name => 'sbtool',
+            description  => 'performs auxiliary actions with existing sandboxes',
+        },
 );
 
 my $choice = shift
