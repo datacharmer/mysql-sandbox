@@ -21,6 +21,14 @@ for my $prog (qw( make_sandbox
 sub tprint;
 sub tprintf;
 
+sub get_exec_result ;
+my $use_open3 = 1;
+
+eval "use IPC::Open3";
+if ($@) {
+        $use_open3 =0;
+}
+
 #
 # defaults
 #
@@ -242,9 +250,33 @@ if ($test_results{failed}) {
 # runs a shell command and returns the output
 #
 sub get_exec_result {
+    if ($use_open3) {
+        return get_exec_result_open3(@_);
+    }
+    else {
+        return get_exec_result_qx(@_);
+    }
+}
+
+sub get_exec_result_qx {
     my ($cmd, $verbose) = @_; 
     print "(shell) $cmd\n" if $verbose;
     my $output = qx($cmd );
+    if ($?) {
+        die ("error executing $cmd ($!)\n");
+    }
+    return $output;
+}
+
+sub get_exec_result_open3 {
+    my ($cmd, $verbose) = @_; 
+    print "(shell) $cmd\n" if $verbose;
+    my ($out, $in, $err) = (undef, undef, 1);
+    my $result = open3($in, $out, $err, $cmd );
+    my $output ='';
+    while (my $line = <$out>) {
+        $output .= $line;
+    }
     if ($?) {
         die ("error executing $cmd ($!)\n");
     }
@@ -351,7 +383,7 @@ sub ok ($;$) {
         print "not ";
         $test_results{failed}++;
     }
-    print "ok - $msg\n";
+    print "ok $test_results{run} - $msg\n";
     if ($verbose) { die "halting the test on verbose\n" unless $condition; }
     return $condition;
 }
