@@ -1,3 +1,7 @@
+2.0.98h 08-Apr-2009
+	- Changed test_sandbox to use IPC::Open3 instead of qx, when
+	  available. This will make the 'make test' output more readable.
+    - added Test_Helper.pm to the test suite
 2.0.98g 07-Apr-2009
 	- added --master_node option to sbtool
 	- added 'preserve' and 'unpreserve' options to sbtool
