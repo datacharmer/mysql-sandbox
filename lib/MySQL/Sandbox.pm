@@ -504,6 +504,8 @@ or
 
  $ make_sandbox_from_source $HOME/build/5.0 replication --how_many_slaves=5
 
+If you call this program several times from the same directory, it will check if the compiled binaries are newer than the extracted ones, and if they aren't, it will reuse the ones created during the previous run, thus saving time and CPU.
+
 =head2 DEFAULTS AND SHORTCUTS
 
 If you use sandboxes often, instead of pointing to a tarball you can set a directory containing expanded tarballs.
@@ -821,10 +823,10 @@ You can also define which tests you want to run:
 
 =head2 Test isolation
 
-The tests are not performed in the common c($SANDBOX_HOME) directory, but 
-on a separate directory, which by default is c($HOME/test_sb). To avoid 
+The tests are not performed in the common C<$SANDBOX_HOME> directory, but 
+on a separate directory, which by default is C<$HOME/test_sb>. To avoid 
 interferences, before the tests start, the application runs the 
-c($SANDBOX_HOME/stop_all) command.
+C<$SANDBOX_HOME/stop_all> command.
 The test directory is considered to exist purely for testing purposes, and
 it is erased several times while running the suite. Using this directory 
 to store valuable data is higly risky.
@@ -837,8 +839,8 @@ When you build the package and run
   make test
 
 test_sandbox is called, and the tests are performed on a temporary directory
-under c($INSTALLATION_DIRECTORY/t/test_sb). By default, version 5.0.77 is used.
-If this version is not found in c($HOME/opt/mysql/), the test is skipped.
+under C<$INSTALLATION_DIRECTORY/t/test_sb>. By default, version 5.0.77 is used.
+If this version is not found in C<$HOME/opt/mysql/>, the test is skipped.
 You can override this option by setting the TEST_VERSION environment variable.
 
   TEST_VERSION=5.1.30 make test
@@ -870,7 +872,8 @@ bash shell
 =head1 COPYRIGHT
 version 3.0
 
-Copyright © 2006,2007,2008,2009  Giuseppe Maxia
+Copyright (C) 2006,2007,2008,2009  Giuseppe Maxia
+
 Home Page  http://launchpad.net/mysql-sandbox/
 
 =head1 LEGAL NOTICE
