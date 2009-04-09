@@ -87,6 +87,35 @@ MAKING SANDBOXES
     three servers under one directory, with the handy sandbox scripts to
     manipulate them.
 
+  CREATING A SANDBOX FROM SOURCE
+    If you want to create a sandbox from the code that you have just
+    compiled, but you don't want to install, there is a script that makesa
+    binary tarball for you and installs a sandbox in one go.
+
+     $ make_sandbox_from_source {SOURCE_DIRECTORY} {sandbox_type} [options]
+
+    The first parameters is the directory where you have successfully run
+    "./configure && make". The second parameter is what kind of sandbox you
+    want to create: One of the following:
+
+      * single
+      * multiple
+      * replication
+      * circular
+
+    You can then add all the options you need at the end. For example:
+
+     $ make_sandbox_from_source $HOME/build/5.0 single --export_binaries --check_port 
+
+    or
+
+     $ make_sandbox_from_source $HOME/build/5.0 replication --how_many_slaves=5
+
+    If you call this program several times from the same directory, it will
+    check if the compiled binaries are newer than the extracted ones, and if
+    they aren't, it will reuse the ones created during the previous run,
+    thus saving time and CPU.
+
   DEFAULTS AND SHORTCUTS
     If you use sandboxes often, instead of pointing to a tarball you can set
     a directory containing expanded tarballs. By default, the sandbox looks
@@ -234,7 +263,7 @@ SBTool the Sandbox helper
         -n     --new_port        (s) <> - new port while moving a sandbox
         -u     --only_used       (-) <> - for "ports" operation, shows only the used ones
         -i     --min_range       (i) <5000> - minimum port when searching for available ranges
-        -x     --max_range       (i) <32000> - maximum port when searching for available ranges
+        -x     --max_range       (i) <64000> - maximum port when searching for available ranges
         -z     --range_size      (i) <10> - size of range when searching for available port range
         -f     --format          (s) <text> - format for "ports" and "info"
              'perl'     fully structured information in Perl code
@@ -362,10 +391,10 @@ TESTING
       test_sandbox --tests=single,replication
 
   Test isolation
-    The tests are not performed in the common c($SANDBOX_HOME) directory,
-    but on a separate directory, which by default is c($HOME/test_sb). To
-    avoid interferences, before the tests start, the application runs the
-    c($SANDBOX_HOME/stop_all) command. The test directory is considered to
+    The tests are not performed in the common $SANDBOX_HOME directory, but
+    on a separate directory, which by default is "$HOME/test_sb". To avoid
+    interferences, before the tests start, the application runs the
+    "$SANDBOX_HOME/stop_all" command. The test directory is considered to
     exist purely for testing purposes, and it is erased several times while
     running the suite. Using this directory to store valuable data is higly
     risky.
@@ -376,10 +405,10 @@ TESTING
       make test
 
     test_sandbox is called, and the tests are performed on a temporary
-    directory under c($INSTALLATION_DIRECTORY/t/test_sb). By default,
-    version 5.0.77 is used. If this version is not found in
-    c($HOME/opt/mysql/), the test is skipped. You can override this option
-    by setting the TEST_VERSION environment variable.
+    directory under "$INSTALLATION_DIRECTORY/t/test_sb". By default, version
+    5.0.77 is used. If this version is not found in "$HOME/opt/mysql/", the
+    test is skipped. You can override this option by setting the
+    TEST_VERSION environment variable.
 
       TEST_VERSION=5.1.30 make test
       TEST_VERSION=$HOME/opt/mysql/5.1.30 make test
@@ -396,8 +425,9 @@ REQUIREMENTS
 
 COPYRIGHT
 version 3.0
-    Copyright © 2006,2007,2008,2009 Giuseppe Maxia Home Page
-    http://launchpad.net/mysql-sandbox/
+    Copyright (C) 2006,2007,2008,2009 Giuseppe Maxia
+
+    Home Page http://launchpad.net/mysql-sandbox/
 
 LEGAL NOTICE
     This program is free software; you can redistribute it and/or modify it

@@ -5,7 +5,7 @@ BEGIN {
 };
 use strict;
 use warnings;
-use Test::More tests => 28;
+use Test::More tests => 31;
 
 # 7 tests
 ok_shell_result( "sandbox",
@@ -59,6 +59,12 @@ ok_shell_result( "test_sandbox  --help",
             ['test_sandbox',
             '--tarball=/path/to/tarball'],
             "test_sandbox");
+
+# 3 tests
+ok_shell_result( "make_sandbox_from_source",
+            ['make_sandbox_from_source',
+            'configure && make'],
+            "make_sandbox_from_source");
 
 sub ok_shell {
     my ($command , $description) = @_;
