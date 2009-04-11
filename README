@@ -5,6 +5,10 @@ NAME
 SYNOPSIS
      make_sandbox /path/to/MySQL-VERSION.tar.gz
 
+     make_sandbox $HOME/opt/mysql/VERSION
+
+     make_sandbox VERSION
+
 PURPOSE
     This package is a sandbox for testing features under any version of
     MySQL from 3.23 to 6.0.
@@ -37,13 +41,18 @@ INSTALLATION
        make test
        make install
 
+    See also under "TESTING" for more options before running 'make test'
+
 MAKING SANDBOXES
-  SINGLE SERVER SANDBOX
+  Single server sandbox
     The easiest way to make a sandbox is
 
-    1 download the sandbox package and install it as instructed above
-    2 download a MySQL binary tarball
-    3 run this command
+    1  download the sandbox package and install it as instructed above
+
+    2  download a MySQL binary tarball
+
+    3  run this command
+
           $ make_sandbox  /path/to/mysql-X.X.XX-osinfo.tar.gz
 
     That's all it takes to get started. The Sandbox will ask you for
@@ -54,7 +63,7 @@ MAKING SANDBOXES
 
        $SANDBOX_HOME/msb_X_X_XX
 
-  MAKING A REPLICATION SANDBOX
+  Making a replication sandbox
     It's as easy as making a single sandbox
 
        $ make_replication_sandbox /path/to/mysql-X.X.XX-osinfo.tar.gz
@@ -63,7 +72,7 @@ MAKING SANDBOXES
 
        under $SANDBOX_HOME/rsandbox_X_X_XX
 
-  CIRCULAR REPLICATION
+  Circular replication
     It requires an appropriate option when you start a replication sandbox
 
        $ make_replication_sandbox --circular=4 /path/to/mysql-X.X.XX-osinfo.tar.gz
@@ -72,7 +81,7 @@ MAKING SANDBOXES
     circular replication. A handy shortcut is "--master_master", which will
     create a circular replication system of exactly two members.
 
-  MULTIPLE SANDBOXES
+  Multiple sandboxes
     You can create a group of sandboxes without any replication among its
     members. If you need three servers of the same version, you can use
 
@@ -87,7 +96,7 @@ MAKING SANDBOXES
     three servers under one directory, with the handy sandbox scripts to
     manipulate them.
 
-  CREATING A SANDBOX FROM SOURCE
+  Creating a sandbox from source
     If you want to create a sandbox from the code that you have just
     compiled, but you don't want to install, there is a script that makesa
     binary tarball for you and installs a sandbox in one go.
@@ -116,7 +125,7 @@ MAKING SANDBOXES
     they aren't, it will reuse the ones created during the previous run,
     thus saving time and CPU.
 
-  DEFAULTS AND SHORTCUTS
+  Defaults and shortcuts
     If you use sandboxes often, instead of pointing to a tarball you can set
     a directory containing expanded tarballs. By default, the sandbox looks
     under $HOME/opt/mysql and /opt/mysql
@@ -136,7 +145,7 @@ MAKING SANDBOXES
     If you use some options frequently, it would make sense to add them to
     the default option file, which is $HOME/.msandboxrc
 
-  FINE TUNING
+  Fine tuning
     Every sandbox script will give you additional information if you invoke
     it with the "--help" option.
 
@@ -152,11 +161,12 @@ MAKING SANDBOXES
     Unless you override the defaults, sandboxes are created inside a
     directory that servers two purposes:
 
-    * further isolates the sandboxes, and keep them under easy control if
-    you are in the habit of creating many of them;
-    * provides a set of handy super-commands, which can be passed to all the
-    sandboxes. Running "$SANDBOX_HOME/stop_all" you will stop all servers of
-    all sandboxes, single or groups, below that directory.
+    *  further isolates the sandboxes, and keep them under easy control if
+       you are in the habit of creating many of them;
+
+    *  provides a set of handy super-commands, which can be passed to all
+       the sandboxes. Running "$SANDBOX_HOME/stop_all" you will stop all
+       servers of all sandboxes, single or groups, below that directory.
 
 USING A SANDBOX
     Change directory to the newly created one (default:
@@ -167,16 +177,22 @@ USING A SANDBOX
 
     start
     restart
-    stop "./start", "./restart", and "./stop" do what their name suggests.
-    use "./use" calls the command line client with the appropriate
-    parameters,
-    clear "./clear" stops the server and removes everything from the data
-    directory, letting you ready to start from scratch.
-    multiple server sandbox On a replication sandbox, you have the same
-    commands, with a "_all" suffix, meaning that you propagate the command
-    to all the members. Then you have "./m" as a shortcut to use the master,
-    "./s1" and "./s2" to access the slaves (and "s3", "s4" ... if you define
-    more)
+    stop
+       "./start", "./restart", and "./stop" do what their name suggests.
+
+    use
+       "./use" calls the command line client with the appropriate
+       parameters,
+
+    clear
+       "./clear" stops the server and removes everything from the data
+       directory, letting you ready to start from scratch.
+
+    multiple server sandbox
+       On a replication sandbox, you have the same commands, with a "_all"
+       suffix, meaning that you propagate the command to all the members.
+       Then you have "./m" as a shortcut to use the master, "./s1" and
+       "./s2" to access the slaves (and "s3", "s4" ... if you define more)
 
        start_all
        stop_all
@@ -185,7 +201,7 @@ USING A SANDBOX
        m
        s1,s2
 
-  DATABASE USERS
+  Database users
     There are 2 database users installed by default:
 
      +-----------------+-------------+-------------------------------+
@@ -195,7 +211,7 @@ USING A SANDBOX
      |  msandbox@%     | msandbox    | all on *.*                    |
      +-----------------+-------------+-------------------------------+
 
-  PORTS AND SOCKETS
+  Ports and sockets
     Ports are created from the server version. a 5.1.25 server will use port
     5125, unless you override the default. Replicated and group sandboxes
     add a delta number to the version figure, to avoid clashing with single
@@ -209,19 +225,20 @@ USING A SANDBOX
      |  3310  | /tmp/mysql_sandbox3310.sock |
      +--------+-----------------------------+
 
-  ENVIRONMENT VARIABLES
-    All programs in the Sandbox suite recognize and uses the following
+  Environment variables
+    All programs in the Sandbox suite recognize and use the following
     variables:
 
-     * HOME the user's home directory
+     * HOME the user's home directory; ($HOME)
      * SANDBOX_HOME the place where the sandboxes are going to be built. 
        ($HOME/sandboxes by default)
-     * USER the operating system user
-     * PATH the execution path
-     * SBDEBUG if set, the programs will print debugging messages
+     * USER the operating system user;
+     * PATH the execution path;
+     * if SBDEBUG if set, the programs will print debugging messages
 
     In addition to the above, make_sandbox will use * SANDBOX_BINARY or
     BINARY_BASE the directory containing the installation server binaries
+    (default: $HOME/opt/mysql)
 
     make_replication_sandbox will recognize the following * MASTER_OPTIONS
     additional options to be passed to the master * SLAVE_OPTIONS additional
@@ -417,14 +434,18 @@ TESTING
 REQUIREMENTS
     To use this package you need at least the following:
 
-    * Linux or Mac OSX operating system (it may work in other *NIX OSs, but
-    has not been tested)
-    * a binary tarball of MySQL 3.23 or later
-    * Perl 5.8.1 or later (for installation only)
-    * bash shell
+    *  Linux or Mac OSX operating system (it may work in other *NIX OSs, but
+       has not been tested)
+
+    *  A binary tarball of MySQL 3.23 or later
+
+    *  Perl 5.8.1 or later
+
+    *  Bash shell
 
 COPYRIGHT
-version 3.0
+    Version 3.0
+
     Copyright (C) 2006,2007,2008,2009 Giuseppe Maxia
 
     Home Page http://launchpad.net/mysql-sandbox/
