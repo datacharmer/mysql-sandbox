@@ -1,8 +1,8 @@
-2.0.98i 08-Apr-2009
+2.0.98i 09-Apr-2009
 	- added script make_sandbox_from_source, which will create
 	  a sandbox from a build directory
 	- Extended maximum port to 64000
-	- added MySQL versions 5.[2345] 
+	- added MySQL versions 5.[2345] as accepted for a Sandbox
 2.0.98h 08-Apr-2009
 	- Changed test_sandbox to use IPC::Open3 instead of qx, when
 	  available. This will make the 'make test' output more readable.

@@ -1,0 +1,180 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use MySQL::Sandbox;
+
+
+my $msb = MySQL::Sandbox->new();
+
+my $source_directory = shift
+    or get_help('source directory missing');
+
+my $sandbox_type = shift
+    or get_help('sandbox_type missing');
+
+my %sandbox_apps = (
+    single      => 'make_sandbox',
+    replication => 'make_replication_sandbox',
+    circular    => 'make_replication_sandbox',
+    multiple    => 'make_multiple_sandbox',
+);
+
+unless ( -d $source_directory) {
+    die "<$source_directory> is not a directory\n";
+}
+
+$source_directory =~ s{/$}{};
+
+unless ( -x "$source_directory/scripts/make_binary_distribution") {
+    die "can't find executable script 'make_binary_distribution'\n";
+}
+
+unless ( -x "$source_directory/sql/mysqld") {
+    die "Can't find executable mysqld. Sources don't seem to have been compiled.\n";
+}
+
+unless ($sandbox_apps{$sandbox_type}) {
+    get_help("unsupported sandbox type ($sandbox_type)");
+}
+
+chdir $source_directory 
+    or die "can't change path to <$source_directory>\n";
+
+my $source_version = get_source_version();
+
+my $old_tarball = last_tarball();
+
+my $new_tarball;
+
+if ( $old_tarball ) {
+    my @tgz = file_age($old_tarball);
+    my @mysqld = file_age("./sql/mysqld");    
+    my @dir = file_age($source_version) ;
+    unless (@dir) {
+        @dir = ('---', 0);
+    }
+    if (($mysqld[1] > $tgz[1]) or ($mysqld[1] > $dir[1])) {
+        print " new build. The tarball needs to be redone\n";
+        $new_tarball = build_tarball();        
+        # removing the directory
+        if ( -d $source_version ) {
+            remove_source_dir($source_version);
+        }
+    }
+    elsif ($tgz[1] > $dir[1])  {
+        print "tarball newer than the version directory\n";
+        # removing the directory
+        if ( ( -d $source_version) && (( $tgz[1] - $dir[1] ) > 60 )) {
+            remove_source_dir($source_version);
+        }
+        $new_tarball = $old_tarball;
+    }
+    elsif ( $dir[1] >= $tgz[1] ) {
+        print "tarball older than directory\n";
+        # Nothing to be done
+        $new_tarball = $source_version;
+    }
+    else {
+        print "dir @dir\n";
+        print "mysqld @mysqld\n";
+        print "tgz @tgz\n";
+        die "unhandled \n";
+    }
+}
+else {
+    print "no old tarball found\n";
+    $new_tarball = build_tarball();
+}
+
+
+my $options = '';
+if ( $sandbox_type eq 'circular') {
+    $options = '--topology=circular';
+}
+
+system "$sandbox_apps{$sandbox_type} $source_directory/$new_tarball $options  @ARGV"; 
+
+#
+#  functions
+#
+
+sub build_tarball {
+    my $result = system "./scripts/make_binary_distribution";
+
+    if ($result or $? ) {
+        die "error creating binary tarball. ($result - $? - $! )";
+    }
+
+    my $tarball = last_tarball()
+        or die "can't find a tarball\n";
+    return $tarball;
+}
+
+sub get_source_version {
+    open my $CONFIG, q{<}, 'configure.in'
+        or die "can't find configure.in\n";
+    my $version;
+    while (my $line = <$CONFIG>) {
+        if ($line =~ /AM_INIT_AUTOMAKE\D+(\d\.\d.\d+)/) {
+            $version = $1;
+            last;
+        }
+    }
+    close $CONFIG;
+    if ($version) {
+        return $version;
+    }
+    else {
+        die "can't find a version in configure.in\n";
+    }
+}
+
+sub last_tarball {
+    my %files = map {file_age($_)} 
+        grep {$_ !~  /^mysql-\d\.\d\.\d+\.tar\.gz$/}  
+            glob("*.tar.gz");
+    return unless keys %files;
+    return (sort { $files{$b} <=> $files{$a} } keys %files)[0];
+}
+
+sub file_age {
+    my ($filename) = @_; 
+    return unless -e $filename;
+    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+        $atime,$mtime,$ctime,$blksize,$blocks) = stat($filename);
+    return ($filename, $atime);
+}
+
+
+sub get_help{
+    my ($msg) = @_;
+    print $msb->credits(), "\n";
+    if ($msg) {
+        print "*** $msg\n";
+    }
+    print <<END_HELP;
+Syntax: $0 source_directory sandbox_type [options]
+
+    source directory is where you have successfully
+        run ./configure && make
+
+    sandbox_type is one of 
+        single
+        replication
+        circular
+        multiple
+
+    options is anything that is needed by the sandbox
+        application of your choice
+
+END_HELP
+exit 1;
+}
+
+sub remove_source_dir {
+    my ($dir) = @_;
+    system ("rm -rf $dir"); 
+}
+
+__END__
