@@ -1,0 +1,47 @@
+# This is a sample user defined test
+# that you can run using test_sandbox
+#
+# There are two kind of tests: shell and sql
+# the test type is defined by a keyword 
+# followed by a colon.
+
+# The 'shell' test requires a 'command', which is
+# passed to a shell.
+# The 'expected' label is a string that you
+# expect to find within the shell output.
+# If you don't expect anything, you can just 
+# say "expected = OK", meaning that you will
+# be satisfied with a ZERO exit code reported 
+# by the operating system.
+# The 'msg' is the description of the test
+# that is shown to you when the test runs.
+shell:
+command  = make_sandbox 5.1.30 --no_confirm
+expected = sandbox server started
+msg      = sandbox creation
+
+# The 'sql' test requires a 'path', which is the
+# place where the test engine expects to find a
+# 'use' script.
+# The 'query' is passed to the above mentioned script
+# and the output is captured for further processing.
+# The 'expected' parameter is a string that you want 
+# to find in the query output.
+# The 'msg' parameter is like the one used with the
+# 'shell' test.
+sql:
+path    = $SANDBOX_HOME/msb_5_1_30
+query   = select version()
+expected = 5.1.30
+msg      = checking version
+
+# All strings starting with a $ are expanded to their 
+# corresponding environment variables. 
+# For example, if $SANDBOX_HOME is /home/sb/tests,
+# the line below will expand to
+# command = /home/sb/tests/msb_5_1_30/stop
+
+shell:
+command  = $SANDBOX_HOME/msb_5_1_30/stop
+expected = OK
+msg      = stopped 

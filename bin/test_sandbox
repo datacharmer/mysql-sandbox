@@ -5,6 +5,7 @@ use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
 use MySQL::Sandbox;
 use English qw( -no_match_vars );
+use Carp;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
 
@@ -45,16 +46,18 @@ my %tests = (
     tuning      => 1,
     sbtool      => 0,
     smoke       => 0,
+    user        => 0,
 );
 
 # my %custom_tests = ();
 
-my ($user_tests, $user_versions, $get_help, $preserve_tests);
+my ($user_tests, $user_versions, $user_defined_test, $get_help, $preserve_tests, );
 
 
 GetOptions( 
    "tarball|versions=s" => \$user_versions,
    "tests=s"    => \$user_tests, 
+   "user_test=s"=> \$user_defined_test, 
    "verbose"    => \$verbose,
    "preserve_tests" => \$preserve_tests,
    "help|h"     => \$get_help,
@@ -78,11 +81,11 @@ if ($user_versions) {
     }
 }
 for my $ver (@versions) {
-    $ver =~ s/^~/$ENV{HOME}/;
+    $ver =~ s/^~/$ENV{'HOME'}/;
     unless (( -d "/opt/mysql/$ver") 
-            or ( -d "$ENV{HOME}/opt/mysql/$ver") 
+            or ( -d "$ENV{'HOME'}/opt/mysql/$ver") 
             or ( -f $ver )) {
-        print "version $ver not found in either /opt/mysql or $ENV{HOME}/opt/mysql\n";
+        print "version $ver not found in either /opt/mysql or $ENV{'HOME'}/opt/mysql\n";
         die "use --versions to list the versions you want to test\n";
     }
 }
@@ -134,14 +137,14 @@ if ( -x $sh_stop_all ) {
 # 
 # setting the current sandbox directory for this test
 #
-$sandbox_home = $ENV{TEST_SANDBOX_HOME} || "$ENV{'HOME'}/test_sb";
+$sandbox_home = $ENV{'TEST_SANDBOX_HOME'} || "$ENV{'HOME'}/test_sb";
 $ENV{'SANDBOX_HOME'} = $sandbox_home;
 $sh_stop_all = "$sandbox_home/stop_all";
 my $sh_clear_all = "$sandbox_home/clear_all";
 my $sh_start_all = "$sandbox_home/start_all";
 my $sh_use_all = "$sandbox_home/use_all";
 
-if ($tests{smoke} and $tests{sbtool}) {
+if ($tests{'smoke'} and $tests{'sbtool'}) {
     die "test <smoke> and test <sbtool> should not run together\n";
 }
 
@@ -188,12 +191,17 @@ for my $ver (@versions) {
 }
 
 if ($tests{'custom'}) {
-    run_custom_test();
+    run_mcustom_test();
+}
+
+if ($tests{'user'}) {
+    die "test file required\n" unless $user_defined_test;
+    run_user_defined_test($user_defined_test);    
 }
 
 my $summaries  = 0;
 for my $test (keys %tests) {
-    if ($tests{$test} && ($test !~ /^(?:tuning|smoke|sbtool)$/)) {
+    if ($tests{$test} && ($test !~ /^(?:tuning|smoke|sbtool|user)$/)) {
         $summaries = 1;
         last;
     }
@@ -203,11 +211,11 @@ if ($summaries) {
     run_summary_tests();
 }
 
-if ($tests{tuning}) {
+if ($tests{'tuning'}) {
     run_tuning_test();
 }
 
-if ($tests{smoke}) {
+if ($tests{'smoke'}) {
     for my $ver ( @versions ) {
         if (-f "$sandbox_home/stop_all") {
             system qq("$sandbox_home/stop_all > /dev/null 2>&1"); 
@@ -217,7 +225,7 @@ if ($tests{smoke}) {
     }
 }
 
-if ($tests{sbtool}) {
+if ($tests{'sbtool'}) {
     for my $ver (@versions) {
         if ( -d $sandbox_home ) {
             system "$sandbox_home/stop_all > /dev/null 2>&1";
@@ -229,14 +237,14 @@ if ($tests{sbtool}) {
 
 
 tprintf "*** Executed %d tests. Passed %d (%5.2f%%). Failed %d (%5.2f%%)\n",
-        $test_results{run},
-        $test_results{passed},
-        $test_results{passed} / $test_results{run} * 100,
-        $test_results{failed},
-        $test_results{failed} / $test_results{run} * 100
+        $test_results{'run'},
+        $test_results{'passed'},
+        $test_results{'passed'} / $test_results{'run'} * 100,
+        $test_results{'failed'},
+        $test_results{'failed'} / $test_results{'run'} * 100
         ;
 
-if ($test_results{failed}) {
+if ($test_results{'failed'}) {
     exit 1;
 }
 
@@ -259,7 +267,7 @@ sub get_exec_result {
 }
 
 sub get_exec_result_qx {
-    my ($cmd, $verbose) = @_; 
+    my ($cmd) = @_; 
     print "(shell) $cmd\n" if $verbose;
     my $output = qx($cmd );
     if ($?) {
@@ -269,7 +277,7 @@ sub get_exec_result_qx {
 }
 
 sub get_exec_result_open3 {
-    my ($cmd, $verbose) = @_; 
+    my ($cmd) = @_; 
     print "(shell) $cmd\n" if $verbose;
     my ($out, $in, $err) = (undef, undef, 1);
     my $result = open3($in, $out, $err, $cmd );
@@ -289,7 +297,7 @@ sub get_exec_result_open3 {
 #  runs a SQL command and returns the output
 #
 sub get_sql_result {
-    my ($sb, $query, $verbose) = @_;
+    my ($sb, $query) = @_;
     print "(sql) $query\n" if $verbose;
     if ( -f "$sb/use" ) {
         # print qq(<echo "$query" | $sb/use -N -B >\n);
@@ -348,6 +356,9 @@ usage: $0 [options]
       executes specific tests.
       currently: (@{[join ",", grep {$tests{$_}} keys %tests]})
 
+    --user_test=filename
+      executes user defined tests from given file
+
     --preserve_tests
       does not remove tests at the end of the suite. 
 
@@ -375,163 +386,223 @@ sub ok ($;$) {
     my ($condition, $msg) = @_;
     # print Dumper \@_;
     $msg = '***' unless defined $msg;
-    $test_results{run}++;
+    $test_results{'run'}++;
     if ($condition) {
-        $test_results{passed}++;
+        $test_results{'passed'}++;
     }
     else {
         print "not ";
-        $test_results{failed}++;
+        $test_results{'failed'}++;
     }
-    print "ok $test_results{run} - $msg\n";
+    print "ok $test_results{'run'} - $msg\n";
     if ($verbose) { die "halting the test on verbose\n" unless $condition; }
     return $condition;
 }
 
 sub run_single_test {
     my ($ver, $version, $bare_version) = @_;
-    my $single_sandbox = get_exec_result(
-            "make_sandbox $ver --no_confirm", 
-            $verbose);
-    ok( $single_sandbox =~ /sandbox server started/,
-            "single SB ($bare_version) started" );
-    my $sql_result = get_sql_result(
-            "$sandbox_home/msb_$version", 
-            'select version(), @@server_id',
-            $verbose );
-    ok( $sql_result =~ /$bare_version/, 
-            "single SB ($bare_version) SQL " );
-    $sql_result = get_sql_result(
+    ok_exec( {
+            command => "make_sandbox $ver --no_confirm", 
+            expected => 'sandbox server started',
+            msg      => "single SB ($bare_version) started"
+            });
+    ok_sql( {
+            path     => "$sandbox_home/msb_$version", 
+            query    => 'select version(), @@server_id',
+            expected => $bare_version,
+            msg      => "single SB ($bare_version) SQL"
+            });
+    get_sql_result(
             "$sandbox_home/msb_$version", 
             'create database \`a-a\`', # Bug#278394 - this will fail on 'clear' if not fixed
             $verbose );
- 
+}
+
+sub ok_sql {
+    my ($params, $wanted_result) = @_;
+    for my $p (qw(path query expected msg)) {
+        unless (defined $params->{$p}) {
+            croak "parameter <$p> not defined\n";
+        }
+    }
+    my $result = get_sql_result(
+            $params->{'path'},
+            $params->{'query'}, 
+            $verbose);
+    if ($wanted_result && ref($wanted_result) eq 'SCALAR')  {
+        $$wanted_result = $result;
+    }
+    if (! ref($params->{'expected'}) ) {
+        if ($params->{'expected'} =~ /^ok$/i) {
+            return ok($CHILD_ERROR == 0 , $params->{'msg'});
+        }
+        elsif ($params->{'expected'} =~ s/^\!//) {
+            return ok( $result !~ /$params->{'expected'}/i , $params->{'msg'});
+        }
+        else {
+            return ok( $result =~ /$params->{'expected'}/i , $params->{'msg'});
+        }
+    }
+    elsif (ref($params->{'expected'}) eq 'ARRAY') {
+        my $count = 0;
+        for my $expected (@{$params->{'expected'}}) {
+            $count++;
+            if ($expected =~ /^ok$/i) {
+                ok($CHILD_ERROR == 0 , $params->{'msg'} . "-[$count]");
+            }
+            elsif ( $expected =~ s/^!//) {
+                ok( $result !~ /$expected/i , $params->{'msg'} . "-[$count]");
+            }
+            else {
+                ok( $result =~ /$expected/i , $params->{'msg'} . "-[$count]");
+            }
+        }
+    }
+    else {
+        croak "parameter 'expected' is neither a scalar nor an array reference\n";
+    }
+}
+
+sub ok_exec {
+    my ($params) = @_;
+    for my $p (qw(command expected msg)) {
+        unless (defined $params->{$p}) {
+            croak "parameter <$p> not defined\n";
+        }
+    }
+    my $result = get_exec_result($params->{'command'});
+    if ($verbose) {
+        print $result, "\n";
+    }
+    if (! ref $params->{'expected'} ) {
+        if ($params->{'expected'} =~ /^ok$/i) {
+            return ok($CHILD_ERROR == 0 , $params->{'msg'});
+        }
+        elsif ($params->{'expected'} =~ s/^\!//) {
+            return ok( $result !~ /$params->{'expected'}/, $params->{'msg'} );
+        }
+        else {
+            return ok( $result =~ /$params->{'expected'}/, $params->{'msg'} );
+        }
+    }
+    elsif (ref( $params->{'expected'}) eq 'ARRAY') {
+        my $count =0;
+        for my $expected (@{$params->{'expected'}}) {
+            $count++;
+            if ($expected =~ /^ok$/i) {
+                ok($CHILD_ERROR == 0 , $params->{'msg'} . "-[$count]");
+            }
+            elsif ($expected =~ s/^\!//) {
+                ok( $result !~ /$expected/, $params->{'msg'} . "-[$count]" );
+            }
+            else {
+                ok( $result =~ /$expected/, $params->{'msg'} . "-[$count]" );
+            }
+        }
+    }
+    else {
+        croak "parameter 'expected' is neither a scalar nor an array reference\n";
+    }
 }
 
 sub run_replication_test {
     my ($ver, $version, $bare_version) = @_;
-    my $replication_sandbox = get_exec_result(
-            "make_replication_sandbox $ver",
-            $verbose);
-    ok( $replication_sandbox !~ /not started yet/, 
-            "replication sandbox ($bare_version) started");
-    my $sql_result = get_sql_result(
-            "$sandbox_home/rsandbox_$version/master", 
-            'select version(), @@server_id', 
-            $verbose );
-    ok( ($sql_result =~ /$bare_version/), 
-            "replication SB master ($bare_version) SQL - version" );
-    ok( ($sql_result =~ /\b1\s*$/), 
-            "replication SB master ($bare_version) SQL - server_id" );
 
+    ok_exec({ command  => "make_replication_sandbox $ver",
+              expected => '!not started yet',
+              msg      => "replication sandbox ($bare_version) started"
+            });
+
+    ok_sql ({ path => "$sandbox_home/rsandbox_$version/master",
+             query => 'select version(), @@server_id',
+             expected => [ $bare_version, '\b1\s*$'],
+             msg => "replication SB master ($bare_version) SQL - version - server_id"
+            });
+    
     sleep 1;
-    $sql_result = get_sql_result(
-            "$sandbox_home/rsandbox_$version/node1", 
-            'select version(), @@server_id', 
-            $verbose );
-    ok( ($sql_result =~ /$bare_version/), 
-            "replication SB slave1 ($bare_version) SQL - version" );
-    ok( ($sql_result =~ /\b101\s*$/), 
-            "replication SB slave1 ($bare_version) SQL - server_id" );
 
-    $sql_result = get_sql_result(
-            "$sandbox_home/rsandbox_$version/node2", 
-            'select version(), @@server_id',
-            $verbose );
-    ok( ($sql_result =~ /$bare_version/), 
-            "replication SB slave2 ($bare_version) SQL - version" );
-    ok(  ($sql_result =~ /\b102\s*$/), 
-            "replication SB slave2 ($bare_version) SQL - server_id" );
-    $sql_result = get_sql_result(
-            "$sandbox_home/rsandbox_$version/master",
-           q{drop table if exists test.t1; create table test.t1 (id int); show tables from test},
-          $verbose); 
-    ok( ($sql_result =~ /t1/) , 
-            "replication SB - table created on master" );
-
-    $sql_result = get_sql_result(
-            "$sandbox_home/rsandbox_$version/node1",
-           q{show tables from test},
-           $verbose);
-    ok( ($sql_result =~ /t1/), 
-            "replication SB - table exists on slave1" );
-    $sql_result = get_sql_result(
-            "$sandbox_home/rsandbox_$version/node2",
-           q{show tables from test},
-           $verbose);
-    ok( ($sql_result =~ /t1/), 
-            "replication SB - table exists on slave2" );
+    for my $node (1, 2) {
+        ok_sql ({ path => "$sandbox_home/rsandbox_$version/node$node",
+             query => 'select version(), @@server_id',
+             expected => [ $bare_version, '\b10' . $node . '\s*$'],
+             msg => "replication SB slave$node ($bare_version) SQL - version - server_id"
+            });
+    }
+ 
+    ok_sql ({ path => "$sandbox_home/rsandbox_$version/master",
+             query => q{drop table if exists test.t1; create table test.t1 (id int); show tables from test},
+             expected => 't1',
+             msg => "replication SB - table created on master"
+            });
+ 
+    for my $node (1, 2) {
+        ok_sql ({ path => "$sandbox_home/rsandbox_$version/node$node",
+                 query => q{show tables from test},
+                 expected => 't1',
+                 msg => "replication SB - table exists on slave$node"
+                });
+    }
 }
 
 sub run_circular_test {
     my ($ver, $version, $bare_version) = @_;
-    my $replication_sandbox = get_exec_result(
-            "make_replication_sandbox --how_many_slaves=3 --topology=circular $ver",
-            $verbose);
-    ok( $replication_sandbox !~ /not started yet/, 
-            "circular replication sandbox ($bare_version) started");
+    
+    ok_exec({ command  => "make_replication_sandbox --how_many_slaves=3 --topology=circular $ver",
+              expected => '!not started yet',
+              msg      => "circular replication sandbox ($bare_version) started",
+        });
 
     for my $node ( 1 .. 3) {
-        #$verbose = 1;
-        my $sql_result = get_sql_result(
-            "$sandbox_home/rcsandbox_$version/node$node", 
-            'show slave status\G', 
-            $verbose );
-        ok( $sql_result =~ /IO_Running.+Yes/ , 
-            "circular replication SB node$node ($bare_version) SQL - IO Running" );
-        ok( $sql_result =~ /SQL_Running.+Yes/ , 
-            "circular replication SB node$node ($bare_version) SQL - SQL Running" );
+        ok_sql ({ path     => "$sandbox_home/rcsandbox_$version/node$node",
+                  query    => 'show slave status\G',
+                  expected => [ 'IO_Running.+Yes', 'SQL_Running.+Yes' ], 
+                  msg      => "circular replication SB node$node ($bare_version) SQL - Running"
+            }
+        );
         sleep 1;
     }
 }
 
 sub run_multiple_test {
     my ($ver, $version, $bare_version) = @_;
-    my $multiple_sandbox = get_exec_result(
-            "make_multiple_sandbox $ver",
-            $verbose);
-    ok( $multiple_sandbox !~ /not started yet/, 
-            "multiple sandbox ($bare_version) started");
+
+    ok_exec({ command => "make_multiple_sandbox $ver",
+              expected => '!not started yet',
+              msg      => "multiple sandbox ($bare_version) started"
+            });
 
     for my $node (1 .. 3 ) {
-        my $sql_result = get_sql_result(
-                "$sandbox_home/multi_msb_$version/node$node", 
-                'select version(), @@server_id',
-                $verbose );
-        ok($sql_result =~ /$bare_version/, 
-                "multiple SB node $node ($bare_version) SQL - version" );
-        ok( $sql_result =~ /\b10$node\s*$/, 
-                "multiple SB node $node ($bare_version) SQL - server_id" );
+
+        ok_sql({ path  => "$sandbox_home/multi_msb_$version/node$node",
+                 query => 'select version(), @@server_id', 
+                 expected => [ $bare_version, '\b10' . $node . '\s*$' ],
+                 msg      => "multiple SB node $node ($bare_version) SQL - version - server_id"
+                });
     }
 }
 
-sub run_custom_test {
-    my $custom_sandbox = get_exec_result(
-            "make_multiple_custom_sandbox @versions",
-            $verbose);
-    ok($custom_sandbox !~ /not started yet/, 
-                "custom sandbox ( @{[map {get_bare_version($_)} @versions]} ) started");
-    my $custom_dir = '';
-    if ($custom_sandbox =~ /group directory installed on (\S+)/) {
-        $custom_dir = $1;
-        ok(-d $custom_dir, 'custom group directory exists')
+sub run_mcustom_test {
+
+    my $custom_dir = "$sandbox_home/multi_cmsb_@{[map {get_bare_version($_)} @versions]}";
+    $custom_dir =~ s/ /-/g;
+    $custom_dir =~ s/\./_/g;
+    ok_exec({ command => "make_multiple_custom_sandbox @versions",
+              expected => ['!not started yet', "group directory installed on $custom_dir" ],
+              msg      => "custom sandbox ( $custom_dir ) started"
+            });
+
+    ok(-d $custom_dir, 'custom group directory exists')
             or die "custom group directory not created\n";
-    }
-    else {
-        die "can't find custom group directory\n";
-    }
     my $counter = 0;
     for my $ver (@versions) {
         my $bare_version = get_bare_version($ver);
         $counter++;
-        my $sql_result = get_sql_result(
-                    "$custom_dir/node$counter", 
-                    'select version(), @@server_id',
-                    $verbose );
-        ok($sql_result =~ /$bare_version/, 
-                    "multiple custom SB node $counter ($bare_version) SQL - version" );
-        ok($sql_result =~ /\b10$counter\s*$/, 
-                    "multiple custom SB node $counter ($bare_version) SQL - server_id" );
+
+        ok_sql({ path   => "$custom_dir/node$counter",
+                 query  => 'select version(), @@server_id',
+                 expected => [$bare_version, '\b10' . $counter . '\s*$'],
+                 msg      => "multiple custom SB node $counter ($bare_version) SQL - version - server_id"
+                });
     }
 }
 
@@ -544,20 +615,20 @@ sub run_summary_tests {
         $new_mysqld_safe_procs - $how_many_mysqld_safe;
 
     my $instances = 
-               (  1 * $tests{single}  # single 
-                + 3 * $tests{replication}  # replicated
-                + 3 * $tests{circular}  # circular
-                + 3 * $tests{multiple} # multiple
+               (  1 * $tests{'single'}          # single 
+                + 3 * $tests{'replication'}     # replicated
+                + 3 * $tests{'circular'}        # circular
+                + 3 * $tests{'multiple'}        # multiple
               );
     my $expected_processes = 
                 $instances * scalar(@versions)
-                + (scalar(@versions) * $tests{custom})  ; # custom counts only once
+                + (scalar(@versions) * $tests{'custom'})  ; # custom counts only once
 
     ok( $expected_processes == ($new_mysqld_safe_procs - $how_many_mysqld_safe), 
             "expected processes ($expected_processes)" );
 
     tprint "** stopping all - please wait\n";
-    my $stop_all = get_exec_result("$sandbox_home/stop_all", $verbose);
+    my $stop_all = get_exec_result("$sandbox_home/stop_all");
 
     $new_mysqld_procs = get_number_of_processes('mysqld');
     $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
@@ -569,7 +640,7 @@ sub run_summary_tests {
             'expected processes (0)' );
 
     tprint "** starting all - please wait\n";
-    my $start_all = get_exec_result("$sandbox_home/start_all", $verbose);
+    my $start_all = get_exec_result("$sandbox_home/start_all");
 
     $new_mysqld_procs = get_number_of_processes('mysqld');
     $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
@@ -580,9 +651,9 @@ sub run_summary_tests {
     ok( $expected_processes == ($new_mysqld_safe_procs - $how_many_mysqld_safe), 
             "expected processes ($expected_processes)" );
 
-    unless ($ENV{PRESERVE_TESTS} or $preserve_tests) { 
+    unless ($ENV{'PRESERVE_TESTS'} or $preserve_tests) { 
         tprint "** cleaning up - please wait\n";
-        my $clear_all = get_exec_result("$sandbox_home/clear_all", $verbose);
+        my $clear_all = get_exec_result("$sandbox_home/clear_all");
 
         $new_mysqld_procs = get_number_of_processes('mysqld');
         $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
@@ -614,31 +685,33 @@ sub run_tuning_test {
     my $version = $bare_version;
     $version =~ s/\./_/g;
 
-    my $single_sandbox = get_exec_result("make_sandbox $ver --no_confirm -c skip-innodb -c sql_mode=strict_all_tables");
-    my $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-            'show engines',
-            $verbose );
-    ok( ($sql_result !~ /innodb\s*yes/i), 
-            "single SB with option skip-innodb ($bare_version) SQL " )
-        or tprint "engines: $sql_result\n";
-     
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-            q(show variables like 'SQL_MODE'),
-            $verbose );
-    ok( ($sql_result =~ /STRICT_ALL_TABLES/i),
-            "single SB with option sql_mode ($bare_version) SQL " )
-        or tprint "SQL_MODE: $sql_result\n";
+    ok_exec({ command  => "make_sandbox $ver --no_confirm -c skip-innodb -c sql_mode=strict_all_tables",
+              expected => 'sandbox server started',
+              msg      => 'tuning server created',
+            });
 
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-            q(create database xyz; show databases like 'xyz'),
-            $verbose);
-    ok ( $sql_result =~ /xyz/,
-            "single SB ($bare_version) - create database");
-    my $clear_sandbox = get_exec_result("$sandbox_home/msb_$version/clear");
-    ok ($clear_sandbox !~ /error/i, "single SB ($bare_version) - clear result" );
+    ok_sql({ path   => "$sandbox_home/msb_$version",
+             query  => 'show engines',
+             expected => '!innodb\s*yes',
+             msg      => "single SB with option skip-innodb ($bare_version) SQL"
+            });
+     
+    ok_sql({  path => "$sandbox_home/msb_$version",
+              query => q(show variables like 'SQL_MODE'),
+              expected => 'STRICT_ALL_TABLES',
+              msg      => "single SB with option sql_mode ($bare_version) SQL "
+            });
+
+    ok_sql({ path   => "$sandbox_home/msb_$version",
+             query  => q(create database xyz; show databases like 'xyz'),
+             expected => 'xyz',
+             msg => "single SB ($bare_version) - create database"
+            });
+
+    ok_exec({  command => "$sandbox_home/msb_$version/clear",
+               expected => '!error',
+               msg      => "single SB ($bare_version) - clear result"
+            });
 
     # my $sandbox_dirs = get_exec_result("ls -d $sandbox_home/msb_$version/data/*/ | wc -l ");
     my $sandbox_dirs = how_many_dirs("$sandbox_home/msb_$version/data");
@@ -646,7 +719,7 @@ sub run_tuning_test {
     ok($sandbox_dirs == 2 , "single SB ($bare_version) - effective clear ");
 
     tprint "** cleaning up - please wait\n";
-    my $clear_all = get_exec_result("$sandbox_home/clear_all", $verbose);
+    my $clear_all = get_exec_result("$sandbox_home/clear_all");
 }
 
 sub get_bare_version {
@@ -663,7 +736,7 @@ sub get_bare_version {
 sub run_smoke_test {
     my ($ver) = @_;
     if ($ver =~ /^[34]/) {
-        tprint "skipping tuning test. It requires version >=5\n";
+        tprint "skipping smoke test. It requires version >=5\n";
         return;
     }
     my $bare_version = get_bare_version($ver);
@@ -679,9 +752,10 @@ sub run_smoke_test {
     my $previous_mysqld = get_number_of_processes('mysqld');
     my $previous_mysqld_safe = get_number_of_processes('mysqld_safe');
 
-    my $single_sandbox = get_exec_result("make_sandbox $ver --no_confirm");
-    ok( $single_sandbox =~ /sandbox server started/,
-            "single SB ($bare_version) started" );
+    ok_exec({ command => "make_sandbox $ver --no_confirm",
+              expected => 'sandbox server started',
+              msg      => "single SB ($bare_version) started"
+            });
 
     my $first_mysqld = get_number_of_processes('mysqld');
     my $first_mysqld_safe = get_number_of_processes('mysqld_safe');
@@ -744,22 +818,20 @@ sub run_smoke_test {
     tprint "previous pid ($pid) current pid ($secondpid)\n" if $verbose;
     ok ($secondpid ne $pid, "new mysqld process created (2)");
 
-    $sql_result = get_sql_result(
-            "$sandbox_home/msb_$version", 
-            'select version()',
-            $verbose );
+    ok_sql({ path   => "$sandbox_home/msb_$version",
+             query  => 'select version()',
+             expected => $bare_version,
+             msg      => "single SB ($bare_version) version (1)"
+            });
 
-    ok( $sql_result =~ /$bare_version/, 
-            "single SB ($bare_version) version (1)" );
+    my $visual_version ;
 
-    $sql_result = get_sql_result(
-            "$sandbox_home/msb_$version", 
-            q{show variables like 'version'},
-            $verbose );
-    ok( $sql_result =~ /$bare_version/, 
-            "single SB ($bare_version) version (2) " );
+    ok_sql({ path   => "$sandbox_home/msb_$version",
+             query  => q{show variables like 'version'},
+             expected => $bare_version,
+             msg      => "single SB ($bare_version) version (2)"
+            }, \$visual_version);
 
-    my $visual_version = $sql_result;
     chomp $visual_version;
     $sql_result = get_sql_result(
             "$sandbox_home/msb_$version", 
@@ -776,13 +848,12 @@ sub run_smoke_test {
     ok( $sql_result && (! ( $sql_result =~ /nothing\s*found/i)), 
             "single SB ($bare_version) HELP tables filled " );
      
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-            q(create database install_test; show databases like 'install_test'),
-            $verbose);
-    ok ( $sql_result =~ /install_test/,
-            "single SB ($bare_version) - create database");
-    
+    ok_sql ({ path      => "$sandbox_home/msb_$version",
+              query     => q(create database install_test; show databases like 'install_test'),
+              expected  => 'install_test',
+              msg       => "single SB ($bare_version) - create database"
+            });
+
     my @test_engines = (
         {
             min_version => 5 ,
@@ -800,92 +871,80 @@ sub run_smoke_test {
 
     for my $test_engine (@test_engines) {
         my $major_version = substr($version,0,1);
-        if ($major_version <  $test_engine->{min_version} ) {
+        if ($major_version <  $test_engine->{'min_version'} ) {
             next;
         }
-        my $engine = $test_engine->{engine};
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-           qq{drop table if exists install_test.testib;
-            create table install_test.testib ( 
-            id int UNSIGNED NOT NULL AUTO_INCREMENT , 
-            nr int UNSIGNED NOT NULL , 
-            PRIMARY KEY ( id)
-            ) engine=$engine; show tables from install_test },
-            $verbose);
-    ok ( $sql_result =~ /testib/,
-            "single SB ($bare_version) - create table");
+        my $engine = $test_engine->{'engine'};
 
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-           q{select engine from information_schema.tables
-             where table_schema='install_test'
-             and table_name = 'testib'
-            },
-            $verbose);
-    my $right_engine=   ($sql_result and ($sql_result =~ /$engine/i));
+        ok_sql ({ path      => "$sandbox_home/msb_$version",
+              query     => 
+                qq{drop table if exists install_test.testib;
+                create table install_test.testib ( 
+                id int UNSIGNED NOT NULL AUTO_INCREMENT , 
+                nr int UNSIGNED NOT NULL , 
+                PRIMARY KEY ( id)
+                ) engine=$engine; show tables from install_test },
+              expected  => 'testib',
+              msg       => "single SB ($bare_version) - create table"
+            });
 
-    
-    ok ( $right_engine,
-            "single SB ($bare_version) - create table - check engine ($engine)")
-        or tprint "result:<$sql_result>\n" ;
+        ok_sql ({ path      => "$sandbox_home/msb_$version",
+              query     => q{select engine from information_schema.tables
+                    where table_schema='install_test'
+                    and table_name = 'testib' },
+              expected  => $engine,
+              msg       => "single SB ($bare_version) - create table - check engine ($engine)"
+            });
 
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-           q{alter table install_test.testib add index nr (nr);
+        ok_sql ({ path      => "$sandbox_home/msb_$version",
+              query     => q{alter table install_test.testib add index nr (nr);
             insert into install_test.testib(id,nr) values ( '1','1');
             insert into install_test.testib(id,nr) values ( '2','2');
             insert into install_test.testib(id,nr) values ( '3','2');
             select * from install_test.testib where nr=2 order by id asc;},
-            $verbose);
-    ok ( $sql_result =~ /2\t2\s*3\t2/, 'smoke 1');
+              expected  => '2\t2\s*3\t2',
+              msg       => "smoke 1"
+            });
 
     }
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-           q{select * from install_test.testib where nr=2 order by id desc;},
-            $verbose);
-    ok ( $sql_result =~ /3\t2\s*2\t2/, 'smoke 2');
 
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-            q{select count(*) from install_test.testib},
-            $verbose);
-    ok ($sql_result =~ /^3$/, 'rows in table'); 
+    ok_sql ({ path      => "$sandbox_home/msb_$version",
+              query     =>  q{select * from install_test.testib where nr=2 order by id desc;},
+              expected  => '3\t2\s*2\t2',
+              msg       => "smoke 2"
+            });
 
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-            q{truncate table install_test.testib; },
-            $verbose);
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-            q{select count(*) from install_test.testib},
-            $verbose);
-    ok ($sql_result =~ /^0$/, 'table truncation'); 
+    ok_sql ({ path      => "$sandbox_home/msb_$version",
+              query     =>  q{select count(*) from install_test.testib},
+              expected  => '^3$',
+              msg       => "rows in table"
+            });
 
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-            q{ drop table install_test.testib; },
-            $verbose);
+    ok_sql ({ path      => "$sandbox_home/msb_$version",
+              query     =>    q{truncate table install_test.testib;}
+                            . q{select count(*) from install_test.testib},
+              expected  => '^0$',
+              msg       => "table truncation"
+            });
 
-    $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
-            q{select count(*) from information_schema.tables where table_schema='install_test'},
-            $verbose);
-
-    ok ($sql_result =~ /^0$/, 'tables in install_test'); 
+    ok_sql ({ path      => "$sandbox_home/msb_$version",
+              query     =>    q{drop table install_test.testib;}
+                            . q{select count(*) from information_schema.tables }
+                            . q{where table_schema='install_test'},
+              expected  => '^0$',
+              msg       => "tables in install_test "
+            });
 
     $sql_result = get_sql_result(
            "$sandbox_home/msb_$version", 
             q{ drop database install_test;},
             $verbose);
-    # my $sandbox_dirs = get_exec_result("ls -d $sandbox_home/msb_$version/data/*/ | wc -l ", $verbose);
     my $sandbox_dirs = how_many_dirs("$sandbox_home/msb_$version/data");
 
     ok($sandbox_dirs == 2 , "single SB ($bare_version) - effective clean up ");
 
     tprint "** cleaning up - please wait\n";
-    my $clear = get_exec_result("$sandbox_home/msb_$version/clear", $verbose);
+    my $clear = get_exec_result("$sandbox_home/msb_$version/clear");
     if ($ver =~ m{(.+)/[^/]+(?:tgz|tar\.gz)$}) {
         my $bindir = $1;
         if ( -d "$bindir/$bare_version" ) {
@@ -911,6 +970,8 @@ sub run_sbtool_test {
             $verbose);
     ok( $first_sandbox =~ /sandbox server started/,
             "first SB (5100) started" );
+
+
     my $second_sandbox = get_exec_result(
             "make_sandbox $ver --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb", 
             $verbose);
@@ -923,13 +984,13 @@ sub run_sbtool_test {
     my $move_sandbox = get_exec_result("sbtool -o move -s $sandbox_home/first_sb -d $sandbox_home/xxx");
     ok( $move_sandbox =~ /The old scripts have been saved/, 'first SB moved to xxx');
 
-    $first_sandbox = get_exec_result("$sandbox_home/xxx/start", $verbose);
+    $first_sandbox = get_exec_result("$sandbox_home/xxx/start");
     ok( $first_sandbox =~ /sandbox server started/, "moved sandbox started");
 
     $move_sandbox = get_exec_result("sbtool -o move -d $sandbox_home/first_sb -s $sandbox_home/xxx");
     ok( $move_sandbox =~ /The old scripts have been saved/, 'xxx moved back to first SB');
 
-    $first_sandbox = get_exec_result("$sandbox_home/first_sb/start", $verbose);
+    $first_sandbox = get_exec_result("$sandbox_home/first_sb/start");
     ok( $first_sandbox =~ /sandbox server started/, "moved back sandbox started");
     
     #
@@ -945,7 +1006,7 @@ sub run_sbtool_test {
     my $copy_sandbox = get_exec_result("sbtool -o copy -s $sandbox_home/first_sb -d $sandbox_home/second_sb");
     ok( $CHILD_ERROR == 0 , 'first SB copied to second SB');
 
-    $second_sandbox = get_exec_result("$sandbox_home/second_sb/start", $verbose);
+    $second_sandbox = get_exec_result("$sandbox_home/second_sb/start");
     ok( $second_sandbox =~ /sandbox server started/, "copied sandbox started");
 
     $sql_result = get_sql_result(
@@ -967,7 +1028,7 @@ sub run_sbtool_test {
     # print $get_ports, "\n";
     my $ports = undef;
     eval "$get_ports";
-    ok ( $ports && !$ports->{5100} && $ports->{5200}, 'get ports (perl format)');
+    ok ( $ports && !$ports->{'5100'} && $ports->{'5200'}, 'get ports (perl format)');
 
     # 
     # sbtool -o info
@@ -975,8 +1036,8 @@ sub run_sbtool_test {
     my $get_info = get_exec_result("sbtool -o info");
     my $all_info = undef;
     eval "$get_info";
-    ok($all_info && $all_info->{5100}{opt}{port} == 5100, 'get info 1');
-    ok($all_info && $all_info->{5200}{opt}{port} == 5200, 'get info 2');
+    ok($all_info && $all_info->{'5100'}{'opt'}{'port'} == 5100, 'get info 1');
+    ok($all_info && $all_info->{'5200'}{'opt'}{'port'} == 5200, 'get info 2');
 
     # 
     # sbtool -o port 
@@ -1118,7 +1179,7 @@ sub how_many_dirs {
 
 sub exists_in_path {
     my ($fname) = @_;
-    my @paths = split /:/, $ENV{PATH};
+    my @paths = split /:/, $ENV{'PATH'};
     for my $path (@paths) {
         $path =~ s{/$}{};
         if ( -f "$path/$fname") {
@@ -1129,14 +1190,90 @@ sub exists_in_path {
 }
 
 sub tprint {
-    unless ($ENV{TAP_MODE}) {
+    unless ($ENV{'TAP_MODE'}) {
         print @_;
     }
 }
 
 sub tprintf {
-    unless ($ENV{TAP_MODE}) {
+    unless ($ENV{'TAP_MODE'}) {
         printf @_;
     }
+}
+
+sub run_user_defined_test {
+    my ($test_file) = @_;
+    my %test_structs = (
+        shell => {required => [qw(command expected msg)], rec => undef},
+        sql   => {required => [qw(path query expected msg)], rec => undef},
+    );
+    my @user_tests = ();
+    my $current_struct = undef;
+    open my $TFILE, q{<}, $test_file
+        or die "can't open $test_file ($!)\n";
+    while (my $line = <$TFILE>) {
+        next if $line =~ /^\s*$/;
+        next if $line =~ /^\s*#/;
+        chomp($line);
+        if ($line =~ /(\w+):/) {
+            my $struct = $1;
+            unless ($test_structs{$struct}) {
+                die "unrecognized test type\n"
+            }
+            if ($current_struct) {
+                my %rec = %{$test_structs{$current_struct}{rec}};
+                push @user_tests, [$current_struct,\%rec];
+                $test_structs{$current_struct}{rec} = undef;
+            }
+            $current_struct = $struct;
+        }
+        elsif ( $line =~ /(\w+)\s*=\s*(.*)/ ) {
+            my $key = $1;
+            my $value = $2;
+            $value =~ s/\$(\w+)/$ENV{$1}/g;
+            $test_structs{$current_struct}{rec}{$key} = $value;
+        }
+        else {
+            die "error parsing line <$.> at file <$test_file>\n";
+        }
+    }
+    close $TFILE;
+    if ($current_struct) {
+        my %rec = %{$test_structs{$current_struct}{rec}};
+        push @user_tests, [$current_struct,\%rec];
+        $test_structs{$current_struct}{rec} = undef;
+    }
+    for my $test (@user_tests) {
+        for my $req (@{ $test_structs{$test->[0]}{required}}) {
+            unless (defined $test->[1]{$req}) {
+                for my $key (keys %{ $test->[1] } ) {
+                    tprintf "%20s => %s\n", $key, $test->[1]{$key};
+                }
+                die "incomplete test. Missing required <$req> label\n";        
+            }
+        }
+    }
+    # print Dumper \@user_tests; exit;
+    for my $test (@user_tests) {
+        my $rec = $test->[1];
+        if ($test->[0] eq 'shell') {
+            ok_exec({ command  => $rec->{command},
+                      expected => $rec->{expected},
+                      msg      => $rec->{msg},
+                    });
+        }
+        elsif ($test->[0] eq 'sql') {
+            ok_sql({ path     => $rec->{path},
+                     query    => $rec->{query},
+                     expected => $rec->{expected},
+                      msg     => $rec->{msg},
+                    });
+        
+        }
+        else {
+            die "unhandled test <$test->[0]>\n";
+        }
+    }
+
 }
 

@@ -19,7 +19,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION="2.0.98i";
+our $VERSION="2.0.99";
 our $DEBUG;
 
 BEGIN {
@@ -385,6 +385,9 @@ MySQL::Sandbox - Quickly installs MySQL side server, either standalone or in gro
 
  make_sandbox /path/to/MySQL-VERSION.tar.gz
 
+ make_sandbox $HOME/opt/mysql/VERSION
+
+ make_sandbox VERSION
 
 =head1 PURPOSE
 
@@ -421,21 +424,26 @@ and PATH variables.
    make test
    make install
 
+See also under L</"TESTING"> for more options before running 'make test'
+
 =head1 MAKING SANDBOXES
 
-=head2 SINGLE SERVER SANDBOX
+=head2 Single server sandbox
 
 The easiest way to make a sandbox is 
 
 =over 3
 
 =item 1
+
 download the sandbox package and install it as instructed above
 
 =item 2
+
 download a MySQL binary tarball
 
 =item 3
+
 run this command
 
    $ make_sandbox  /path/to/mysql-X.X.XX-osinfo.tar.gz
@@ -449,7 +457,7 @@ By default, the sandbox creates a new instance for you under
    $SANDBOX_HOME/msb_X_X_XX
 
 
-=head2 MAKING A REPLICATION SANDBOX
+=head2 Making a replication sandbox
 
 It's as easy as making a single sandbox
 
@@ -459,7 +467,7 @@ This will create a new instance of one master  and two slaves
 
    under $SANDBOX_HOME/rsandbox_X_X_XX
 
-=head2 CIRCULAR REPLICATION
+=head2 Circular replication
 
 It requires an appropriate option when you start a replication sandbox
 
@@ -468,7 +476,7 @@ It requires an appropriate option when you start a replication sandbox
 This will create a replication system with three servers connected by circular replication.
 A handy shortcut is C<--master_master>, which will create a circular replication system of exactly two members.
 
-=head2 MULTIPLE SANDBOXES
+=head2 Multiple sandboxes
 
 You can create a group of sandboxes without any replication among its members.
 If you need three servers of the same version, you can use
@@ -481,7 +489,7 @@ If you need servers of different versions in the same group, you may like
 
 Assuming that each tarball is from a different version, you will group three servers under one directory, with the handy sandbox scripts to manipulate them.
 
-=head2 CREATING A SANDBOX FROM SOURCE
+=head2 Creating a sandbox from source
 
 If you want to create a sandbox from the code that you have just compiled, but you don't want to install, there is a script that makesa binary tarball for you and installs a sandbox in one go.
 
@@ -506,7 +514,7 @@ or
 
 If you call this program several times from the same directory, it will check if the compiled binaries are newer than the extracted ones, and if they aren't, it will reuse the ones created during the previous run, thus saving time and CPU.
 
-=head2 DEFAULTS AND SHORTCUTS
+=head2 Defaults and shortcuts
 
 If you use sandboxes often, instead of pointing to a tarball you can set a directory containing expanded tarballs.
 By default, the sandbox looks under $HOME/opt/mysql and /opt/mysql
@@ -525,7 +533,7 @@ If you have such an organization, then you can invoke every sandbox script with 
 
 If you use some options frequently, it would make sense to add them to the default option file, which is $HOME/.msandboxrc
 
-=head2 FINE TUNING
+=head2 Fine tuning
 
 Every sandbox script will give you additional information if you invoke it
 with the "--help" option.
@@ -544,9 +552,11 @@ directory that servers two purposes:
 =over 3
 
 =item *
+
 further isolates the sandboxes, and keep them under easy control if you are in the habit of creating many of them;
 
 =item *
+
 provides a set of handy super-commands, which can be passed to all the sandboxes. Running "$SANDBOX_HOME/stop_all" you will stop all servers of all sandboxes, single or groups, below that directory.
 
 =back
@@ -558,7 +568,7 @@ Change directory to the newly created one
 
 The sandbox directory of the instance you just created contains
 some handy scripts to manage your server easily and in isolation.
- 
+
 =over 3
 
 =item start
@@ -566,15 +576,19 @@ some handy scripts to manage your server easily and in isolation.
 =item restart
 
 =item stop
+
 "./start", "./restart", and "./stop" do what their name suggests.
 
 =item use
+
 "./use" calls the command line client with the appropriate parameters,
 
 =item clear
+
 "./clear" stops the server and removes everything from the data directory, letting you ready to start from scratch.
 
 =item multiple server sandbox
+
 On a replication sandbox, you have the same commands, with a "_all"
 suffix, meaning that you propagate the command to all the members.
 Then you have "./m" as a shortcut to use the master, "./s1" and "./s2"
@@ -598,7 +612,7 @@ to access the slaves (and "s3", "s4" ... if you define more)
 
 =back
 
-=head2 DATABASE USERS
+=head2 Database users
 
 There are 2 database users installed by default:
 
@@ -609,7 +623,7 @@ There are 2 database users installed by default:
  |  msandbox@%     | msandbox    | all on *.*                    |
  +-----------------+-------------+-------------------------------+
 
-=head2 PORTS AND SOCKETS
+=head2 Ports and sockets
 
 Ports are created from the server version.
 a 5.1.25 server will use port 5125, unless you override the default.
@@ -624,20 +638,21 @@ figure, to avoid clashing with single installations.
  |  3310  | /tmp/mysql_sandbox3310.sock |
  +--------+-----------------------------+
 
-=head2 ENVIRONMENT VARIABLES
+=head2 Environment variables
 
-All programs in the Sandbox suite recognize and uses the following variables:
+All programs in the Sandbox suite recognize and use the following variables:
 
- * HOME the user's home directory
+ * HOME the user's home directory; ($HOME)
  * SANDBOX_HOME the place where the sandboxes are going to be built. 
    ($HOME/sandboxes by default)
- * USER the operating system user
- * PATH the execution path
- * SBDEBUG if set, the programs will print debugging messages
+ * USER the operating system user;
+ * PATH the execution path;
+ * if SBDEBUG if set, the programs will print debugging messages
 
 In addition to the above, make_sandbox will use
  * SANDBOX_BINARY or BINARY_BASE 
    the directory containing the installation server binaries
+   (default: $HOME/opt/mysql) 
 
 make_replication_sandbox will recognize the following
    * MASTER_OPTIONS additional options to be passed to the master
@@ -855,22 +870,27 @@ To use this package you need at least the following:
 =over 3
 
 =item *
+
 Linux or Mac OSX operating system (it may work in other *NIX OSs, but has not been tested)
 
 =item *
-a binary tarball of MySQL 3.23 or later
+
+A binary tarball of MySQL 3.23 or later
 
 =item *
-Perl 5.8.1 or later (for installation only)
+
+Perl 5.8.1 or later 
 
 =item *
-bash shell
+
+Bash shell
 
 =back
 
 
 =head1 COPYRIGHT
-version 3.0
+
+Version 3.0
 
 Copyright (C) 2006,2007,2008,2009  Giuseppe Maxia
 

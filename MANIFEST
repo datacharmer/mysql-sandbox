@@ -20,5 +20,7 @@ t/02_test_binaries.t
 t/03_test_sandbox.t
 t/04_test_sbtool.t
 t/05_test_smoke.t
+t/06_test_user_defined.t
+t/user_defined.test
 t/Test_Helper.pm
 
