@@ -42,10 +42,10 @@ unless ( $ENV{SANDBOX_HOME} ) {
 #    $ENV{SANDBOX_HOME} = $ENV{SANDBOX_HOME} || "$ENV{HOME}/sandboxes";
 #}
 #
-#unless ( -d $ENV{'SANDBOX_HOME'} ) {
-#    mkdir $ENV{'SANDBOX_HOME'} 
-#        or die "can't create $ENV{'SANDBOX_HOME'} ($CHILD_ERROR) \n";
-#}
+unless ( -d $ENV{'SANDBOX_HOME'} ) {
+    mkdir $ENV{'SANDBOX_HOME'} 
+        or die "can't create $ENV{'SANDBOX_HOME'} ($CHILD_ERROR) \n";
+}
 
 #my $install_dir;
 #$install_dir = $PROGRAM_NAME;
@@ -132,7 +132,10 @@ if ( -d $replication_directory ) {
 }
 else {
     print "creating replication directory $replication_directory\n" if $msb->{options}{verbose};
-    mkdir $replication_directory
+    mkdir $replication_directory;
+    unless ( -d $replication_directory ) {
+        die "error creating replication directory n";
+    }
 }
 
 for my $dir ( 1 .. $msb->{options}{how_many_slaves}) {

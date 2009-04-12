@@ -19,7 +19,7 @@ sub test_sandbox {
         die "command expected\n";
     }
     unless ($expected_tests) {
-        die "how many tests expected as second parameter\n";
+        die "number of tests expected as second parameter\n";
     }
     $expected_tests =~ /^\d+$/
         or die "the 'expected tests' parameter must be a number \n";

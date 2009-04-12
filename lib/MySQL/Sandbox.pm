@@ -19,7 +19,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION="2.0.99";
+our $VERSION="2.0.99a";
 our $DEBUG;
 
 BEGIN {
