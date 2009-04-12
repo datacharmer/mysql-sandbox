@@ -1,0 +1,27 @@
+#
+# Example of how to check 
+# replication with a user defined test file
+#
+
+shell:
+command     = make_replication_sandbox --verbose 5.1.32
+expected    = !not started yet
+msg         = replication started
+
+sql:
+path        = $SANDBOX_HOME/rsandbox_5_1_32/master
+query       = create table test.t1 (i int); show tables from test
+expected    = t1
+msg         = table created on master
+
+sql:
+path        = $SANDBOX_HOME/rsandbox_5_1_32/node1
+query       = show tables from test
+expected    = t1
+msg         = table replicated on slave1
+
+shell:
+command     = $SANDBOX_HOME/rsandbox_5_1_32/stop_all
+expected    = OK
+msg         = replication stopped
+

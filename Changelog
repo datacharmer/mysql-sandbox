@@ -1,6 +1,7 @@
 2.0.99a  12-Apr-2009
 	- fixed bug in make_replication_sandbox and make_multiple_sandbox. If a
 	group sandbox was the first to be created under $SANDBOX_HOME, it failed.
+	- added check_replication.sb as user defined sample test
 2.0.99  11-Apr-2009
 	- implemented user defined test modules
 	- fixed some documentation glitches
