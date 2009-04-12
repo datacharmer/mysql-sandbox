@@ -273,6 +273,7 @@ sub get_exec_result_qx {
     if ($?) {
         die ("error executing $cmd ($!)\n");
     }
+    print "qx(shell) $output\n" if $verbose;
     return $output;
 }
 
@@ -288,6 +289,7 @@ sub get_exec_result_open3 {
     if ($?) {
         die ("error executing $cmd ($!)\n");
     }
+    print "o3(shell) $output\n" if $verbose;
     return $output;
 }
 
@@ -1256,6 +1258,7 @@ sub run_user_defined_test {
     # print Dumper \@user_tests; exit;
     for my $test (@user_tests) {
         my $rec = $test->[1];
+        # print Dumper $test;
         if ($test->[0] eq 'shell') {
             ok_exec({ command  => $rec->{command},
                       expected => $rec->{expected},

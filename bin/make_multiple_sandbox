@@ -26,6 +26,10 @@ use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
 
+unless ( -d $ENV{'SANDBOX_HOME'} ) {
+    mkdir $ENV{'SANDBOX_HOME'} 
+        or die "can't create $ENV{'SANDBOX_HOME'} ($CHILD_ERROR) \n";
+}
 #my $install_dir;
 #$install_dir = $PROGRAM_NAME;
 #$install_dir =~ s{/\w+(\.pl)?$}{};
@@ -92,6 +96,7 @@ if ( -d $group_directory ) {
 else {
     print "creating group directory $group_directory\n" if $msb->{options}{verbose};
     mkdir $group_directory
+            or die "can't create $group_directory\n";
 }
 
 if ( -f "$group_directory/needs_initialization" ) {

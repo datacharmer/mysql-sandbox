@@ -31,6 +31,11 @@ my %defaults = (
     group_directory => 'multi_cmsb',
 );
 
+unless ( -d $ENV{'SANDBOX_HOME'} ) {
+    mkdir $ENV{'SANDBOX_HOME'} 
+        or die "can't create $ENV{'SANDBOX_HOME'} ($CHILD_ERROR) \n";
+}
+
 #my $install_dir;
 #$install_dir = $PROGRAM_NAME;
 #$install_dir =~ s{/\w+(\.pl)?$}{};
@@ -90,6 +95,7 @@ if ( -d $group_directory ) {
 else {
     print "creating replication directory $group_directory\n" if $msb->{options}{verbose};
     mkdir $group_directory
+        or die "can't create $group_directory \n";
 }
 
 for my $dir ( 1 .. @versions ) {
