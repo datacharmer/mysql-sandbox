@@ -21,7 +21,7 @@ use warnings;
 use English qw( -no_match_vars ); 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox;
+use MySQL::Sandbox qw(get_ranges);
 use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
@@ -105,13 +105,31 @@ for my $dir ( 1 .. @versions ) {
     }
 }
 
+my $custom_base_port = 0;
+if ( $msb->{options}{sandbox_base_port}) {
+    $custom_base_port = $msb->{options}{sandbox_base_port};
+}
+else {
+    $custom_base_port = $defaults{custom_base_port};
+}
+
+if ( $msb->{options}{check_base_port}) {
+    $custom_base_port = get_ranges({
+            min_range   => $custom_base_port,
+            range_size  => $#versions,
+            max_range   => 64000,
+            search_path => $ENV{SANDBOX_HOME},
+        }, 1);
+}
+
+
 for my $ver_counter (0 .. $#versions) {
 
     if ( $msb->{options}{sandbox_base_port}) {
-        $replication_port = $msb->{options}{sandbox_base_port};
+        $replication_port = $custom_base_port;
     }
     else {
-        $replication_port = $defaults{custom_base_port} + $base_version[$ver_counter];
+        $replication_port = $custom_base_port + $base_version[$ver_counter];
     }
 
     my $additional_node_options = $ENV{NODE_OPTIONS} || '';

@@ -21,7 +21,7 @@ use warnings;
 use English qw( -no_match_vars ); 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox;
+use MySQL::Sandbox qw(get_ranges);
 use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
@@ -156,6 +156,16 @@ if ( $msb->{options}{sandbox_base_port}) {
 else {
     $replication_port = $defaults{replication_base_port} + $base_version + ($release_no * 100);
 }
+
+if ( $msb->{options}{check_base_port}) {
+    $replication_port = get_ranges({
+                min_range   => $replication_port,
+                range_size  => $msb->{options}{how_many_slaves},
+                max_range   => 64000,
+                search_path => $ENV{SANDBOX_HOME},
+            }, 1);
+}
+
 print "installing and starting master\n";
 my $additional_master_options = $ENV{MASTER_OPTIONS} || '';
 my $additional_slave_options = $ENV{SLAVE_OPTIONS} || '';

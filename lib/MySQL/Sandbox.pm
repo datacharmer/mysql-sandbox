@@ -19,7 +19,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION="2.0.99a";
+our $VERSION="2.0.99b";
 our $DEBUG;
 
 BEGIN {
@@ -324,7 +324,7 @@ sub is_sandbox_running {
 }
 
 sub get_ranges {
-    my ($options) = @_;
+    my ($options, $silent ) = @_;
     my ( $ports, $all_info ) = get_sb_info(undef, $options);
     my $minimum_port = $options->{min_range};
     my $maximum_port = $options->{max_range};
@@ -351,7 +351,10 @@ sub get_ranges {
         }
         $range_found = 1;
     }
-    printf "%5d - %5d\n", $minimum_port , $minimum_port + $range_size;
+    unless ($silent) {
+        printf "%5d - %5d\n", $minimum_port , $minimum_port + $range_size;
+    }
+    return $minimum_port;
 }
 
 sub get_ports {
