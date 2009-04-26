@@ -1,3 +1,8 @@
+2.0.99b  26-Apr-2009
+	- added group port checking to make_replication_sandbox and
+	  make_multiple_sandbox
+	- added 2 new tests to the test suite to test singkle and group
+	  port checking
 2.0.99a  12-Apr-2009
 	- fixed bug in make_replication_sandbox and make_multiple_sandbox. If a
 	group sandbox was the first to be created under $SANDBOX_HOME, it failed.

@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="2.0.99a";
+our $VERSION="2.0.99b";
 
 our @MANIFEST = (
 'clear.sh',
@@ -300,6 +300,16 @@ my %parse_options_replication = (
                                             '(Default: 11000  + version )',
                                          ]
                             },
+    check_base_port      => {
+                                value => undef,               
+                                parse => 'check_base_port',           
+                                so    =>  45,
+                                help  => [
+                                            'Check that the ports are available ', 
+                                            '(Default: disabled )',
+                                         ]
+                            },
+
 
     how_many_slaves      => {
                                 value => 2,               
@@ -403,6 +413,15 @@ my %parse_options_many = (
                                             '(Default: 7000  + version )',
                                          ]
                             },
+    check_base_port      => {
+                                value => undef,               
+                                parse => 'check_base_port',           
+                                so    =>  45,
+                                help  => [
+                                            'Check that the ports are available ', 
+                                            '(Default: disabled )',
+                                         ]
+                            },
 
     how_many_nodes      => {
                                 value => 3,               
@@ -492,6 +511,15 @@ my %parse_options_custom_many = (
                                 help  => [
                                             'The port number to use for the sandbox custom system.', 
                                             '(Default: 5000  + version )',
+                                         ]
+                            },
+    check_base_port      => {
+                                value => undef,               
+                                parse => 'check_base_port',           
+                                so    =>  45,
+                                help  => [
+                                            'Check that the ports are available ', 
+                                            '(Default: disabled )',
                                          ]
                             },
 

@@ -1,0 +1,35 @@
+#
+# test for replication and group sandbox port checking
+#
+
+shell:
+command     = make_sandbox 5.0.77 --sandbox_port=8000 --no_confirm
+expected    = sandbox server started
+msg         = server 1 started
+
+shell:
+command     = make_sandbox 5.0.77 --sandbox_port=8000 --check_port --no_confirm
+expected    = sandbox server started
+msg         = server 2 started
+
+sql:
+path        = $SANDBOX_HOME/msb_5_0_77/
+query       = show variables like 'port'
+expected    = 8000
+msg         = right port on server 1
+
+sql:
+path        = $SANDBOX_HOME/msb_5_0_77_a
+query       = show variables like 'port'
+expected    = 8001
+msg         = right port on server 2
+
+shell:
+command     = sbtool -o delete -s $SANDBOX_HOME/msb_5_0_77/
+expected    = has been removed
+msg         = server 1 stopped and removed
+
+shell:
+command     = sbtool -o delete -s $SANDBOX_HOME/msb_5_0_77_a
+expected    = has been removed
+msg         = server 2 stopped and removed
