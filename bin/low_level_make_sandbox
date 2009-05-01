@@ -667,7 +667,7 @@ sub set_sandbox_dir_scripts {
         return;
     }
     copy_and_replace('sandbox_action.pl', $sandboxdir);
-    for my $name (qw(start stop clear use send_kill)) {
+    for my $name (qw(start stop clear use send_kill restart)) {
         open my $FH, q{>}, "$sandboxdir/${name}_all"
             or die "can't create ${name}_all in $sandboxdir\n";
         print $FH "#!$msb->{options}{'binbash'}\n";

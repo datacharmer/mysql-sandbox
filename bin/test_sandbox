@@ -569,7 +569,7 @@ sub run_multiple_test {
     my ($ver, $version, $bare_version) = @_;
 
     ok_exec({ command => "make_multiple_sandbox $ver",
-              expected => '!not started yet',
+              expected => 'group directory installed',
               msg      => "multiple sandbox ($bare_version) started"
             });
 

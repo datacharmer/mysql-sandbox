@@ -244,20 +244,20 @@ my $current_dir = $ENV{PWD};
 
 chdir $replication_directory;
 
-for my $cmd ( qw(start stop clear send_kill) ) {
+for my $cmd ( qw(start stop clear send_kill ) ) {
     my $cmd_fname = $cmd . '_all';
     $msb->write_to($cmd_fname, '>', '#!/bin/sh');
     if ($cmd eq 'start') {
         $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on master') );
-        $msb->write_to ($cmd_fname, '>>', "$replication_directory/master/$cmd");
+        $msb->write_to ($cmd_fname, '>>', qq($replication_directory/master/$cmd "\$@") );
     }
     for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
         $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on slave $slave'));
-        $msb->write_to ($cmd_fname, '>>', "$replication_directory/node$slave/$cmd");
+        $msb->write_to ($cmd_fname, '>>', qq($replication_directory/node$slave/$cmd "\$@"));
     }
     if ($cmd ne 'start') {
         $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on master') );
-        $msb->write_to ($cmd_fname, '>>', "$replication_directory/master/$cmd");
+        $msb->write_to ($cmd_fname, '>>', qq($replication_directory/master/$cmd "\$@"));
     }
     chmod 0755, $cmd_fname;
 }
@@ -290,6 +290,11 @@ $msb->write_to('m',    '>',    "#!/bin/sh");
 $msb->write_to('m',    '>>',   qq($replication_directory/master/use "\$@") );
 chmod 0755, 'm';
 
+$msb->write_to('restart_all', '>',  '#!/bin/sh');
+$msb->write_to('restart_all', '>>', qq($replication_directory/stop_all));
+$msb->write_to('restart_all', '>>', qq($replication_directory/start_all "\$@"));
+
+chmod 0755, 'restart_all';
 $msb->write_to('use_all', '>', '#!/bin/sh');
 my $slave_list = join(' ', (1 .. $msb->{options}{how_many_slaves}) );
 

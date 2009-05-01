@@ -179,6 +179,12 @@ USING A SANDBOX
     restart
     stop
        "./start", "./restart", and "./stop" do what their name suggests.
+       "start" and "restart" accept parameters that are eventually passed to
+       the server. e.g.:
+
+         ./start --skip-innodb
+
+         ./restart --event-scheduler=disabled
 
     use
        "./use" calls the command line client with the appropriate
@@ -192,9 +198,14 @@ USING A SANDBOX
        On a replication sandbox, you have the same commands, with a "_all"
        suffix, meaning that you propagate the command to all the members.
        Then you have "./m" as a shortcut to use the master, "./s1" and
-       "./s2" to access the slaves (and "s3", "s4" ... if you define more)
+       "./s2" to access the slaves (and "s3", "s4" ... if you define more).
+
+       In group sandboxes without a master slave relationship (circular
+       replication and multiple sandboxes) the nodes can be accessed by
+       ./n1, ./n2, ./n3, and so on.
 
        start_all
+       restart_all
        stop_all
        use_all
        clear_all

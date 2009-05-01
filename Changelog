@@ -1,3 +1,10 @@
+2.0.99c  01-May-2009
+	- Fixed conceptual bug in "start" and "restart". Group sandboxes
+	  were not allowing it
+	- added "restart_all" in group sandboxes
+	- Added 18 new tests to check the above problem
+	- Added documentation about port checking and parameters accepted by
+	'start' and 'restart'
 2.0.99b  26-Apr-2009
 	- added group port checking to make_replication_sandbox and
 	  make_multiple_sandbox
