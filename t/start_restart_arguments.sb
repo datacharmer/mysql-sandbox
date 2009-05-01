@@ -1,0 +1,157 @@
+#
+# single server
+#
+shell:
+command     = make_sandbox $TEST_VERSION --no_confirm --sandbox_directory=single_server
+expected    = sandbox server started
+msg         = server 1 started
+
+shell:
+command     = $SANDBOX_HOME/stop_all
+expected    = OK
+msg         = all servers stopped
+
+shell:
+command     = $SANDBOX_HOME/start_all --key-buffer=20M
+expected    = OK
+msg         = all servers started
+
+shell:
+command     = $SANDBOX_HOME/use_all "show variables like 'key_buffer_size' "
+expected    = 20971520
+msg         = got right buffer size (20M)
+
+shell:
+command     = $SANDBOX_HOME/restart_all --key-buffer=25M
+expected    = OK
+msg         = all servers restarted
+
+shell:
+command     = $SANDBOX_HOME/use_all "show variables like 'key_buffer_size' "
+expected    = 26214400
+msg         = got right buffer size (25M)
+
+shell:
+command     = sbtool -o delete -s $SANDBOX_HOME/single_server
+expected    = has been removed
+msg         = single_server stopped and removed
+
+#
+# group directory
+#
+shell:
+command     = make_multiple_sandbox $TEST_VERSION --group_directory=group_server
+expected    = group directory installed
+msg         = group sandbox started
+msg         = group directory started
+
+shell:
+command     = $SANDBOX_HOME/stop_all
+expected    = OK
+msg         = all servers stopped
+
+shell:
+command     = $SANDBOX_HOME/start_all --key-buffer=20M
+expected    = OK
+msg         = all servers started
+
+shell:
+command     = $SANDBOX_HOME/use_all "show variables like 'key_buffer_size' "
+expected    = 20971520
+msg         = got right buffer size (20M)
+
+shell:
+command     = $SANDBOX_HOME/restart_all --key-buffer=25M
+expected    = OK
+msg         = all servers restarted
+
+shell:
+command     = $SANDBOX_HOME/use_all "show variables like 'key_buffer_size' "
+expected    = 26214400
+msg         = got right buffer size (25M)
+
+
+shell:
+command     = sbtool -o delete -s $SANDBOX_HOME/group_server
+expected    = has been removed
+msg         = group server stopped and removed
+
+#
+# replication directory
+#
+shell:
+command     = make_replication_sandbox $TEST_VERSION --replication_directory=replication_server
+expected    = replication directory installed
+msg         = replication sandbox started
+
+shell:
+command     = $SANDBOX_HOME/stop_all
+expected    = OK
+msg         = all servers stopped
+
+shell:
+command     = $SANDBOX_HOME/start_all --key-buffer=20M
+expected    = OK
+msg         = all servers started
+
+shell:
+command     = $SANDBOX_HOME/use_all "show variables like 'key_buffer_size' "
+expected    = 20971520
+msg         = got right buffer size (20M)
+
+shell:
+command     = $SANDBOX_HOME/restart_all --key-buffer=25M
+expected    = OK
+msg         = all servers restarted
+
+shell:
+command     = $SANDBOX_HOME/use_all "show variables like 'key_buffer_size' "
+expected    = 26214400
+msg         = got right buffer size (25M)
+
+
+shell:
+command     = sbtool -o delete -s $SANDBOX_HOME/replication_server
+expected    = has been removed
+msg         = replication server stopped and removed
+
+
+#
+# circular replication directory
+#
+shell:
+command     = make_replication_sandbox $TEST_VERSION --circular=3 --replication_directory=replication_server
+expected    = group directory installed
+msg         = circular replication sandbox started
+
+shell:
+command     = $SANDBOX_HOME/stop_all
+expected    = OK
+msg         = all servers stopped
+
+shell:
+command     = $SANDBOX_HOME/start_all --key-buffer=20M
+expected    = OK
+msg         = all servers started
+
+shell:
+command     = $SANDBOX_HOME/use_all "show variables like 'key_buffer_size' "
+expected    = 20971520
+msg         = got right buffer size (20M)
+
+shell:
+command     = $SANDBOX_HOME/restart_all --key-buffer=25M
+expected    = OK
+msg         = all servers restarted
+
+shell:
+command     = $SANDBOX_HOME/use_all "show variables like 'key_buffer_size' "
+expected    = 26214400
+msg         = got right buffer size (25M)
+
+shell:
+command     = sbtool -o delete -s $SANDBOX_HOME/replication_server
+expected    = has been removed
+msg         = circular replication server stopped and removed
+
+

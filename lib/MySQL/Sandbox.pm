@@ -19,7 +19,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION="2.0.99b";
+our $VERSION="2.0.99c";
 our $DEBUG;
 
 BEGIN {
@@ -581,6 +581,11 @@ some handy scripts to manage your server easily and in isolation.
 =item stop
 
 "./start", "./restart", and "./stop" do what their name suggests.
+C<start> and C<restart> accept parameters that are eventually passed to the server. e.g.:
+
+  ./start --skip-innodb
+
+  ./restart --event-scheduler=disabled
 
 =item use
 
@@ -595,11 +600,15 @@ some handy scripts to manage your server easily and in isolation.
 On a replication sandbox, you have the same commands, with a "_all"
 suffix, meaning that you propagate the command to all the members.
 Then you have "./m" as a shortcut to use the master, "./s1" and "./s2"
-to access the slaves (and "s3", "s4" ... if you define more)
+to access the slaves (and "s3", "s4" ... if you define more).
+
+In group sandboxes without a master slave relationship (circular replication and multiple sandboxes) the nodes can be accessed by ./n1, ./n2, ./n3, and so on.
 
 =over 3
 
 =item start_all
+
+=item restart_all
 
 =item stop_all
 

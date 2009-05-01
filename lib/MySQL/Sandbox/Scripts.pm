@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="2.0.99b";
+our $VERSION="2.0.99c";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1038,14 +1038,15 @@ use MySQL::Sandbox;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
 
+my $action_list = 'use|start|stop|clear|restart|send_kill';
 my $action = shift
-    or die "action required {use|start|stop|clear}\n";
-$action =~/^(use|start|stop|clear|send_kill)$/ 
-    or die "action must be one of {use|start|stop|clear|send_kill}\n";
+    or die "action required {$action_list}\n";
+$action =~/^($action_list)$/ 
+    or die "action must be one of {$action_list}\n";
 my $sandboxdir = $0;
 $sandboxdir =~ s{[^/]+$}{};
 $sandboxdir =~ s{/$}{};
-my $command = shift;
+my $command = $ARGV[0];
 if ($action eq 'use' and !$command) {
     die "action 'use' requires a command\n";
 }
@@ -1066,11 +1067,11 @@ for my $dir (@dirs) {
         } 
         elsif ( -x "$dir/${action}_all") {
             print "-- executing  $dir/${action}_all\n" if $DEBUG;
-            system("$dir/${action}_all")
+            system("$dir/${action}_all", @ARGV)
         }
         elsif ( -x "$dir/$action") {
             print "-- executing  $dir/$action\n" if $DEBUG;
-            system("$dir/$action")
+            system("$dir/$action", @ARGV)
         }
     }
 }

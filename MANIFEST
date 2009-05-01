@@ -22,11 +22,13 @@ t/04_test_sbtool.t
 t/05_test_smoke.t
 t/06_test_user_defined.t
 t/07_test_user_defined.t
-t/check_single_server.sb
-t/check_replication.sb
 t/Test_Helper.pm
 t/08_test_single_port_checking.t
 t/09_test_multiple_port_checking.t
+t/10_check_start_restart.t
 t/group_port_checking.sb
 t/single_port_checking.sb
+t/check_single_server.sb
+t/check_replication.sb
+t/start_restart_arguments.sb
 

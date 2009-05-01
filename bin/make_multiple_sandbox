@@ -216,7 +216,7 @@ my $current_dir = $ENV{PWD};
 
 chdir $group_directory;
 
-for my $cmd ( qw(start stop clear send_kill) ) {
+for my $cmd ( qw(start stop clear send_kill ) ) {
     my $cmd_fname = $cmd . '_all';
     $msb->write_to($cmd_fname, '>', '#!/bin/sh');
     if ($cmd =~ /stop|clear|send_kill/ && $msb->{options}{'circular'}) {
@@ -226,7 +226,7 @@ for my $cmd ( qw(start stop clear send_kill) ) {
     } 
     for my $node (1 .. $msb->{options}{how_many_nodes} ) {
         $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on node $node'));
-        $msb->write_to ($cmd_fname, '>>', "$group_directory/node$node/$cmd");
+        $msb->write_to ($cmd_fname, '>>', qq($group_directory/node$node/$cmd "\$@"));
         if (($cmd eq 'start') and $msb->{options}{'circular'}) {
             $msb->write_to ($cmd_fname, '>>', 
                       "if [ -f $group_directory/node$node/data/master.info ] \n"
@@ -237,6 +237,11 @@ for my $cmd ( qw(start stop clear send_kill) ) {
     }
     chmod 0755, $cmd_fname;
 }
+
+$msb->write_to('restart_all', '>', '#!/bin/sh');
+$msb->write_to('restart_all', '>>', qq($group_directory/stop_all));
+$msb->write_to('restart_all', '>>', qq($group_directory/start_all "\$@"));
+chmod 0755, 'restart_all';
 
 $msb->write_to('use_all', '>', '#!/bin/sh');
 my $node_list = join(' ', (1 .. $msb->{options}{how_many_nodes}) );
@@ -277,7 +282,7 @@ if ($msb->{options}{'circular'}) {
     $msb->write_to(
         "$group_directory/clear_all", '>>', 
                 "date > $group_directory/needs_initialization");
-    $msb->write_to("$group_directory/start_all", '>>', 
+    $msb->write_to(qq($group_directory/start_all "\$@"), '>>', 
                   "if [ -f $group_directory/needs_initialization ] \n"
                 . "then\n"
                 . "  $circular_replication_script\n"
