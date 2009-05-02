@@ -42,7 +42,6 @@ msg         = single_server stopped and removed
 shell:
 command     = make_multiple_sandbox $TEST_VERSION --group_directory=group_server
 expected    = group directory installed
-msg         = group sandbox started
 msg         = group directory started
 
 shell:

@@ -1,4 +1,21 @@
 #!/usr/bin/perl
+# test_sandbox
+#    The MySQL Sandbox
+#    Copyright (C) 2009 Giuseppe Maxia
+#    Contacts: http://datacharmer.org
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; version 2 of the License
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 use strict;
 use warnings;
 use Data::Dumper;
@@ -88,6 +105,10 @@ for my $ver (@versions) {
         print "version $ver not found in either /opt/mysql or $ENV{'HOME'}/opt/mysql\n";
         die "use --versions to list the versions you want to test\n";
     }
+}
+
+if ($user_defined_test and !$user_tests) {
+    $user_tests = 'user';
 }
 
 if ($user_tests) {
@@ -359,7 +380,8 @@ usage: $0 [options]
       currently: (@{[join ",", grep {$tests{$_}} keys %tests]})
 
     --user_test=filename
-      executes user defined tests from given file
+      executes user defined tests from given file 
+      (implies --tests=user)
 
     --preserve_tests
       does not remove tests at the end of the suite. 
@@ -585,10 +607,12 @@ sub run_multiple_test {
 
 sub run_mcustom_test {
 
-    my $custom_dir = "$sandbox_home/multi_cmsb_@{[map {get_bare_version($_)} @versions]}";
+    my $gdname = 'multi_cmsb_' . get_bare_version($versions[0]) ;
+    my $custom_dir = "$sandbox_home/$gdname";
     $custom_dir =~ s/ /-/g;
     $custom_dir =~ s/\./_/g;
-    ok_exec({ command => "make_multiple_custom_sandbox @versions",
+    $gdname =~ s/\./_/g;
+    ok_exec({ command => "make_multiple_custom_sandbox --group_directory=$gdname @versions ",
               expected => ['!not started yet', "group directory installed on $custom_dir" ],
               msg      => "custom sandbox ( $custom_dir ) started"
             });
@@ -728,7 +752,15 @@ sub get_bare_version {
     my ($ver) = @_;
     $ver =~ s{.*/}{};
     if ($ver =~ /(\d+\.\d+\.\d+)/) {
-        return $1;
+        my $bv = $1;
+        if (wantarray) {
+            my $underscored_version = $bv;
+            $underscored_version =~ s/\./_/g;
+            return ($bv, $underscored_version);
+        }
+        else {
+            return $bv;
+        }
     }
     else {
         die "'$ver'  does not contain a valid version\n";
@@ -1205,6 +1237,9 @@ sub tprintf {
 
 sub run_user_defined_test {
     my ($test_file) = @_;
+    if ($test_file =~ /\.sb\.pl$/) {
+        return run_user_defined_perl_test($test_file);
+    }
     my %test_structs = (
         shell => {required => [qw(command expected msg)], rec => undef},
         sql   => {required => [qw(path query expected msg)], rec => undef},
@@ -1278,5 +1313,20 @@ sub run_user_defined_test {
         }
     }
 
+}
+
+sub run_user_defined_perl_test {
+    my ($test_file) = @_;
+    open my $FH, q{<}, $test_file
+        or die "can't open $test_file ($!)\n";
+    my $test_contents ='';
+    while (my $line = <$FH>) {
+        $test_contents .= $line;
+    }
+    close ($FH);
+    eval $test_contents;
+    if ($@) {
+        die "failed test $test_file\n$@\n";
+    } 
 }
 
