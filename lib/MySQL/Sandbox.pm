@@ -19,7 +19,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION="2.0.99c";
+our $VERSION="2.0.99d";
 our $DEBUG;
 
 BEGIN {
@@ -948,7 +948,9 @@ You can override this option by setting the TEST_VERSION environment variable.
 
 Starting with version 2.0.99, you can define your own tests, and run them by
 
-  $ test_sandbox --tests=user --user_test=file_name
+  $ test_sandbox --user_test=file_name
+
+=head3 simplified test script
 
 Inside your test file, you can define test actions.
 There are two kind of tests: shell and sql the test type is defined by a keyword followed by a colon.
@@ -983,6 +985,53 @@ For example, if $SANDBOX_HOME is /home/sb/tests, the line
 will expand to:
 
   command = /home/sb/tests/msb_5_1_30/stop
+
+=head3 Perl based test scripts
+
+In addition to the internal script language, you can also define perl scripts, which will be able to call routines defined inside test_sandbox. (see list below)
+To be identified as a Perl script, the user defined test must have the extension ".sb.pl"
+
+=over 3
+
+=item ok_shell()
+
+The C<ok_shell> function requires a hash reference containing the following labels:
+A 'command', which is passed to a shell.
+The 'expected' label is a string that you expect to find within the shell output.
+If you don't expect anything, you can just say "expected = OK", meaning that you will
+be satisfied with a ZERO exit code reported by the operating system.
+The 'msg' is the description of the test that is shown to you when the test runs.
+
+  ok_shell($hashref)
+  ok_shell({
+        command  => 'make_sandbox 5.1.30 --no_confirm',
+        expected => 'sandbox server started',
+        msg      => 'sandbox creation',
+        })
+
+=item ok_sql()  
+
+The C<ok_sql> function requires a hashref containing the following labels:
+A 'path', which is the place where the test engine expects to find a 'use' script.
+The 'query' is passed to the above mentioned script and the output is captured for further processing.
+The 'expected' parameter is a string that you want to find in the query output.
+The 'msg' parameter is like the one used with the ok_exec function.
+
+=item get_bare_version()
+
+This function accepts one parameter, which can be either a MySQL tarball name or a version, and returns the bare version found in the input string.
+If called in list mode, it returns also a normalized version string with dots replaced by underscores.
+
+    my $version = get_bare_version('5.1.30'); 
+    # returns '5.1.30'
+
+    my $version = get_bare_version('mysql-5.1.30-OS.tar.gz'); 
+    # returns '5.1.30'
+
+    my ($version,$dir_name) = get_bare_version('mysql-5.1.30-OS.tar.gz'); 
+    # returns ('5.1.30', '5_1_30')
+
+See the test script t/start_restart_arguments.sb.pl as an example
 
 =head1 REQUIREMENTS
 

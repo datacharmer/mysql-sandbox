@@ -14,7 +14,7 @@ our @EXPORT_OK= qw( test_sandbox);
 our @EXPORT = @EXPORT_OK;
 
 sub test_sandbox {
-    my ($cmd, $expected_tests) = @_;
+    my ($cmd, $expected_tests, $informative) = @_;
     unless ($cmd) {
         die "command expected\n";
     }
@@ -36,13 +36,14 @@ sub test_sandbox {
     if (   ( -d $test_version) 
         or (( -f $test_version ) && ($test_version =~ /\.tar\.gz$/) )
         or ( -d "$ENV{HOME}/opt/mysql/$test_version")) {
-        warn "Testing <$test_version>. Please wait. This will take a few minutes\n";
+        warn  "Testing <$test_version>. "
+            . "Please wait. This will take a few minutes\n" if $informative;
         print "1..$expected_tests\n";
     }
     else {
         print "1..1\n";
-        print "ok 1 # skip - no binaries found for $test_version"
-               . " - See the README under 'TESTING' for more options.\n";
+        print "ok 1 # skip - no binaries found for $test_version\n";
+        print " - See the README under 'TESTING' for more options.\n" if $informative;
         exit;
     }
 

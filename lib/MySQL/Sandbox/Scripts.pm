@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="2.0.99c";
+our $VERSION="2.0.99d";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1128,4 +1128,37 @@ sub scripts_in_code {
 }
 
 1;
+
+=head1 NAME
+
+MySQL::Sandbox::Scripts - Collection of script templates for MySQL Sandbox
+
+=head1 PURPOSE
+
+This package is a collection of data and scripts templates for MySQL::Sandbox.
+It is not supposed to be used stand alone, but it is an ancillary package.
+
+=head1 COPYRIGHT
+
+Version 3.0
+
+Copyright (C) 2006,2007,2008,2009  Giuseppe Maxia
+
+Home Page  http://launchpad.net/mysql-sandbox/
+
+=head1 LEGAL NOTICE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; version 2 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+USA
 
