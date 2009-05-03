@@ -1,9 +1,12 @@
 package Test_Helper;
 
+my $test_version;
 BEGIN {
     $ENV{TEST_SANDBOX_HOME}="$ENV{PWD}/t/test_sb";
     $ENV{PERL5LIB}="$ENV{PWD}/lib";
     $ENV{PATH}="$ENV{PWD}/bin:$ENV{PATH}";
+    $ENV{TEST_VERSION} = $ENV{TEST_VERSION} || '5.0.77';
+    $test_version = $ENV{TEST_VERSION} ;
 };
 
 use strict;
@@ -24,7 +27,6 @@ sub test_sandbox {
     $expected_tests =~ /^\d+$/
         or die "the 'expected tests' parameter must be a number \n";
 
-    my $test_version = $ENV{TEST_VERSION} || '5.0.77';
     ##
     # accepts either a bare version 
     #   (e.g. 5.0.79)

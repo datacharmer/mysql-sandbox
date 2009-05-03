@@ -1,3 +1,8 @@
+# Test for drill-down start and restart parameters
+#
+# Creates single and multiple sandboxes, sends a "start_all" call with 
+# parameters, and checks that the parameter was received.
+#
 my $ver = '5.0.77';
 my $TEST_VERSION = $ENV{TEST_VERSION} || $ver;
 my ($bare_version, $version) = get_bare_version ($ver);
@@ -13,6 +18,12 @@ my @test_sb = (
         expected    => 'group directory installed',
         msg         => 'group directory started',
         dir_name    => 'group_server',
+    },
+    {
+        command     => "make_multiple_custom_sandbox --group_directory=custom_server $TEST_VERSION ",
+        expected    => 'group directory installed',
+        msg         => 'custom directory started',
+        dir_name    => 'custom_server',
     },
     {
         command     => "make_replication_sandbox --replication_directory=replication_server $TEST_VERSION ",

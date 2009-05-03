@@ -5,6 +5,8 @@ BEGIN {
 };
 use strict;
 use warnings;
+use lib './t';
+use Test_Helper;
 use Test::More tests => 31;
 
 # 7 tests

@@ -4,6 +4,7 @@ bin/make_multiple_sandbox
 bin/make_replication_sandbox
 bin/make_sandbox
 bin/make_sandbox_from_source
+bin/make_sandbox_from_installed
 bin/sandbox
 bin/sbtool
 bin/test_sandbox
@@ -11,6 +12,7 @@ Changelog
 COPYING
 lib/MySQL/Sandbox.pm
 lib/MySQL/Sandbox/Scripts.pm
+lib/MySQL/Sandbox/Recipes.pm
 Makefile.PL
 MANIFEST
 README
@@ -26,9 +28,12 @@ t/Test_Helper.pm
 t/08_test_single_port_checking.t
 t/09_test_multiple_port_checking.t
 t/10_check_start_restart.t
+t/11_replication_parameters.t
 t/group_port_checking.sb
 t/single_port_checking.sb
 t/check_single_server.sb
 t/check_replication.sb
 t/start_restart_arguments.sb
+t/start_restart_arguments.sb.pl
+t/replication_parameters.sb.pl
 

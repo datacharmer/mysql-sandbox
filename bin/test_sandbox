@@ -608,10 +608,10 @@ sub run_multiple_test {
 sub run_mcustom_test {
 
     my $gdname = 'multi_cmsb_' . get_bare_version($versions[0]) ;
-    my $custom_dir = "$sandbox_home/$gdname";
-    $custom_dir =~ s/ /-/g;
-    $custom_dir =~ s/\./_/g;
+    #$custom_dir =~ s/ /-/g;
+    #$custom_dir =~ s/\./_/g;
     $gdname =~ s/\./_/g;
+    my $custom_dir = "$sandbox_home/$gdname";
     ok_exec({ command => "make_multiple_custom_sandbox --group_directory=$gdname @versions ",
               expected => ['!not started yet', "group directory installed on $custom_dir" ],
               msg      => "custom sandbox ( $custom_dir ) started"
@@ -623,12 +623,16 @@ sub run_mcustom_test {
     for my $ver (@versions) {
         my $bare_version = get_bare_version($ver);
         $counter++;
-
-        ok_sql({ path   => "$custom_dir/node$counter",
+	if ( -d  "$custom_dir/node$counter" ) {
+            ok_sql({ path   => "$custom_dir/node$counter",
                  query  => 'select version(), @@server_id',
                  expected => [$bare_version, '\b10' . $counter . '\s*$'],
                  msg      => "multiple custom SB node $counter ($bare_version) SQL - version - server_id"
                 });
+	}
+	else {
+		ok(1, 'test skipped');
+	}
     }
 }
 
@@ -1111,6 +1115,9 @@ sub run_sbtool_test {
     ok( $second_sandbox =~ /sandbox server started/,
             "second SB (5200) started" );
 
+    # 
+    # sbtool -o preserve
+    #
     my $preserve_sandbox = get_exec_result("sbtool -o preserve -s $sandbox_home/second_sb");
     ok($preserve_sandbox =~ /is now permanent/, 'preserve active sandbox');
     $delete_sandbox = get_exec_result("sbtool -o delete -s $sandbox_home/second_sb");

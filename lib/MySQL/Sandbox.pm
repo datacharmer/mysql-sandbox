@@ -19,7 +19,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION="2.0.99d";
+our $VERSION="2.0.99e";
 our $DEBUG;
 
 BEGIN {
@@ -485,7 +485,7 @@ You can create a group of sandboxes without any replication among its members.
 If you need three servers of the same version, you can use
 
  $ make_multiple_sandbox /path/to/tarball 
-    
+
 If you need servers of different versions in the same group, you may like
 
  $ make_multiple_custom_sandbox /path/to/tarball1 path/to/tarball2 /path/to/tb3 
@@ -517,6 +517,17 @@ or
 
 If you call this program several times from the same directory, it will check if the compiled binaries are newer than the extracted ones, and if they aren't, it will reuse the ones created during the previous run, thus saving time and CPU.
 
+=head2 Creating a sandbox from already installed binaries
+
+The script C<make_sandbox_from_installed> tries to create a sandbox using already installed binaries.
+Since these binaries can be in several different places, the script creates a container with symbolic links, where the binaries (their links, actually) are arranged as MySQL Sandbox expects them to be.
+
+To use this version, change directory to a place where you want to store this symbolic links container, and invoke
+
+  make_sandbox_from_installed X.X.XX [options]
+
+where X.X.XX is the version number. You can then pass any options accepted by make_sandbox.
+
 =head2 Defaults and shortcuts
 
 If you use sandboxes often, instead of pointing to a tarball you can set a directory containing expanded tarballs.
@@ -527,7 +538,7 @@ e.g.
 
   $HOME/opt/mysql/5.0.64 
   /opt/mysql/5.1.24
-    
+
 If you have such an organization, then you can invoke every sandbox script with this abridged syntax:
 
   make_sandbox 5.0.64
@@ -707,7 +718,7 @@ same base port number, unless you specify C<--check_base_port>.
  make_replication_sandbox --check_base_port 5.0.79
  # Creates a replication directory under $SANDBOX_HOME/rsandbox_5_0_79
  # overwriting the previous one. 
- 
+
  # WRONG
  make_replication_sandbox --replication_directory=newdir 5.0.79
  # Created a replication directory under $SANDBOX_HOME/newdir.
@@ -988,7 +999,7 @@ will expand to:
 
 =head3 Perl based test scripts
 
-In addition to the internal script language, you can also define perl scripts, which will be able to call routines defined inside test_sandbox. (see list below)
+In addition to the internal script language, you can also define perl scripts, which will be able to use the $sandbox_home global variable and to call routines defined inside test_sandbox. (see list below)
 To be identified as a Perl script, the user defined test must have the extension ".sb.pl"
 
 =over 3
@@ -1017,6 +1028,7 @@ The 'query' is passed to the above mentioned script and the output is captured f
 The 'expected' parameter is a string that you want to find in the query output.
 The 'msg' parameter is like the one used with the ok_exec function.
 
+
 =item get_bare_version()
 
 This function accepts one parameter, which can be either a MySQL tarball name or a version, and returns the bare version found in the input string.
@@ -1031,7 +1043,13 @@ If called in list mode, it returns also a normalized version string with dots re
     my ($version,$dir_name) = get_bare_version('mysql-5.1.30-OS.tar.gz'); 
     # returns ('5.1.30', '5_1_30')
 
+=item ok
+
+This is a low level function, similar to the one provided by Test::More. You should not need to call this one directly, unless you want to fine tuning a test.
+
 See the test script t/start_restart_arguments.sb.pl as an example
+
+=back
 
 =head1 REQUIREMENTS
 

@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="2.0.99d";
+our $VERSION="2.0.99e";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1128,7 +1128,7 @@ sub scripts_in_code {
 }
 
 1;
-
+__END__
 =head1 NAME
 
 MySQL::Sandbox::Scripts - Collection of script templates for MySQL Sandbox

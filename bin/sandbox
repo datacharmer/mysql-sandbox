@@ -58,6 +58,10 @@ my @apps = (
             description  => 'create a sandbox from a build directory',
         },
         {
+            name => 'make_sandbox_from_installed',
+            description  => 'create a sandbox from already installed binaries',
+        },
+        {
             name => 'sbtool',
             description  => 'performs auxiliary actions with existing sandboxes',
         },

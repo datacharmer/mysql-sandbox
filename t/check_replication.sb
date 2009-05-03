@@ -4,24 +4,24 @@
 #
 
 shell:
-command     = make_replication_sandbox --verbose 5.1.32
-expected    = !not started yet
+command     = make_replication_sandbox --verbose --replication_directory=rsandbox_XXXX $TEST_VERSION 
+expected    = replication directory installed
 msg         = replication started
 
 sql:
-path        = $SANDBOX_HOME/rsandbox_5_1_32/master
+path        = $SANDBOX_HOME/rsandbox_XXXX/master
 query       = create table test.t1 (i int); show tables from test
 expected    = t1
 msg         = table created on master
 
 sql:
-path        = $SANDBOX_HOME/rsandbox_5_1_32/node1
+path        = $SANDBOX_HOME/rsandbox_XXXX/node1
 query       = show tables from test
 expected    = t1
 msg         = table replicated on slave1
 
 shell:
-command     = $SANDBOX_HOME/rsandbox_5_1_32/stop_all
+command     = $SANDBOX_HOME/rsandbox_XXXX/stop_all
 expected    = OK
 msg         = replication stopped
 
