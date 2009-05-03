@@ -1,3 +1,9 @@
+2.0.99e  03-May-2009
+	- added make_sandbox_from_installed to install from binaries already
+	  installed via packages such as .deb, .rpm. 
+	- added sample perl test script to MANIFEST. Missed during the previous release
+	- added MySQL::Sandbox::Recipes, a cookbook with short How-To tutorials
+	- cleaned up tests. Added 8 more test to check replication parameters
 2.0.99d  02-May-2009
 	- Added user defined test in Perl, in addition to the ones written in
 	  the test_sandbox script language

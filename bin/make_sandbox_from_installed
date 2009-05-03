@@ -1,0 +1,131 @@
+#!/usr/bin/perl
+#!/bin/sh
+# make_sandbox_from_installed
+#    The MySQL Sandbox
+#    Copyright (C) 2006,2007,2008 Giuseppe Maxia, MySQL AB
+#    Contacts: http://datacharmer.org
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; version 2 of the License
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+
+use strict;
+use warnings;
+use MySQL::Sandbox;
+
+my $new_version = shift
+    or die "version needed\n";
+$new_version =~ /^\d+\.\d+\.\d+$/ 
+    or die "invalid version format (required #.#.##)\n";
+
+my $current_dir = $ENV{PWD};
+
+if ( -d $new_version) {
+    die "directory $new_version already exists. Choose another name or location\n"
+}
+
+mkdir $new_version 
+    or die "can't create $new_version ($!)\n";
+my @binaries = (
+    {files => 'my*',                from => 'bin/',     to => 'bin'},
+    {files => 'resolveip',          from => 'bin/',     to => 'bin'},
+    {files => 'mysql_install_db',   from => 'scripts/', to => 'bin', optional => 1},
+    {files => 'mysql*',             from => 'lib/',     to => 'lib'},
+    {files => 'mysql*',             from => 'libexec/', to => 'bin', optional =>1},
+    {files => 'mysql/',             from => 'share/',   to => 'share', optional =>1},
+);
+
+my @commands;
+my @prefixes = (
+    '/usr',
+    '/usr/local',
+    '/usr/local/mysql',
+);
+
+my $found_mysqld =0;
+my $found_install_db =0;
+for my $prefix (@prefixes) {
+    if ((-x "$prefix/bin/mysqld") or (-x "$prefix/libexec/mysqld")) {
+        $found_mysqld =1;
+    }
+    if ((-x "$prefix/bin/mysql_install_db") or (-x "$prefix/scripts/mysql_install_db")) {
+        $found_install_db =1;
+    }
+}
+unless ($found_mysqld) {
+    die "can't find mysqld in (@prefixes)\n";
+}
+unless ($found_install_db) {
+    die "can't find mysql_install_db in (@prefixes)\n";
+}
+
+for my $bin ( @binaries ) {
+    my $found_prefix = undef;
+    for my $prefix (@prefixes) {
+        if ($bin->{files} =~ /\*/ ) {
+            my @files = glob("$prefix/$bin->{from}/$bin->{files}");
+            if (@files) {
+                $found_prefix = $prefix;
+                last;
+            }
+        }
+        else {
+            if ( -e "$prefix/$bin->{from}/$bin->{files}") {
+                $found_prefix = $prefix;
+                last;
+            }
+        }
+    }
+    unless ( $found_prefix) {
+        if ($bin->{optional}) {
+            next;
+        }
+        die "can't find $bin->{from}/$bin->{files} under (@prefixes) \n";
+    }
+    push @commands, sprintf("ln -s %s/%s/%s %s/%s/%s",
+        $found_prefix,
+        $bin->{from},
+        $bin->{files},
+        $current_dir,
+        $new_version,
+        $bin->{to}
+    );
+}
+
+unless (grep { /share/ } @commands) {
+    if ( -d "/usr/local/mysql/share" ) {
+        push @commands, "ln -s /usr/local/mysql/share/* $current_dir/$new_version/share";
+    }
+}
+
+#use Data::Dumper;
+#print Dumper \@commands; 
+#exit;
+
+chdir $new_version;
+for my $dir (qw(bin lib share)) {
+    mkdir $dir
+        or die "can't create $new_version/$dir\n";
+}
+
+for my $command (@commands) {
+    system $command;
+    if ($?) {
+        die "error creating symbolic link ($command) \n";
+    } 
+}
+
+$ENV{SANDBOX_BINARY} = $current_dir;
+system "make_sandbox $new_version @ARGV";
+
+

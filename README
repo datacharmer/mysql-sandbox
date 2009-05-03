@@ -86,7 +86,7 @@ MAKING SANDBOXES
     members. If you need three servers of the same version, you can use
 
      $ make_multiple_sandbox /path/to/tarball 
-    
+
     If you need servers of different versions in the same group, you may
     like
 
@@ -125,6 +125,21 @@ MAKING SANDBOXES
     they aren't, it will reuse the ones created during the previous run,
     thus saving time and CPU.
 
+  Creating a sandbox from already installed binaries
+    The script "make_sandbox_from_installed" tries to create a sandbox using
+    already installed binaries. Since these binaries can be in several
+    different places, the script creates a container with symbolic links,
+    where the binaries (their links, actually) are arranged as MySQL Sandbox
+    expects them to be.
+
+    To use this version, change directory to a place where you want to store
+    this symbolic links container, and invoke
+
+      make_sandbox_from_installed X.X.XX [options]
+
+    where X.X.XX is the version number. You can then pass any options
+    accepted by make_sandbox.
+
   Defaults and shortcuts
     If you use sandboxes often, instead of pointing to a tarball you can set
     a directory containing expanded tarballs. By default, the sandbox looks
@@ -134,7 +149,7 @@ MAKING SANDBOXES
 
       $HOME/opt/mysql/5.0.64 
       /opt/mysql/5.1.24
-    
+
     If you have such an organization, then you can invoke every sandbox
     script with this abridged syntax:
 
@@ -290,7 +305,7 @@ USING A SANDBOX
      make_replication_sandbox --check_base_port 5.0.79
      # Creates a replication directory under $SANDBOX_HOME/rsandbox_5_0_79
      # overwriting the previous one. 
- 
+
      # WRONG
      make_replication_sandbox --replication_directory=newdir 5.0.79
      # Created a replication directory under $SANDBOX_HOME/newdir.
@@ -557,9 +572,10 @@ TESTING
 
    Perl based test scripts
     In addition to the internal script language, you can also define perl
-    scripts, which will be able to call routines defined inside
-    test_sandbox. (see list below) To be identified as a Perl script, the
-    user defined test must have the extension ".sb.pl"
+    scripts, which will be able to use the $sandbox_home global variable and
+    to call routines defined inside test_sandbox. (see list below) To be
+    identified as a Perl script, the user defined test must have the
+    extension ".sb.pl"
 
     ok_shell()
        The "ok_shell" function requires a hash reference containing the
@@ -601,39 +617,42 @@ TESTING
            my ($version,$dir_name) = get_bare_version('mysql-5.1.30-OS.tar.gz'); 
            # returns ('5.1.30', '5_1_30')
 
+    ok This is a low level function, similar to the one provided by
+       Test::More. You should not need to call this one directly, unless you
+       want to fine tuning a test.
+
        See the test script t/start_restart_arguments.sb.pl as an example
 
 REQUIREMENTS
-       To use this package you need at least the following:
+    To use this package you need at least the following:
 
-       *  Linux or Mac OSX operating system (it may work in other *NIX OSs,
-          but has not been tested)
+    *  Linux or Mac OSX operating system (it may work in other *NIX OSs, but
+       has not been tested)
 
-       *  A binary tarball of MySQL 3.23 or later
+    *  A binary tarball of MySQL 3.23 or later
 
-       *  Perl 5.8.1 or later
+    *  Perl 5.8.1 or later
 
-       *  Bash shell
+    *  Bash shell
 
 COPYRIGHT
-       Version 3.0
+    Version 3.0
 
-       Copyright (C) 2006,2007,2008,2009 Giuseppe Maxia
+    Copyright (C) 2006,2007,2008,2009 Giuseppe Maxia
 
-       Home Page http://launchpad.net/mysql-sandbox/
+    Home Page http://launchpad.net/mysql-sandbox/
 
 LEGAL NOTICE
-       This program is free software; you can redistribute it and/or modify
-       it under the terms of the GNU General Public License as published by
-       the Free Software Foundation; version 2 of the License.
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; version 2 of the License.
 
-       This program is distributed in the hope that it will be useful, but
-       WITHOUT ANY WARRANTY; without even the implied warranty of
-       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-       General Public License for more details.
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+    Public License for more details.
 
-       You should have received a copy of the GNU General Public License
-       along with this program; if not, write to the Free Software
-       Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
-       USA
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 

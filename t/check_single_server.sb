@@ -16,7 +16,7 @@
 # The 'msg' is the description of the test
 # that is shown to you when the test runs.
 shell:
-command  = make_sandbox 5.1.30 --no_confirm
+command  = make_sandbox $TEST_VERSION --no_confirm --sandbox_directory=msb_XXXX
 expected = sandbox server started
 msg      = sandbox creation
 
@@ -30,9 +30,9 @@ msg      = sandbox creation
 # The 'msg' parameter is like the one used with the
 # 'shell' test.
 sql:
-path    = $SANDBOX_HOME/msb_5_1_30
+path    = $SANDBOX_HOME/msb_XXXX
 query   = select version()
-expected = 5.1.30
+expected = $TEST_VERSION
 msg      = checking version
 
 # All strings starting with a $ are expanded to their 
@@ -42,6 +42,6 @@ msg      = checking version
 # command = /home/sb/tests/msb_5_1_30/stop
 
 shell:
-command  = $SANDBOX_HOME/msb_5_1_30/stop
+command  = $SANDBOX_HOME/msb_XXXX/stop
 expected = OK
 msg      = stopped 
