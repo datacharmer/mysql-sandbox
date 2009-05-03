@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-#!/bin/sh
 # make_sandbox_from_installed
 #    The MySQL Sandbox
 #    Copyright (C) 2006,2007,2008 Giuseppe Maxia, MySQL AB
@@ -40,7 +39,8 @@ my @binaries = (
     {files => 'my*',                from => 'bin/',     to => 'bin'},
     {files => 'resolveip',          from => 'bin/',     to => 'bin'},
     {files => 'mysql_install_db',   from => 'scripts/', to => 'bin', optional => 1},
-    {files => 'mysql*',             from => 'lib/',     to => 'lib'},
+    {files => 'mysql*',             from => 'lib64/',   to => 'lib', optional => 1},
+    {files => 'mysql*',             from => 'lib/',     to => 'lib', optional => 1},
     {files => 'mysql*',             from => 'libexec/', to => 'bin', optional =>1},
     {files => 'mysql/',             from => 'share/',   to => 'share', optional =>1},
 );
@@ -54,6 +54,8 @@ my @prefixes = (
 
 my $found_mysqld =0;
 my $found_install_db =0;
+my $found_libraries =0;
+
 for my $prefix (@prefixes) {
     if ((-x "$prefix/bin/mysqld") or (-x "$prefix/libexec/mysqld")) {
         $found_mysqld =1;
@@ -61,12 +63,20 @@ for my $prefix (@prefixes) {
     if ((-x "$prefix/bin/mysql_install_db") or (-x "$prefix/scripts/mysql_install_db")) {
         $found_install_db =1;
     }
+    if ( glob("$prefix/lib/mysql/libmysqlclient*") 
+       or glob( "$prefix/lib/libmysqlclient*")  ) {
+        $found_libraries =1;
+    }
 }
+
 unless ($found_mysqld) {
     die "can't find mysqld in (@prefixes)\n";
 }
 unless ($found_install_db) {
     die "can't find mysql_install_db in (@prefixes)\n";
+}
+unless ($found_libraries) {
+    die "can't find mysql libraries in (@prefixes)\n";
 }
 
 for my $bin ( @binaries ) {
@@ -127,5 +137,3 @@ for my $command (@commands) {
 
 $ENV{SANDBOX_BINARY} = $current_dir;
 system "make_sandbox $new_version @ARGV";
-
-

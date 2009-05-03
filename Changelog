@@ -1,3 +1,6 @@
+2.0.99f  03-May-2009
+	- fixed bug in make_sandbox_from_installed. Some system use /lib64 
+	  instead of /lib 
 2.0.99e  03-May-2009
 	- added make_sandbox_from_installed to install from binaries already
 	  installed via packages such as .deb, .rpm. 
