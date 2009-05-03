@@ -1,6 +1,6 @@
 package MySQL::Sandbox::Recipes;
 
-our $VERSION="2.0.99e";
+our $VERSION="2.0.99f";
 
 1;
 __END__
@@ -25,7 +25,7 @@ L<http://www.slideshare.net/datacharmer/mysql-sandbox-3>
 
 =head2 the easy way - as root
 
-This is so easy, that it's almost a shame to show it.
+This is so easy, that I am almost ashamed to show it.
 Anyway, here goes.
 
   # cpan MySQL::Sandbox
@@ -40,11 +40,11 @@ to install in $HOME/usr/local.
 
 =item 1 
 
-download MySQL Sandbox tarball from cpan
+Download MySQL Sandbox tarball from cpan
 
 =item 2 
 
-set the variables that you will need
+Set the variables that you will need
 
     mkdir $HOME/usr/local
     export PATH=$HOME/usr/local/bin
@@ -52,7 +52,7 @@ set the variables that you will need
 
 =item 3 
 
-build and install
+Build and install
 
     perl Makefile.PL PREFIX=$HOME/usr/local
     make
@@ -60,6 +60,10 @@ build and install
     make install
 
 =back
+
+It is a bit complex, but you need to do the setup only once. After that, you can use MySQL Sandbox in your user space.
+
+Another solution, which can be habdy if you use a box without Perl and without root access, is to install Perl in your user space, and then you can use CPAN to install any package in your user space.
 
 =head1 SINGLE SERVER RECIPES
 
@@ -79,6 +83,11 @@ Make the sandbox
     make_sandbox /path/to/mysql-X.X.X-Your_Operating_System.tar.gz
 
 Notice that this command will expand the tarball into a directory C<X.X.X>, located in the same path where tghe tarball is. If you want to expand in a centralized directory, see the next recipe.
+
+If you have already a centralized repository for your binaries (see next recipe), then you can create a sandbox even more easily:
+
+  make_sandbox 5.1.34
+  make_replication_sandbox 5.1.34
 
 =back
 
@@ -215,18 +224,50 @@ The 'restart' script accepts parameters in the same way. While 'start' only work
 
 =head2 Stopping a sandbox
 
+Inside every single sandbox there are two scripts that can stop a sandbox.
+
   ./stop
+
+The 'stop' script attempts a clean stop, using mysqladmin. This works most of the time, especially if you are using a GA release.
+
   ./send_kill
+
+The 'send_kill' script achieve the same result, but with a different path. First, it tries to stop the sandboxed server nicely, by sending a C<kill -15> to the server PID. If this fails, after a reasonable timeout, it sends a deadly C<kill -9> and removes the PID file. This brutal method is not recommended for general usage, but it is sometimes necessary when dealing with servers in early stages of their development.
 
 =head2 Cleaning up a sandbox
 
   ./clear
 
+The 'clear' script will empty the data directory, trying to clean the system as much as possible. 
+If the server is running when you invoke the script, it will issue a C<drop database> query for each schema. It will also truncate the general and slow query log tables, if they exist.
+If the server is not running, 'clear' will clean up the data directory as best as it can. Notice however that invoking 'clear' when the server is not running will not remove stored routines and events.
+WARNING! No confirmation is asked! The data will be gone in 1 second.
+
 =head2 Copying sandbox contents to another
+
+Using 'sbtool', the Sandbox helper, this task is easy to perform.
+You need two sandboxes. This command cannnot copy to an arbitrary directory, but only to an existing sandbox.
+The first sandbox is where the data is stored. You need to use the C<--source_dir> option (or C<-s> for short). The second directory, identified with C<--dest_dir>, (or C<-d>) is the place where the data is copied. 
+WARNING! the destination data is overwritten!
+This command skips binary logs, relay logs, and general logs.
 
   sbtool -o copy \
     -s /path/to/source/sandbox \
     -d /path/to/destination/sandbox
+
+Some important points to remember:
+
+=over 3
+
+=item *
+
+This command only copies from a single sandbox to another. If you want to copy from a masterto several slaves, you need to run the command multiple times.
+
+=item *
+
+Before copying, this command stops both source and destination sandbox.
+
+=back
 
 =head2 Moving a sandbox
 
@@ -234,6 +275,9 @@ The 'restart' script accepts parameters in the same way. While 'start' only work
     -s /path/to/source/sandbox \
     -d /path/to/destination/directory
 
+This command stops the sandbox, moves it to the requested directory, and then changes all the paths in the scripts, to refer to the new directory.
+
+If the destination directory already exists, the command fails.
 
 =head2 Changing port to an existing sandbox
 
@@ -241,21 +285,34 @@ The 'restart' script accepts parameters in the same way. While 'start' only work
     -s /path/to/source/sandbox \
     --new_port=XXXX
 
+THis is similar to moving a sandbox, except that the directory is not changed. The sandbox is stopped, and the port changed in all the scripts.
+
 =head2 Removing a sandbox completely
 
   sbtool -o delete \
     -s /path/to/source/sandbox 
 
+This is a combination of using the 'clear' script and removing the sandbox.
+There is a safety check, though. If the sandbox is a permanent one (see next recipe), the operation aborts.
+Otherwise, the script calls 'clear' (clear_all if it is a group sandbox) and then removes all the contents. 
+
+WARNING! No confirmation is asked! The data will be gone in 1 second.
+
 =head2 Making a sandbox permanent
+
+MySQL Sandbox has been created with testing in mind. As such, the sandboxes are expendable, and there are some commands to get rid of them easily and quickly.
+However, you don't want always to do this.
+Sometimes, you need to keep the data for some time, to record it, or to copy it somewhere, or to use it for some similar testing. Whatever the reason, in these cases you don't want your data to disappear accidentally.
+The 'preserve' command, part of the sbtool, disables the 'clear' script in your sandbox, to avoid unpleasant "oh no" moments.
+Notice that nothing will protect you against hastily typed 'DROP DATABASE' queries! If you really need your data around, make a copy!
 
   sbtool -o preserve \
     -s /path/to/source/sandbox 
 
+If you change your mind, invoking sbtool with the 'unpreserve' operation, makes the sandbox erasable again.
+
   sbtool -o unpreserve \
     -s /path/to/source/sandbox 
-
-
-# TODO
 
 =head2 Starting and stopping a sandbox when the host server starts
 
@@ -282,7 +339,16 @@ After this call, you can then install sandboxes (single or multiple) with a simp
 
 =head2 Creating a standard replication sandbox
 
-  make_replication_sandbox /path/to/tarball 
+  make_replication_sandbox /path/to/tarball5.1.34.tar.gz 
+
+As easy as making a single sandbox, this command creates a replication system with one master an two slaves.
+If you have set the repository under $SANDBOX_BINARY (see L<Easily creating more sandboxes after the first one>), then you can also say
+
+  make_replication_sandbox 5.1.34
+
+If you want a different number of slaves, you can add an option
+
+  make_replication_sandbox --how_many_slaves=5 5.1.34
 
 =head2 Using a replication sandbox
 
@@ -300,31 +366,84 @@ To use it, move to that directory and invoke one of these scripts:
   * ./s2 for the second slave, s3 for the third one, and so on
   * ./use_all to send a command to the master and all slaves
   * ./check_slaves to see as a quick glance if the slaves are working
- 
+
 All the above scripts are shortcuts to the 'use' script in the appropriate directory.
 The 'use' script was described in the section dedicated to single server recipes.
 
 =head2 Creating a circular replication sandbox
 
- make_replication_sandbox --circular=4 /path/to/tarball 
+To create a circular replication system, you use the same command used for standard replication, but you add an option to indicate that you want a circular topology.
+
+ make_replication_sandbox --circular=4 /path/to/tarball5.1.34.tar.gz
+
+The above command creates a system with 4 nodes, where node 1 is master of 2, node 2 is master of 3, node 3 is master of 4, and node 4, to close the circle, is master of 1.
+
+If you have a binary repository under $SANDBOX_BINARY, you can use the simplified call:
+
+ make_replication_sandbox --circular=4 5.1.34
 
 =head2 Using a circular sandbox
 
 Same as using a replication sandbox (see above), but there are no 'm' and 's#' scripts. Instead, there are 'n#' scripts, to access node 1 (n1), node 2, (n2) and so on.
+You may try this:
+
+  $ ./n1 -e 'create table test.t1 (i int)'
+  $ ./n3 -e 'insert into test.t1 values (3)'
+  $ ./use_all 'select * from test.t1'
+  # server: 1: 
+  i
+  3
+  # server: 2: 
+  i
+  3
+  # server: 3: 
+  i
+  3
+  # server: 4: 
+  i
+  3
 
 =head2 Creating a group of unrelated sandboxes (same version)
 
   make_multiple_sandbox /path/to/tarball 
   make_multiple_sandbox --how_many_nodes=4 /path/to/tarball 
 
+A group of unrelated sandboxes is a set of three or more servers installed under the same directory.
+What is the purpose of this? It is useful whenever you need to play with several servers without being tied by the master/slave relationship.
+One possible reason is to try new replication schemes with a clean setup. Or you may want to test the Federated engine.
+Another common usage is when you need to test different approaches to the same problem, and you want to compare results quickly. 
+
 =head2 Creating a group of unrelated sandboxes (different versions)
 
   make_multiple_custom_sandbox /path/to/tarball5.1.34 /path/to/tarball5.0.77
-  make_multiple_custom_sandbox 5.1.34 5.0.77
+  make_multiple_custom_sandbox 5.1.34 5.0.77 5.4.0
+
+Similar to the previous one, the composite group is a collection of servers of different versions, all under the same directory.
+It can be useful when you want to compare some scheme in different versions, and automate the operations as much as possible.
 
 =head2 Using a group of sandboxes
 
 Same as using a replication sandbox (see above), but there are no 'm' and 's#' scripts. Instead, there are 'n#' scripts, to access node 1 (n1), node 2, (n2) and so on.
+
+A group of sandboxes is easily manged with the 'use_all' script.
+For example, you may want to pass a SQL instruction to all the servers
+
+  ./use_all 'select something from dbname.tablename where x=1'
+
+Or you want to execute a SQL script for each server
+
+  ./use_all 'source somescript.sql'
+
+The internal organization of the directory makes it easy to do more complex operations with all the servers within the group. For example, if you want to measure the speed of execution of the same statement for each server (assuming that you have different setups for each one), you can create a shell script:
+
+  ./stop_all
+  for N in 1 2 3
+  do
+    echo "processing node $N"
+    ./node$N/start --some_mysqld_option=somevalue
+    time ./node$N/use -e 'select something_heavy from somedb.sometable'
+    ./node$N/stop
+  done
 
 =head2 Creating a group sandbox with port checking
 
@@ -340,6 +459,10 @@ Same as using a replication sandbox (see above), but there are no 'm' and 's#' s
   export SLAVE_OPTIONS="--my_file=large"
   make_replication_sandbox 5.1.34
 
+  export MASTER_OPTIONS="--my_file=/path/to/my.cnf"
+  export SLAVE_OPTIONS="--my_file=/path/to/my_other.cnf"
+  make_replication_sandbox 5.1.34
+
   export NODE_OPTIONS="--my_file=large"
   make_replication_sandbox 5.1.34
 
@@ -347,6 +470,8 @@ Same as using a replication sandbox (see above), but there are no 'm' and 's#' s
   make_multiple_sandbox 5.1.34
 
 =head2 Creating a group sandbox from a source directory
+
+Same as for a single sandbox, but use the 'replication' or 'multiple' keyword when calling the script
 
 =head2 Starting or restarting a group sandbox with temporary options
 
@@ -381,6 +506,52 @@ Same as using a replication sandbox (see above), but there are no 'm' and 's#' s
   sbtool -o unpreserve \
     -s /path/to/source/sandbox 
 
+=head1 Managing sandboxes in groups
+
+=head2 Using more than one SANDBOX_HOME
+
+   export SANDBOX_HOME=/my/alternative/directory
+   make_sandbox 5.1.34 --check_port
+
+=head2 Stopping all sandboxes at once
+
+    $SANDBOX_HOME/stop_all
+
+=head2 Starting all sandboxes at once
+
+    $SANDBOX_HOME/start_all
+
+=head2 Running the same query on all sandboxes
+
+    $SANDBOX_HOME/use_all 'select something_cool'
+
+=head1 Testing with sandboxes
+
+=head2 Running the built-in test suite
+
+Download and expand the MySQL Sandbox package
+
+    perl Makefile.PL
+    make
+    TEST_VERSION=/path/to/mysql/tarball make test
+    # or
+    TEST_VERSION=5.1.34 make test
+
+The TEST_VERSION environment variable contains a version or the path to a tarball used by the test suite. If no test version is provided, most of the tests are skipped.
+The test suite creates a private SANDBOX_HOME under ./t/test_sb. All the sandboxes needed for the test are executed there. If something goes wrong, that is the place to inspect for clues.
+
+=head2 Creating and running your own tests
+
+Look at the ./t directory inside the MySQL Sandbox package (previous recipe).
+There are several .sb files, which are good examples of what you can do with the simple testing language.
+If this is not enough, you can use Perl itself. There are a few .sb.pl files, which are plugins for test_sandbox.
+Once you create your file, you can run it with
+
+  test_sandbox --user_test=your_test.sb
+
+To use a Perl test, name the test with a .sb.pl extension.
+
+  test_sandbox --user_test=your_test.sb.pl
 
 =head1 COPYRIGHT
 
