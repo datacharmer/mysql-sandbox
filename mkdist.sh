@@ -12,8 +12,8 @@ perl -i.bak -pe 'BEGIN{$V=shift;};s/^(our \$VERSION=)([^;]+)/$1"$V"/' $VERSION l
 perl -i.bak -pe 'BEGIN{$V=shift;};s/^(our \$VERSION=)([^;]+)/$1"$V"/' $VERSION lib/MySQL/Sandbox/Recipes.pm
 
 pod2text lib/MySQL/Sandbox.pm > README
-pod2html lib/MySQL/Sandbox.pm > sandbox.html
-pod2html lib/MySQL/Sandbox/Recipes.pm > cookbook.html
+pod2html lib/MySQL/Sandbox.pm > ./drafts/sandbox.html
+pod2html lib/MySQL/Sandbox/Recipes.pm > ./drafts/cookbook.html
 
 perl Makefile.PL PREFIX=$HOME/usr/local
 make
@@ -35,5 +35,6 @@ fi
 make clean
 
 find . -name "*~" -exec rm {} \;
+find . -name "*.bak" -exec rm {} \;
 rm -rf t/test_sb/
 

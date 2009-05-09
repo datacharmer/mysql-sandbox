@@ -1,0 +1,23 @@
+__LICENSE__
+[mysql]
+_MYSQL_PROMPT_
+#
+
+[client]
+user            = _DBUSER_
+password        = _DBPASSWORD_
+port            = _SERVERPORT_
+socket          = /tmp/mysql_sandbox_SERVERPORT_.sock
+
+[mysqld]
+user                            = _OSUSER_
+port                            = _SERVERPORT_
+socket                          = /tmp/mysql_sandbox_SERVERPORT_.sock
+basedir                         = _BASEDIR_
+datadir                         = _HOME_DIR_/_SANDBOXDIR_/data
+pid-file                        = _HOME_DIR_/_SANDBOXDIR_/data/mysql_sandbox_SERVERPORT_.pid
+#log-slow-queries               = _HOME_DIR_/_SANDBOXDIR_/data/msandbox-slow.log
+#log                            = _HOME_DIR_/_SANDBOXDIR_/data/msandbox.log
+_MORE_OPTIONS_
+
+

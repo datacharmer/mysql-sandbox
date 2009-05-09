@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="2.0.99f";
+our $VERSION="3.0.00";
 
 our @MANIFEST = (
 'clear.sh',
@@ -682,7 +682,7 @@ my %parse_options_sbtool = (
     },
 );
 
-
+# --- START SCRIPTS IN CODE ---
 
 my %scripts_in_code = (
     'start.sh' => <<'START_SCRIPT',
@@ -1080,6 +1080,8 @@ SANDBOX_ACTION_SCRIPT
 
 );
 
+# --- END SCRIPTS IN CODE ---
+
 my $license_text = <<'LICENSE';
 #    The MySQL Sandbox
 #    Copyright (C) 2006,2007,2008,2009 Giuseppe Maxia
@@ -1131,12 +1133,14 @@ sub scripts_in_code {
 __END__
 =head1 NAME
 
-MySQL::Sandbox::Scripts - Collection of script templates for MySQL Sandbox
+MySQL::Sandbox::Scripts - Script templates for MySQL Sandbox
 
 =head1 PURPOSE
 
 This package is a collection of data and scripts templates for MySQL::Sandbox.
-It is not supposed to be used stand alone, but it is an ancillary package.
+It is not supposed to be used stand alone. It is an ancillary package.
+For a reference manual, see L<MySQL::Sandbox>. For a cookbook, see L<MySQL::Sandbox::Recipes>.
+
 
 =head1 COPYRIGHT
 

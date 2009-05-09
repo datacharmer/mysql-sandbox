@@ -19,7 +19,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION="2.0.99f";
+our $VERSION="3.0.00";
 our $DEBUG;
 
 BEGIN {
@@ -694,6 +694,8 @@ either C<--force> or C<--check_port>.
 
  make_sandbox 5.0.79 --check_port
  # Creates a sandbox with port 5081 under $SANDBOX_HOME/msb_5_0_79_b
+
+Notice that this option is disabled when you use a group sandbox (replication or multiple). Even if you set NODE_OPTIONS=--check_port, it won't be used, because every group sandbox invokes make_sandbox with the --no_check_port option.
 
 =head3 Multiple sandbox port checking
 

@@ -1,0 +1,25 @@
+#!/Users/gmax/usr/local/bin/bash
+
+#-----------------------------------------
+SBDIR="/Users/gmax/sandboxes/msb_5_1_34"
+. "$SBDIR/sandbox_env"
+#-----------------------------------------
+
+if [ "$1" = "" ]
+then
+    echo "syntax my sql{dump|binlog|admin} arguments"
+    exit
+fi
+
+SUFFIX=$1
+shift
+
+MYSQLCMD="$BASEDIR/bin/my$SUFFIX"
+
+if [ -f $MYSQLCMD ]
+then
+    $MYSQLCMD --defaults-file=$SBDIR/my.sandbox.cnf "$@"
+else
+    echo "$MYSQLCMD not found "
+fi
+

@@ -1,3 +1,10 @@
+3.0.00   09-May-2009
+    - GA release
+    - no code modification. Same codebase as 2.0.99f
+	- completed cookbook (41 recipes in MySQL::Sandbox::Recipes)
+	- added script_templates directory (No modification in current version,
+	  just preparation for 3.1.xx)
+	- added drafts directory
 2.0.99f  03-May-2009
 	- fixed bug in make_sandbox_from_installed. Some system use /lib64 
 	  instead of /lib 
