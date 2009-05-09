@@ -1,18 +1,17 @@
 package MySQL::Sandbox::Recipes;
 
-our $VERSION="2.0.99f";
+our $VERSION="3.0.00";
 
 1;
 __END__
+
 =head1 NAME
 
-MySQL::Sandbox::Recipes - Collection of recipes for MySQL Sandbox
+MySQL::Sandbox::Recipes - A cookbook for MySQL Sandbox
 
 =head1 PURPOSE
 
 This package is a collection of HOW-TO brief tutorials and recipes for MySQL Sandbox
-
-This is B<work in progress>. You may see that some of these recipes are still stubs. I am working on them in my free time, but I am definitely going to complete it.
 
 =head1 Installing MySQL::Sandbox
 
@@ -192,6 +191,7 @@ See the next recipe for an automatic way of getting a different port and directo
 This option will check if port 5134 is used. If it is, it will check the next available port, until it finds a free one. 
 In the previous statement context, 'free' means not only 'in use', but also allocated by another sandbox that is currently not running.
 If the directory msb_5_1_34 is used, the sandbox is created in msb_5_1_34_a. The application keeps checking for free ports and unused directories until it finds a suitable combination.
+Notice that this option is disabled when you use a group sandbox (replication or multiple). Even if you set NODE_OPTIONS=--check_port, it won't be used, because every group sandbox invokes make_sandbox with the --no_check_port option.
 
 =head2 Creating a single sandbox with a specific option file
 
@@ -447,13 +447,44 @@ The internal organization of the directory makes it easy to do more complex oper
 
 =head2 Creating a group sandbox with port checking
 
-  make_replication_sandbox --check_base_port \
-    --sandbox_directory=something_unique /path/to/tarball
+When you create a multiple sandbox (make_replication_sandbox, 
+make_multiple_sandbox, make_multiple_custom_sandbox) the default behavior
+is to overwrite the existing sandbox without asking for confirmation. 
+The rationale is that a multiple sandbox is definitely more likely to be a 
+created only for testing purposes, and overwriting it should not be a problem.
+If you want to avoid overwriting, you can specify a different group name
+(C<--replication_directory> C<--group_directory>), but this will use the
+same base port number, unless you specify C<--check_base_port>.
 
-  make_multiple_sandbox --check_base_port \
-    --sandbox_directory=something_unique /path/to/tarball 
+ make_replication_sandbox 5.0.79
+ # Creates a replication directory under $SANDBOX_HOME/rsandbox_5_0_79
+ # The default base_port is 7000
+
+ make_replication_sandbox 5.0.79
+ # Creates a replication directory under $SANDBOX_HOME/rsandbox_5_0_79
+ # overwriting the previous one. The default base port is still 7000
+
+ # WRONG
+ make_replication_sandbox --check_base_port 5.0.79
+ # Creates a replication directory under $SANDBOX_HOME/rsandbox_5_0_79
+ # overwriting the previous one. 
+
+ # WRONG
+ make_replication_sandbox --replication_directory=newdir 5.0.79
+ # Created a replication directory under $SANDBOX_HOME/newdir.
+ # The previous one is preserved, but the new sandbox does not start
+ # because of port conflict.
+
+ # RIGHT
+ make_replication_sandbox --replication_directory=newwdir \
+    --check_base_port 5.0.79
+ # Creates a replication directory under $SANDBOX_HOME/newdir
+ # The previous one is preserved. No conflicts happen
 
 =head2 Creating a group sandbox with a specific option file
+
+When you create a group sandbox, make_sanbox is invoked several times, with a predefined set of options. You can add options for each node by means of environmental variables.
+If you create a replication sandbox, you can set different options for the master and for the slaves:
 
   export MASTER_OPTIONS="--my_file=huge"
   export SLAVE_OPTIONS="--my_file=large"
@@ -463,31 +494,51 @@ The internal organization of the directory makes it easy to do more complex oper
   export SLAVE_OPTIONS="--my_file=/path/to/my_other.cnf"
   make_replication_sandbox 5.1.34
 
+If you don't need the distinction, then you can define the same option for all nodes at once:
+
   export NODE_OPTIONS="--my_file=large"
   make_replication_sandbox 5.1.34
+
+For non-replication group sandboxes (or for circular replication), $NODE_OPTION is the appropriate way of setting options.
 
   export NODE_OPTIONS="--my_file=large"
   make_multiple_sandbox 5.1.34
 
 =head2 Creating a group sandbox from a source directory
 
-Same as for a single sandbox, but use the 'replication' or 'multiple' keyword when calling the script
+Same as for a single sandbox, but use the 'replication' or 'multiple' keyword when calling the script.
+
+  make_sandbox_from_source $PWD replication [options]
+  make_sandbox_from_source $PWD multiple [options]
 
 =head2 Starting or restarting a group sandbox with temporary options
 
-  ./start_all [options]
-  ./restart_all [options]
+When you want to restart a group of sandboxes with some temporary options, all you need to do is to pass the option to the command line of ./start_all (if the group was not running) or ./restart_all.
+
+  ./start_all --mysqld=mysqld-debug --gdb
+  ./restart_all --max-allowed-packet=20M
 
 =head2 Stopping a group sandbox
 
+The natural way of stopping a group of sandboxes is to invoke the C<stop_all> script. This will work as expected most of the time.
+
   ./stop_all
+
+If you are dealing with a potentially unresponsive server (for example when testing alpha code), then you may use C<send_kill_all>, which will attempt a gentle stop first, and then kill the server brutally, if it does not respond after a predefined timeout of 10 seconds.
+
   ./send_kill_all
 
 =head2 Cleaning up a group sandbox
 
+To revert a group sandbox to its original state, the quickest way is to call C<clear_all>, which will invoke the C<clear> script in every depending single sandbox.
+
   ./clear_all
 
+In a replication sandbox, this command will also remove all replication settings. For this reason, C<clear_all> creates a dummy file called C<needs_initialization>, containing the date and time of the cleanup. This is a signal for C<start_all> to initialize the slaves at the next occurrence. No need for the user to do anything special. The sandbox is self healing.
+
 =head2 Moving a group sandbox
+
+This recipe is the same for single and multiple sandboxes. Using the sbtool will move a sandbox in a clean and safe way. All the elements of the sandbox will be changed to adapt to the new location.
 
   sbtool -o move \
     -s /path/to/source/sandbox \
@@ -495,13 +546,21 @@ Same as for a single sandbox, but use the 'replication' or 'multiple' keyword wh
 
 =head2 Removing a group sandbox completely
 
+The sbtool can delete completely any sandbox, either single or multiple.
+
   sbtool -o delete \
     -s /path/to/source/sandbox 
 
+This operation will fail if the sandbox has been made permanent. (See next recipe).
+
 =head2 Making a group sandbox permanent 
+
+A sandbox is designed to be easy to create and to throw away, because its primary purpose is testing. However, there are cases when you want to keep the contents around for a while, and you therefore want to make sure that the sandbox is not cleaned up or deleted by mistake. C<sbtool> achieves this goal by disabling the C<clear_all> script and the C<clear> script in all depending sandboxes. In this state, also the 'delete' operation fails (see previous recipe).
 
   sbtool -o preserve \
     -s /path/to/source/sandbox 
+
+When you need to get rid of the sandbox contents quickly, you can 'unpreserve' it, and the clear* scripts will be enabled again.
 
   sbtool -o unpreserve \
     -s /path/to/source/sandbox 
@@ -510,20 +569,36 @@ Same as for a single sandbox, but use the 'replication' or 'multiple' keyword wh
 
 =head2 Using more than one SANDBOX_HOME
 
+The default $SANDBOX_HOME is $HOME/sandboxes, which is suitable for most purposes. If your $HOME is not fit for this task (e.g. if it is located in a NFS partition), you may set a different one on the command line or in your shell startup file.
+
    export SANDBOX_HOME=/my/alternative/directory
    make_sandbox 5.1.34 --check_port
 
+The above procedure is also useful when you, for any reasons, want a completely different set of sandboxes for a new batch of tests, and you want to be able to manage all of them at once. To avoid conflicts, you should always use the --check_port option.
+
 =head2 Stopping all sandboxes at once
+
+The $SANDBOX_HOME directory is the place containing all sandboxes, both single and multiple. This allows you to stop all of them at once with a single command.
 
     $SANDBOX_HOME/stop_all
 
 =head2 Starting all sandboxes at once
 
+Similarly to the previous recipe, you can start all sandboxes at once with a single command.
+
     $SANDBOX_HOME/start_all
 
-=head2 Running the same query on all sandboxes
+Notice that, if you created two or more sandboxes that use the same port, (create one with port X, stop it, create another with port X), there will be a conflict, and the second sandbox (and subsequent ones) won't start.
+
+=head2 Running the same query on all active sandboxes
+
+This is a quick way of getting a result from every sandbox under $SANDBOX_HOME. The query passed to C<use_all> will be passed to every C<use> or C<use_all> scripts of the depending sandboxes.
 
     $SANDBOX_HOME/use_all 'select something_cool'
+
+If you want to run several queries from a script, use the C<source> keyword:
+
+    $SANDBOX_HOME/use_all 'source /full/path/to/script.sql'
 
 =head1 Testing with sandboxes
 
@@ -539,6 +614,8 @@ Download and expand the MySQL Sandbox package
 
 The TEST_VERSION environment variable contains a version or the path to a tarball used by the test suite. If no test version is provided, most of the tests are skipped.
 The test suite creates a private SANDBOX_HOME under ./t/test_sb. All the sandboxes needed for the test are executed there. If something goes wrong, that is the place to inspect for clues.
+
+IMPORTANT: When running test_sandbox, either standalone or within the test suite, it will stop all sandboxes inside $SANDBOX_HOME, to prevent conflicts with the sandboxes created during the tests.
 
 =head2 Creating and running your own tests
 

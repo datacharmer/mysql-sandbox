@@ -10,7 +10,7 @@
 # same rule used for make_sandbox and low_level_make_sandbox
 # "-c option=value" 
 #
-my $TEST_VERSION = $ENV{TEST_VERSION} || '5.0.77';
+my $TEST_VERSION = $ENV{TEST_VERSION};
 my ($version, $name_version) = get_bare_version($TEST_VERSION);
 my $replication_dir = "rsandbox_$name_version";
 $ENV{MASTER_OPTIONS} = '-c key-buffer=20M';

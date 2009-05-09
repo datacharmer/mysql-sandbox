@@ -1,0 +1,20 @@
+  SINGLE SANDBOX
+
+  Sandbox home:          [/home/username/sandboxes______]
+
+  +----------------+
+  | Choose version |  or [ enter path to tarball________]
+  +----------------+ 
+  |  5.0.45        |  port:              [_5077_]  check: [_]
+  |  5.0.51        |  sandbox directory: [msb_5_0_77_________________]
+  |  5.0.67        |  options file :     small ( ) large (*)  huge ( )
+  | [5.0.77] <--   |                     [_custom____________________]
+  |  5.1.30        |                     
+  |  5.1.31        |  mysqld options:    [drop down menu_____________]
+  |  5.1.32        |                    
+  |  6.0.10        |  prompt: prefix:    [mysql______________________]  
+  +----------------+          body:      [[\h] {\u} (\d)>____________]
+                       
+                         
+                                  < CANCEL >    < OK >
+                                         
