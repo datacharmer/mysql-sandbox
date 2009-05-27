@@ -1,6 +1,9 @@
+3.0.01   28-May-2009
+	- Fixed Bug#381044 "my" script fails on some executables
+	- moved function "exists_in_path" to MySQL::Sandbox module
 3.0.00   09-May-2009
-    - GA release
-    - no code modification. Same codebase as 2.0.99f
+	- GA release
+	- no code modification. Same codebase as 2.0.99f
 	- completed cookbook (41 recipes in MySQL::Sandbox::Recipes)
 	- added script_templates directory (No modification in current version,
 	  just preparation for 3.1.xx)

@@ -10,7 +10,7 @@ my $scripts = scripts_in_code();
 print Dumper $scripts;
 
 for my $script (keys %{$scripts}) {
-    my $fname = "./process/$script";
+    my $fname = "./sb_scripts/$script";
     open my $FH, '>', $fname
         or die "can't create $fname ($!)\n";
     print $FH $scripts->{$script}, "\n";
