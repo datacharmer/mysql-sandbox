@@ -44,7 +44,7 @@ unless ($scripts_found) {
     die "could not find scripts in code within $module\n";
 }
 
-my @files = grep { /(?<!~)$/ } glob('./process/*');
+my @files = grep { /(?<!~)$/ } glob('./sb_scripts/*');
 
 my $scripts_text = '';
 

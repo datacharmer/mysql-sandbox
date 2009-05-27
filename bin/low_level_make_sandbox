@@ -22,7 +22,7 @@ use warnings;
 use English qw( -no_match_vars ); 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox qw( find_safe_port_and_directory);
+use MySQL::Sandbox qw( find_safe_port_and_directory exists_in_path);
 use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
@@ -532,17 +532,6 @@ sub copy_and_replace {
         rename $newname, $better_name;
     }
     return;
-}
-
-sub exists_in_path {
-    my ($cmd) = @_;
-    my @path_directories = split /:/, $ENV{PATH}; ## no critic
-    for my $dir (@path_directories) {
-        if ( -x "$dir/$cmd") {
-            return 1;
-        } 
-    }
-    return 0;
 }
 
 sub get_more_options {

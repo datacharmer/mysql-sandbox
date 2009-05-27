@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.00";
+our $VERSION="3.0.01";
 
 our @MANIFEST = (
 'clear.sh',
@@ -930,9 +930,41 @@ shift
 
 MYSQLCMD="$BASEDIR/bin/my$SUFFIX"
 
+NODEFAULT=(myisam_ftdump
+myisamlog
+mysql_config
+mysql_convert_table_format
+mysql_find_rows
+mysql_fix_extensions
+mysql_fix_privilege_tables
+mysql_secure_installation
+mysql_setpermission
+mysql_tzinfo_to_sql
+mysql_upgrade
+mysql_waitpid
+mysql_zap
+mysqlaccess
+mysqlbinlog
+mysqlbug
+mysqldumpslow
+mysqlhotcopy
+mysqltest
+mysqltest_embedded)
+
+DEFAULTSFILE="--defaults-file=$SBDIR/my.sandbox.cnf"
+
+for NAME in ${NODEFAULT[@]}
+do
+    if [ "my$SUFFIX" = "$NAME" ]
+    then
+        DEFAULTSFILE=""
+        break
+    fi
+done
+
 if [ -f $MYSQLCMD ]
 then
-    $MYSQLCMD --defaults-file=$SBDIR/my.sandbox.cnf "$@"
+    $MYSQLCMD $DEFAULTSFILE "$@"
 else
     echo "$MYSQLCMD not found "
 fi

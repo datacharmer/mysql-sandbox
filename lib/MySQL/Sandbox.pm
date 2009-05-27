@@ -9,6 +9,7 @@ use File::Find;
 use base qw( Exporter);
 our @ISA= qw(Exporter);
 our @EXPORT_OK= qw( is_port_open
+                    exists_in_path
                     is_a_sandbox
                     find_safe_port_and_directory
                     first_unused_port
@@ -19,7 +20,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.00";
+our $VERSION="3.0.01";
 our $DEBUG;
 
 BEGIN {
@@ -376,6 +377,18 @@ sub get_ports {
     }
     return ( $ports, $all_info );
 }
+
+sub exists_in_path {
+    my ($cmd) = @_;
+    my @path_directories = split /:/, $ENV{PATH}; ## no critic
+    for my $dir (@path_directories) {
+        if ( -x "$dir/$cmd") {
+            return 1;
+        } 
+    }
+    return 0;
+}
+
 
 1;
 __END__
