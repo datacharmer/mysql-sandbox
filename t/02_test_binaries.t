@@ -1,13 +1,13 @@
-
 BEGIN {
     $ENV{PERL5LIB}="$ENV{PWD}/lib";
     $ENV{PATH}="$ENV{PWD}/bin:$ENV{PATH}";
 };
+
 use strict;
 use warnings;
 use lib './t';
 use Test_Helper;
-use Test::More tests => 31;
+use Test::More tests => 36;
 
 # 7 tests
 ok_shell_result( "sandbox",
@@ -18,6 +18,16 @@ ok_shell_result( "sandbox",
             'make_multiple_sandbox',
             'make_multiple_custom_sandbox'],
             "sandbox");
+
+# 5 tests
+ok_shell_result( "sb",
+        ['shortcut',
+        'single',
+        'replication',
+        'multiple'
+        ],
+        "sb"
+);
 
 # 3 tests
 ok_shell_result( "low_level_make_sandbox --help", 
@@ -80,6 +90,7 @@ sub ok_shell_result {
     $? = 0;
     $! = undef;
     my $result = qx($command); 
+    # diag ">>$result\n";
     ok($? >= 0 , $description);
     for my $item (@{ $search_items}) {
         ok( $result =~ /$item/ , "$description - $item" );

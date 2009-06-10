@@ -21,7 +21,7 @@ use strict;
 use warnings;
 # use Data::Dumper;
 use English qw( -no_match_vars ); 
-use MySQL::Sandbox;
+use MySQL::Sandbox qw( runs_as_root);
  
 #my $install_dir = $PROGRAM_NAME;
 #$install_dir =~ s{/\w+(\.pl)?$}{};
@@ -33,6 +33,8 @@ use MySQL::Sandbox;
 # eval "use lib q($install_dir)";
 
 my $msb = MySQL::Sandbox->new();
+
+runs_as_root();
 
 my $where_to_install = shift
     or die "syntax $PROGRAM_NAME {VERSION|tarball_full_name} [options]\n";

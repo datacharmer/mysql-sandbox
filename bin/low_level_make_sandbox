@@ -22,7 +22,7 @@ use warnings;
 use English qw( -no_match_vars ); 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox qw( find_safe_port_and_directory exists_in_path);
+use MySQL::Sandbox qw( find_safe_port_and_directory exists_in_path runs_as_root);
 use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
@@ -32,6 +32,8 @@ my $DEBUG = $MySQL::Sandbox::DEBUG;
 #$install_dir =~ s{/\w+(\.pl)?$}{};
 
 my $msb = MySQL::Sandbox->new();
+
+runs_as_root();
 
 check_sandbox_dir();
 my %scripts_in_code = %{ MySQL::Sandbox::Scripts::scripts_in_code() };

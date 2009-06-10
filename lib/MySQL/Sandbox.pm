@@ -9,6 +9,7 @@ use File::Find;
 use base qw( Exporter);
 our @ISA= qw(Exporter);
 our @EXPORT_OK= qw( is_port_open
+                    runs_as_root
                     exists_in_path
                     is_a_sandbox
                     find_safe_port_and_directory
@@ -20,7 +21,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.01";
+our $VERSION="3.0.03";
 our $DEBUG;
 
 BEGIN {
@@ -387,6 +388,18 @@ sub exists_in_path {
         } 
     }
     return 0;
+}
+
+sub runs_as_root {
+    if ( ($REAL_USER_ID == 0) or ($EFFECTIVE_USER_ID == 0)) {
+        unless ($ENV{SANDBOX_AS_ROOT}) {
+            die   "MySQL Sandbox should not run as root\n"
+                . "\n"
+                . "If you know what you are doing and want to\n "
+                . "run as root nonetheless, please set the environment\n"
+                . "variable 'SANDBOX_AS_ROOT' to a nonzero value\n";
+        }
+    }
 }
 
 
@@ -778,6 +791,61 @@ The test suite, C<test_sandbox>, recognizes two environment variables
  * PRESERVE_TESTS. If set, this variable prevents the removal of test
    sandboxes created by test_sandbox. It is useful to inspect sandboxes
    if a test fails.
+
+=head2 sb - the Sandbox shortcut
+
+When you have many sandboxes, even the simple exercise of typing the path to the appropriate 'use' script can be tedious and seemingly slow.
+
+If saving a few keystrokes is important, you may consider using C<sb>, the sandbox shortcut.
+You invoke 'sb' with a version number, without dots or underscores. The shortcut script will try its best at finding the right directory.
+
+  $ sb 5135
+  # same as calling 
+  # $SANDBOX_HOME/msb_5_1_35/use
+
+Every option that you use after the version is passed to the 'use' script.
+
+  $ sb 5135 -e "SELECT VERSION()"
+  # same as calling 
+  # $SANDBOX_HOME/msb_5_1_35/use -e "SELECT VERSION()"
+
+Prepending a "r" to the version number indicates a replication sandbox. If the directory is found, the script will call the master.
+
+  $ sb r5135
+  # same as calling 
+  # $SANDBOX_HOME/rsandbox_5_1_35/m
+
+To use a slave, use the corresponding number immediately after the version.
+
+  $ sb r5135 2
+  # same as calling 
+  # $SANDBOX_HOME/rsandbox_5_1_35/s2
+
+Options for the destination script are added after the node indication.
+
+  $ sb r5135 2 -e "SELECT 1"
+  # same as calling 
+  # $SANDBOX_HOME/rsandbox_5_1_35/s2 -e "SELECT 1"
+
+Similar to replication, you can call multiple sandboxes, using an 'm' before the version number.
+
+  $ sb m5135
+  # same as calling 
+  # $SANDBOX_HOME/multi_msb_5_1_35/n1
+
+  $ sb m5135 2
+  # same as calling 
+  # $SANDBOX_HOME/multi_msb_5_1_35/n2
+
+If your sandbox has a non-standard name and you pass such name instead of a version, the script will attempt to open a single sandbox with that name.
+
+  $ sb testSB
+  # same as calling 
+  # $SANDBOX_HOME/testSB/use
+
+If the identified sandbox is not active, the script will attempt to start it.
+
+This shortcut script doesn't deal with any sandbox script other than the ones listed in the above examples.
 
 =head1 SBTool the Sandbox helper
 

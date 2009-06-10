@@ -20,7 +20,9 @@
 
 use strict;
 use warnings;
-use MySQL::Sandbox;
+use MySQL::Sandbox qw(runs_as_root);
+
+runs_as_root();
 
 my $new_version = shift
     or die "version needed\n";
