@@ -45,6 +45,7 @@
 		</ul>
 
 		<li><a href="#environment_variables">Environment variables</a></li>
+		<li><a href="#sb__the_sandbox_shortcut">sb - the Sandbox shortcut</a></li>
 	</ul>
 
 	<li><a href="#sbtool_the_sandbox_helper">SBTool the Sandbox helper</a></li>
@@ -456,6 +457,52 @@ make_multiple_custom_sandbox and make_multiple_sandbox</p>
  * PRESERVE_TESTS. If set, this variable prevents the removal of test
    sandboxes created by test_sandbox. It is useful to inspect sandboxes
    if a test fails.</pre>
+<p>
+</p>
+<h2><a name="sb__the_sandbox_shortcut">sb - the Sandbox shortcut</a></h2>
+<p>When you have many sandboxes, even the simple exercise of typing the path to the appropriate 'use' script can be tedious and seemingly slow.</p>
+<p>If saving a few keystrokes is important, you may consider using <code>sb</code>, the sandbox shortcut.
+You invoke 'sb' with a version number, without dots or underscores. The shortcut script will try its best at finding the right directory.</p>
+<pre>
+  $ sb 5135
+  # same as calling 
+  # $SANDBOX_HOME/msb_5_1_35/use</pre>
+<p>Every option that you use after the version is passed to the 'use' script.</p>
+<pre>
+  $ sb 5135 -e &quot;SELECT VERSION()&quot;
+  # same as calling 
+  # $SANDBOX_HOME/msb_5_1_35/use -e &quot;SELECT VERSION()&quot;</pre>
+<p>Prepending a ``r'' to the version number indicates a replication sandbox. If the directory is found, the script will call the master.</p>
+<pre>
+  $ sb r5135
+  # same as calling 
+  # $SANDBOX_HOME/rsandbox_5_1_35/m</pre>
+<p>To use a slave, use the corresponding number immediately after the version.</p>
+<pre>
+  $ sb r5135 2
+  # same as calling 
+  # $SANDBOX_HOME/rsandbox_5_1_35/s2</pre>
+<p>Options for the destination script are added after the node indication.</p>
+<pre>
+  $ sb r5135 2 -e &quot;SELECT 1&quot;
+  # same as calling 
+  # $SANDBOX_HOME/rsandbox_5_1_35/s2 -e &quot;SELECT 1&quot;</pre>
+<p>Similar to replication, you can call multiple sandboxes, using an 'm' before the version number.</p>
+<pre>
+  $ sb m5135
+  # same as calling 
+  # $SANDBOX_HOME/multi_msb_5_1_35/n1</pre>
+<pre>
+  $ sb m5135 2
+  # same as calling 
+  # $SANDBOX_HOME/multi_msb_5_1_35/n2</pre>
+<p>If your sandbox has a non-standard name and you pass such name instead of a version, the script will attempt to open a single sandbox with that name.</p>
+<pre>
+  $ sb testSB
+  # same as calling 
+  # $SANDBOX_HOME/testSB/use</pre>
+<p>If the identified sandbox is not active, the script will attempt to start it.</p>
+<p>This shortcut script doesn't deal with any sandbox script other than the ones listed in the above examples.</p>
 <p>
 </p>
 <hr />

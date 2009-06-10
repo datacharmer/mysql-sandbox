@@ -27,6 +27,7 @@ use Getopt::Long qw(:config no_ignore_case );
 use File::Copy qw/cp/;
 use File::Find;
 use MySQL::Sandbox qw( 
+                runs_as_root
                 is_a_sandbox 
                 is_sandbox_running
                 get_sandbox_params 
@@ -37,6 +38,7 @@ use MySQL::Sandbox qw(
 
 use MySQL::Sandbox::Scripts;
 
+runs_as_root();
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
 
