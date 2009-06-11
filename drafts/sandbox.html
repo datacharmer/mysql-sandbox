@@ -503,6 +503,31 @@ You invoke 'sb' with a version number, without dots or underscores. The shortcut
   # $SANDBOX_HOME/testSB/use</pre>
 <p>If the identified sandbox is not active, the script will attempt to start it.</p>
 <p>This shortcut script doesn't deal with any sandbox script other than the ones listed in the above examples.</p>
+<p>But the sb can do even more. If you invoke it with a dotted version number, the script will run the appropriate make*sandbox script and then use the sandbox itself.</p>
+<pre>
+  $ sb 5.1.35
+  # same as calling 
+  # make_sandbox 5.1.35 --no_confirm
+  # and then
+  # $SANDBOX_HOME/msb_5_1_35/use</pre>
+<p>It works for group sandboxes as well.</p>
+<pre>
+  $ sb r5.1.35
+  # same as calling 
+  # make_replication_sandbox 5.1.35 
+  # and then
+  # $SANDBOX_HOME/rsandbox_5_1_35/m</pre>
+<p>And finally, it also does What You Expect when using a tarball instead of a version.</p>
+<pre>
+  $ sb mysql-5.1.35-YOUR_OS.tar.gz
+  # creates and uses a single sandbox from this tarball</pre>
+<pre>
+  $ sb r mysql-5.1.35-YOUR_OS.tar.gz
+  # creates and uses a replication sandbox from this tarball</pre>
+<pre>
+  $ sb m mysql-5.1.35-YOUR_OS.tar.gz
+  # creates and uses a multiple sandbox from this tarball</pre>
+<p>Using a MySQL server has never been easier.</p>
 <p>
 </p>
 <hr />
