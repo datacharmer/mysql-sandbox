@@ -847,6 +847,35 @@ If the identified sandbox is not active, the script will attempt to start it.
 
 This shortcut script doesn't deal with any sandbox script other than the ones listed in the above examples.
 
+But the sb can do even more. If you invoke it with a dotted version number, the script will run the appropriate make*sandbox script and then use the sandbox itself.
+
+  $ sb 5.1.35
+  # same as calling 
+  # make_sandbox 5.1.35 --no_confirm
+  # and then
+  # $SANDBOX_HOME/msb_5_1_35/use
+
+It works for group sandboxes as well.
+
+  $ sb r5.1.35
+  # same as calling 
+  # make_replication_sandbox 5.1.35 
+  # and then
+  # $SANDBOX_HOME/rsandbox_5_1_35/m
+
+And finally, it also does What You Expect when using a tarball instead of a version.
+
+  $ sb mysql-5.1.35-YOUR_OS.tar.gz
+  # creates and uses a single sandbox from this tarball
+
+  $ sb r mysql-5.1.35-YOUR_OS.tar.gz
+  # creates and uses a replication sandbox from this tarball
+
+  $ sb m mysql-5.1.35-YOUR_OS.tar.gz
+  # creates and uses a multiple sandbox from this tarball
+
+Using a MySQL server has never been easier.
+
 =head1 SBTool the Sandbox helper
 
 The Sandbox Helper, C<sbtool>, is a tool that allows administrative operations 

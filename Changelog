@@ -1,5 +1,5 @@
 3.0.03   11-Jun-2009
-	- added the 'sb' shortcut script to invoke sandboxes easily.
+	- added the 'sb' shortcut script to create and invoke sandboxes easily.
 3.0.02   30-May-2009
 	- Added a check for all scripts, to prevent MySQL::Sandbox 
 	  from running as root without explicit awareness
