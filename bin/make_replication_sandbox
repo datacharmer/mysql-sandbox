@@ -22,7 +22,7 @@ use warnings;
 use English qw( -no_match_vars ); 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox qw(get_ranges runs_as_root );
+use MySQL::Sandbox qw(get_ranges runs_as_root use_env);
 use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
@@ -368,7 +368,7 @@ system "./initialize_slaves"
 system q( perl -i -pe 's/(-u root) (--password=)/$1/g' initialize_slaves );
 
 chdir $current_dir;
-print "replication directory installed on $replication_directory\n";
+print "replication directory installed in ", use_env($replication_directory), "\n";
 
 sub make_circular_replication {
     my $cmd =  "make_multiple_sandbox --circular";

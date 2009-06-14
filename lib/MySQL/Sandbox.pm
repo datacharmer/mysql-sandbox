@@ -19,9 +19,10 @@ our @EXPORT_OK= qw( is_port_open
                     get_sb_info
                     get_ports
                     get_ranges
+                    use_env
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.03";
+our $VERSION="3.0.04";
 our $DEBUG;
 
 BEGIN {
@@ -401,6 +402,26 @@ sub runs_as_root {
         }
     }
 }
+
+#
+# Replaces a path portion with an environment variable name
+# if a match is found
+#
+sub use_env{
+    my ($path) = @_;
+    my @vars = (
+            'HOME', 
+            'SANDBOX_HOME',
+    );
+    for my $var (@vars) {
+        if ($path =~ /^$ENV{$var}/) {
+            $path =~ s/$ENV{$var}/\$$var/;
+            return $path;
+        }
+    }
+    return $path;
+}
+
 
 
 1;

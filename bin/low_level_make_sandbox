@@ -22,7 +22,7 @@ use warnings;
 use English qw( -no_match_vars ); 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox qw( find_safe_port_and_directory exists_in_path runs_as_root);
+use MySQL::Sandbox qw( find_safe_port_and_directory exists_in_path runs_as_root use_env);
 use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
@@ -324,17 +324,22 @@ print $msb->credits(),
 #open my $CURRENT_CONF , q{>}, "$install_dir/current_options.conf"
 #    or die "error creating current_options.conf ($ERRNO)\n";
 
-for my $key (
+if ($msb->{options}{no_show}) {
+    $msb->{options}{no_confirm} =1;
+}
+
+unless ($msb->{options}{no_show}) {
+    for my $key (
                 sort { $msb->{parse_options}{$a}{so} <=> $msb->{parse_options}{$b}{so} } 
                 grep { $msb->{parse_options}{$_}{parse}}  keys %{$msb->{parse_options}} ) {
-    next if grep { $key eq $_ } qw/more_options help interactive conf_file no_confirm /;
-    my $is_array = ref($msb->{options}{$key}) && ref($msb->{options}{$key}) eq 'ARRAY';
-    printf "%-30s = %s\n", $key, $is_array ? join q{ ; }, @{ $msb->{options}{$key} } : $msb->{options}{$key};
-    next unless $msb->{options}{$key};
-    next if $msb->{options}{$key} =~ /^ \s* $/x;
-    #printf $CURRENT_CONF "%-30s = %s\n", $key, $is_array ? join q{ ; }, @{ $msb->{options}{$key} } : $msb->{options}{$key};
+        next if grep { $key eq $_ } qw/more_options help interactive conf_file no_confirm /;
+        my $is_array = ref($msb->{options}{$key}) && ref($msb->{options}{$key}) eq 'ARRAY';
+        printf "%-30s = %s\n", $key, $is_array ? join q{ ; }, 
+            @{ $msb->{options}{$key} } : $msb->{options}{$key};
+        next unless $msb->{options}{$key};
+        next if $msb->{options}{$key} =~ /^ \s* $/x;
+    }
 }
-#close $CURRENT_CONF;
 
 my $answer = 'y';
 
@@ -492,8 +497,7 @@ print
       #"To repeat this installation with the same options,\n",
       #"use $PROGRAM_NAME --conf_file=current_options.conf\n",
       #('-' x 40), "\n",
-      "Your sandbox server was installed in $sandbox_directory\n";
-
+      "Your sandbox server was installed in ", use_env($sandbox_directory), "\n";
 
 sub copy_and_replace {
     my ($filename,  $destination_dir, $destination_filename) = @_ ;

@@ -1,3 +1,9 @@
+3.0.04   14-Jun-2009
+	- fixed bug in test_sandbox. A "$" sign in a directory name was not
+	  escaped properly
+	- added the "--no_show" option to low_level_make_sandbox
+	- fixed a bug in the "sb" script. Calling it in "create mode" did
+	  fail if $SANDBOX_HOME does not exist yet.
 3.0.03   11-Jun-2009
 	- added the 'sb' shortcut script to create and invoke sandboxes easily.
 3.0.02   30-May-2009

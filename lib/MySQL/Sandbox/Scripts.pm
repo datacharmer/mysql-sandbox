@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.03";
+our $VERSION="3.0.04";
 
 our @MANIFEST = (
 'clear.sh',
@@ -258,11 +258,20 @@ my %parse_options_low_level_make_sandbox = (
     no_confirm            => {
                                 value => 0, 
                                 parse => 'no_confirm',
-                                so    => 190,
+                                so    => 180,
                                 help  => [
                                             'suppress the confirmation request from user',
                                          ],
                             },
+    no_show               => {
+                                value => 0, 
+                                parse => 'no_show',
+                                so    => 190,
+                                help  => [
+                                            'does not show options or ask confirmation to the user',
+                                         ],
+                            },
+
 );
 
 my %parse_options_replication = (
