@@ -40,9 +40,9 @@ if ( $version =~ /^[rm]$/) {
 }
 
 $ENV{SANDBOX_HOME} = $ENV{SANDBOX_HOME} || "$ENV{HOME}/sandboxes";
-unless ( -d $ENV{SANDBOX_HOME} ) {
-    die "\$SANDBOX_HOME not found at $ENV{SANDBOX_HOME}\n";
-}
+#unless ( -d $ENV{SANDBOX_HOME} ) {
+#    die "\$SANDBOX_HOME not found at $ENV{SANDBOX_HOME}\n";
+#}
 
 $version =~ s/\s*//g;
 

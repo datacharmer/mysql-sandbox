@@ -20,7 +20,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox;
+use MySQL::Sandbox qw(use_env);
 use English qw( -no_match_vars );
 use Carp;
 
@@ -503,10 +503,10 @@ sub ok_exec {
             return ok($CHILD_ERROR == 0 , $params->{'msg'});
         }
         elsif ($params->{'expected'} =~ s/^\!//) {
-            return ok( $result !~ /$params->{'expected'}/, $params->{'msg'} );
+            return ok( $result !~ /\Q$params->{'expected'}\E/, $params->{'msg'} );
         }
         else {
-            return ok( $result =~ /$params->{'expected'}/, $params->{'msg'} );
+            return ok( $result =~ /\Q$params->{'expected'}\E/, $params->{'msg'} );
         }
     }
     elsif (ref( $params->{'expected'}) eq 'ARRAY') {
@@ -517,10 +517,10 @@ sub ok_exec {
                 ok($CHILD_ERROR == 0 , $params->{'msg'} . "-[$count]");
             }
             elsif ($expected =~ s/^\!//) {
-                ok( $result !~ /$expected/, $params->{'msg'} . "-[$count]" );
+                ok( $result !~ /\Q$expected\E/, $params->{'msg'} . "-[$count]" );
             }
             else {
-                ok( $result =~ /$expected/, $params->{'msg'} . "-[$count]" );
+                ok( $result =~ /\Q$expected\E/, $params->{'msg'} . "-[$count]" );
             }
         }
     }
@@ -610,13 +610,16 @@ sub run_mcustom_test {
     my $gdname = 'multi_cmsb_' . get_bare_version($versions[0]) ;
     #$custom_dir =~ s/ /-/g;
     #$custom_dir =~ s/\./_/g;
+    # $DEBUG=2; $verbose=2; 
     $gdname =~ s/\./_/g;
     my $custom_dir = "$sandbox_home/$gdname";
     ok_exec({ command => "make_multiple_custom_sandbox --group_directory=$gdname @versions ",
-              expected => ['!not started yet', "group directory installed on $custom_dir" ],
-              msg      => "custom sandbox ( $custom_dir ) started"
+              expected => [
+                    '!not started yet', 
+                    "group directory installed in " . use_env($custom_dir) 
+                    ],
+              msg      => "custom sandbox ( ". use_env($custom_dir)." ) started"
             });
-
     ok(-d $custom_dir, 'custom group directory exists')
             or die "custom group directory not created\n";
     my $counter = 0;

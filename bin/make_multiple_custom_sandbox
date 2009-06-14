@@ -22,7 +22,7 @@ use warnings;
 use English qw( -no_match_vars ); 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox qw(get_ranges runs_as_root);
+use MySQL::Sandbox qw(get_ranges runs_as_root use_env);
 use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
@@ -211,7 +211,7 @@ for my $node (1 .. @versions ) {
 }
 
 chdir $current_dir;
-print "group directory installed on $group_directory\n";
+print "group directory installed in ", use_env($group_directory),"\n";
 
 sub make_group_dir {
     my ($base_dir, $dashed) = @_;

@@ -223,7 +223,9 @@ if ( -d "$binary_base/$bare_basedir" ) {
     if ($major >=5) {
         push(@install_options, qq(--my_clause=log-error=msandbox.err));
     }
-    print "Executing low_level_make_sandbox ", join( " \\\n\t", @install_options ), "\n";
+    unless (grep {$_ eq '--no_show'} @install_options) {
+        print "Executing low_level_make_sandbox ", join( " \\\n\t", @install_options ), "\n";
+    }
     exec "low_level_make_sandbox", @install_options;
 }
 else {
