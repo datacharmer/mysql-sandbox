@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.04";
+our $VERSION="3.0.5";
 
 our @MANIFEST = (
 'clear.sh',
@@ -238,6 +238,15 @@ my %parse_options_low_level_make_sandbox = (
                                          ] 
                             },
 
+   no_run                 => {
+                                value => 0,                  
+                                parse => 'no_run',                  
+                                so    => 176,
+                                help  => [
+                                            'Stops the server if started with "load_grants".',
+                                            '(default: disabled)'
+                                         ] 
+                            },
 
     interactive           => {
                                 value => 0,                  
@@ -703,7 +712,7 @@ export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
 MYSQLD_SAFE="$BASEDIR/bin/_MYSQLDSAFE_"
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
-TIMEOUT=20
+TIMEOUT=60
 if [ -f $PIDFILE ]
 then
     echo "sandbox server already started (found pid file $PIDFILE)"
@@ -779,7 +788,7 @@ STOP_SCRIPT
 __LICENSE__
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
-TIMEOUT=10
+TIMEOUT=30
 if [ -f $PIDFILE ]
 then
     MYPID=`cat $PIDFILE`
@@ -814,6 +823,7 @@ export DYLD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$DYLD_LIBRARY_PATH
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 BASEDIR=_BASEDIR_
 MYSQL="$BASEDIR/bin/mysql"
+export MYSQL_HISTFILE="$SBDIR/.mysql_history"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 if [ -f $PIDFILE ]
 then

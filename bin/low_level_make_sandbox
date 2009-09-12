@@ -277,6 +277,10 @@ for my $cmd ( ($bash, 'tar', 'gzip') ) {
 }
 
 my $bin_bash = `which $bash`; ## no critic
+if ((! $bin_bash) or ( $bin_bash =~ /^no/i) ) {
+    die "can't find the 'bash' shell\n";
+}
+
 chomp $bin_bash;
 $msb->{options}{'binbash'} = $bin_bash;
 my @supported_versions = @{ MySQL::Sandbox::supported_versions() };
@@ -429,6 +433,9 @@ for my $file_spec ( @file_list) {  #, @doc_file_list) {
 if ($msb->{options}{datadir_from} eq 'script' ) {
     my $script = sprintf '%s/scripts/mysql_install_db', $msb->{options}{basedir} ;
     unless ( -x $script ) {
+        if ( -e $script ) {
+            die "$script is not executable\n";
+        }
         $script = sprintf '%s/bin/mysql_install_db', $msb->{options}{basedir} ;
     }
     if ( -x $script ) {
@@ -448,6 +455,9 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         }
     }
     else {
+        if ( -e $script ) {
+            die "$script is not executable\n";
+        }
         die "$script not found\n";
     }
 }
@@ -490,6 +500,11 @@ if ($msb->{options}{load_grants}) {
     # sleep 3;
     system "$sandbox_directory/load_grants"
         and die "can't load grants\n";
+    if ($msb->{options}{no_run}) {
+        print "stopping server\n";
+        system "$sandbox_directory/stop"
+            and die "can't stop server\n";
+    }
 }
 
 print 

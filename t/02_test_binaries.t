@@ -10,14 +10,14 @@ use Test_Helper;
 use Test::More tests => 36;
 
 # 7 tests
-ok_shell_result( "sandbox",
+ok_shell_result( "msandbox",
             ['available',
             'low_level_make_sandbox', 
             'make_sandbox',
             'make_replication_sandbox',
             'make_multiple_sandbox',
             'make_multiple_custom_sandbox'],
-            "sandbox");
+            "msandbox");
 
 # 5 tests
 ok_shell_result( "sb",

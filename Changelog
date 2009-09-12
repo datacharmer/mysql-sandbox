@@ -1,3 +1,18 @@
+3.0.05   12-Sep-2009
+	- Fixed Bug#428274 make_sandbox fails on Mac OSX 10.6 "snow Leopard"
+    - Increased starting timeout from 20 to 60, because some recent versions
+	  of MySQL are quite slower to start.
+	- Added a dedicated history file per each sandbox (Thanks to Gerardo Narvaja
+	  for suggesting it) 
+	- fixed bug in make_sandbox when dealing with a non-standard answer to the
+	"which" Unix utility
+	- added error checking for 'bash' to low_level_make_sandbox
+	- improved error checking for mysql_install_db script
+	- renamed 'sandbox' tool -> 'msandbox' to prevent clash
+	  with existing tool in Linux distros
+	- Added "--no_run" option to low_level_make_sandbox, to stop
+	  the server when using the "--load_grants" option. The purpose is 
+	  to end the command without leaving any running sub-process.
 3.0.04   14-Jun-2009
 	- fixed bug in test_sandbox. A "$" sign in a directory name was not
 	  escaped properly

@@ -1,6 +1,6 @@
 package MySQL::Sandbox::Recipes;
 
-our $VERSION="3.0.04";
+our $VERSION="3.0.5";
 
 1;
 __END__
