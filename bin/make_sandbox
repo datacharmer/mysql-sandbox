@@ -64,7 +64,7 @@ $where_to_install =~ s/^\s*\~/$ENV{HOME}/x;
 if  ( $where_to_install =~ m{^mysql\D+\d+\.\d+\.\d+.*\.tar\.gz$ }x ) { 
     $where_to_install = $ENV{PWD} . '/' . $where_to_install;
     unless ( -f $where_to_install ) {
-        die "file not found ($where_to_install)\n";
+        die "file not found in current directory ($where_to_install)\n";
     }
 }
 
@@ -85,7 +85,7 @@ elsif  ( $where_to_install =~ m{^(/.+)/(\d+)\.(\d+)\.(\d+)$}x ) {
 elsif  ( $where_to_install =~ m{^(/.+)/(mysql\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.gz$ }x ) { 
     my $new_dir;
     unless ( -f $where_to_install ) {
-        die "file not found ($where_to_install)\n";
+        die "tarball file not found ($where_to_install)\n";
     }
     ($binary_base, $new_dir, $major, $minor, $release) =  ($1, $2, $3, $4, $5);
     print "unpacking $where_to_install\n";
@@ -97,16 +97,30 @@ elsif  ( $where_to_install =~ m{^(/.+)/(mysql\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.
     }
     else {
         my $original_dir = $ENV{PWD};
-        my $which_tar = qx(which gtar);
-        unless ($which_tar) {
+        my @recognized_tar_executables = qw(gtar gnutar bsdtar);
+        my $which_tar;
+        my $tar_found = 0;
+        for my $tar_exec (@recognized_tar_executables) {
+            $which_tar = qx(which $tar_exec);
+            if ((!$which_tar) or ($which_tar =~ /^no/i)) {
+                next
+            }
+            else {
+                $tar_found = 1; last
+            }
+        }
+        unless ($tar_found ) {
             $which_tar = qx(which tar );
+            if ((!$which_tar) or ($which_tar =~ /^no/i)) {
+                $which_tar = undef;
+            }
         }
         if ($which_tar) {
             chomp $which_tar;
             $tar_executable = $which_tar;
             my $tar_version = qx($tar_executable --help)
                 or die "can't find tar program\n";
-            unless ($tar_version =~ /GNU/i) {
+            unless ($tar_version =~ /(?:bsdtar|gnu\s+tar)/i) {
                 die "this version of tar is not supported\n";
             }
         }

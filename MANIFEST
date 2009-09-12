@@ -6,7 +6,7 @@ bin/make_sandbox
 bin/make_sandbox_from_source
 bin/make_sandbox_from_installed
 bin/sb
-bin/sandbox
+bin/msandbox
 bin/sbtool
 bin/test_sandbox
 Changelog

@@ -12,7 +12,7 @@ WriteMakefile(
                          }, 
     EXE_FILES         => [
                             'bin/sb',
-                            'bin/sandbox',
+                            'bin/msandbox',
                             'bin/sbtool',
                             'bin/test_sandbox',
                             'bin/low_level_make_sandbox',
