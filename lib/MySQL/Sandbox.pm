@@ -22,7 +22,7 @@ our @EXPORT_OK= qw( is_port_open
                     use_env
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.5";
+our $VERSION="3.0.06";
 our $DEBUG;
 
 BEGIN {
@@ -473,6 +473,8 @@ and PATH variables.
    make
    make test
    make install
+
+Notice that PERL5LIB could be different in different operating systems. If you opt for this installation method, you must adapt it to your operating system path and Perl version.
 
 See also under L</"TESTING"> for more options before running 'make test'
 

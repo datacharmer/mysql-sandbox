@@ -9,8 +9,10 @@
 
 <body style="background-color: white">
 
-<p><a name="__index__"></a></p>
+
 <!-- INDEX BEGIN -->
+<div name="index">
+<p><a name="__index__"></a></p>
 
 <ul>
 
@@ -45,30 +47,30 @@
 		</ul>
 
 		<li><a href="#environment_variables">Environment variables</a></li>
-		<li><a href="#sb__the_sandbox_shortcut">sb - the Sandbox shortcut</a></li>
+		<li><a href="#sb___the_sandbox_shortcut">sb - the Sandbox shortcut</a></li>
 	</ul>
 
 	<li><a href="#sbtool_the_sandbox_helper">SBTool the Sandbox helper</a></li>
 	<ul>
 
-		<li><a href="#sbtool__informational_options">sbtool - Informational options</a></li>
+		<li><a href="#sbtool___informational_options">sbtool - Informational options</a></li>
 		<ul>
 
-			<li><a href="#sbtool_o_info">sbtool -o info</a></li>
-			<li><a href="#sbtool_o_ports">sbtool -o ports</a></li>
-			<li><a href="#sbtool_o_range">sbtool -o range</a></li>
+			<li><a href="#sbtool__o_info">sbtool -o info</a></li>
+			<li><a href="#sbtool__o_ports">sbtool -o ports</a></li>
+			<li><a href="#sbtool__o_range">sbtool -o range</a></li>
 		</ul>
 
-		<li><a href="#sbtool__modification_options">sbtool - modification options</a></li>
+		<li><a href="#sbtool___modification_options">sbtool - modification options</a></li>
 		<ul>
 
-			<li><a href="#sbtool_o_port">sbtool -o port</a></li>
-			<li><a href="#sbtool_o_copy">sbtool -o copy</a></li>
-			<li><a href="#sbtool_o_move">sbtool -o move</a></li>
-			<li><a href="#sbtool_o_tree">sbtool -o tree</a></li>
-			<li><a href="#sbtool_o_preserve">sbtool -o preserve</a></li>
-			<li><a href="#sbtool_o_unpreserve">sbtool -o unpreserve</a></li>
-			<li><a href="#sbtool_o_delete">sbtool -o delete</a></li>
+			<li><a href="#sbtool__o_port">sbtool -o port</a></li>
+			<li><a href="#sbtool__o_copy">sbtool -o copy</a></li>
+			<li><a href="#sbtool__o_move">sbtool -o move</a></li>
+			<li><a href="#sbtool__o_tree">sbtool -o tree</a></li>
+			<li><a href="#sbtool__o_preserve">sbtool -o preserve</a></li>
+			<li><a href="#sbtool__o_unpreserve">sbtool -o unpreserve</a></li>
+			<li><a href="#sbtool__o_delete">sbtool -o delete</a></li>
 		</ul>
 
 	</ul>
@@ -92,9 +94,11 @@
 	<li><a href="#copyright">COPYRIGHT</a></li>
 	<li><a href="#legal_notice">LEGAL NOTICE</a></li>
 </ul>
+
+<hr name="index" />
+</div>
 <!-- INDEX END -->
 
-<hr />
 <p>
 </p>
 <h1><a name="name">NAME</a></h1>
@@ -143,6 +147,7 @@ and PATH variables.</p>
    make
    make test
    make install</pre>
+<p>Notice that PERL5LIB could be different in different operating systems. If you opt for this installation method, you must adapt it to your operating system path and Perl version.</p>
 <p>See also under <a href="#testing">TESTING</a> for more options before running 'make test'</p>
 <p>
 </p>
@@ -203,7 +208,7 @@ If you need three servers of the same version, you can use</p>
 <p>If you want to create a sandbox from the code that you have just compiled, but you don't want to install, there is a script that makesa binary tarball for you and installs a sandbox in one go.</p>
 <pre>
  $ make_sandbox_from_source {SOURCE_DIRECTORY} {sandbox_type} [options]</pre>
-<p>The first parameters is the directory where you have successfully run ``./configure &amp;&amp; make''. 
+<p>The first parameters is the directory where you have successfully run &quot;./configure &amp;&amp; make&quot;. 
 The second parameter is what kind of sandbox you want to create: One of the following:</p>
 <pre>
   * single
@@ -247,7 +252,7 @@ e.g.</p>
 </p>
 <h2><a name="fine_tuning">Fine tuning</a></h2>
 <p>Every sandbox script will give you additional information if you invoke it
-with the ``--help'' option.</p>
+with the &quot;--help&quot; option.</p>
 <p>When creating a single sandbox, you can pass to the new server most any option
 that can be used in a my.cnf file, in addition to specific sandbox options.</p>
 <p>Multiple and replication sandboxes, for example, accept a --how_many_slaves=X
@@ -262,7 +267,7 @@ directory that servers two purposes:</p>
 <p>further isolates the sandboxes, and keep them under easy control if you are in the habit of creating many of them;</p>
 </li>
 <li>
-<p>provides a set of handy super-commands, which can be passed to all the sandboxes. Running ``$SANDBOX_HOME/stop_all'' you will stop all servers of all sandboxes, single or groups, below that directory.</p>
+<p>provides a set of handy super-commands, which can be passed to all the sandboxes. Running &quot;$SANDBOX_HOME/stop_all&quot; you will stop all servers of all sandboxes, single or groups, below that directory.</p>
 </li>
 </ul>
 <p>
@@ -274,64 +279,55 @@ directory that servers two purposes:</p>
 <p>The sandbox directory of the instance you just created contains
 some handy scripts to manage your server easily and in isolation.</p>
 <dl>
-<dt><strong><a name="item_start">start</a></strong>
+<dt><strong><a name="start" class="item">start</a></strong></dt>
 
-<dt><strong><a name="item_restart">restart</a></strong>
+<dt><strong><a name="restart" class="item">restart</a></strong></dt>
 
-<dt><strong><a name="item_stop">stop</a></strong>
+<dt><strong><a name="stop" class="item">stop</a></strong></dt>
 
 <dd>
-<p>``./start'', ``./restart'', and ``./stop'' do what their name suggests.
-<a href="#item_start"><code>start</code></a> and <a href="#item_restart"><code>restart</code></a> accept parameters that are eventually passed to the server. e.g.:</p>
-</dd>
-<dd>
+<p>&quot;./start&quot;, &quot;./restart&quot;, and &quot;./stop&quot; do what their name suggests.
+<a href="#start"><code>start</code></a> and <a href="#restart"><code>restart</code></a> accept parameters that are eventually passed to the server. e.g.:</p>
 <pre>
   ./start --skip-innodb</pre>
-</dd>
-<dd>
 <pre>
   ./restart --event-scheduler=disabled</pre>
 </dd>
-</li>
-<dt><strong><a name="item_use">use</a></strong>
+<dt><strong><a name="use" class="item">use</a></strong></dt>
 
 <dd>
-<p>``./use'' calls the command line client with the appropriate parameters,</p>
+<p>&quot;./use&quot; calls the command line client with the appropriate parameters,</p>
 </dd>
-</li>
-<dt><strong><a name="item_clear">clear</a></strong>
+<dt><strong><a name="clear" class="item">clear</a></strong></dt>
 
 <dd>
-<p>``./clear'' stops the server and removes everything from the data directory, letting you ready to start from scratch.</p>
+<p>&quot;./clear&quot; stops the server and removes everything from the data directory, letting you ready to start from scratch.</p>
 </dd>
-</li>
-<dt><strong><a name="item_multiple_server_sandbox">multiple server sandbox</a></strong>
+<dt><strong><a name="multiple_server_sandbox" class="item">multiple server sandbox</a></strong></dt>
 
 <dd>
-<p>On a replication sandbox, you have the same commands, with a ``_all''
+<p>On a replication sandbox, you have the same commands, with a &quot;_all&quot;
 suffix, meaning that you propagate the command to all the members.
-Then you have ``./m'' as a shortcut to use the master, ``./s1'' and ``./s2''
-to access the slaves (and ``s3'', ``s4'' ... if you define more).</p>
-</dd>
-<dd>
+Then you have &quot;./m&quot; as a shortcut to use the master, &quot;./s1&quot; and &quot;./s2&quot;
+to access the slaves (and &quot;s3&quot;, &quot;s4&quot; ... if you define more).</p>
 <p>In group sandboxes without a master slave relationship (circular replication and multiple sandboxes) the nodes can be accessed by ./n1, ./n2, ./n3, and so on.</p>
-</dd>
 <dl>
-<dt><strong><a name="item_start_all">start_all</a></strong>
+<dt><strong><a name="start_all" class="item">start_all</a></strong></dt>
 
-<dt><strong><a name="item_restart_all">restart_all</a></strong>
+<dt><strong><a name="restart_all" class="item">restart_all</a></strong></dt>
 
-<dt><strong><a name="item_stop_all">stop_all</a></strong>
+<dt><strong><a name="stop_all" class="item">stop_all</a></strong></dt>
 
-<dt><strong><a name="item_use_all">use_all</a></strong>
+<dt><strong><a name="use_all" class="item">use_all</a></strong></dt>
 
-<dt><strong><a name="item_clear_all">clear_all</a></strong>
+<dt><strong><a name="clear_all" class="item">clear_all</a></strong></dt>
 
-<dt><strong><a name="item_m">m</a></strong>
+<dt><strong><a name="m" class="item">m</a></strong></dt>
 
-<dt><strong><a name="item_s1_2cs2">s1,s2</a></strong>
+<dt><strong><a name="s1_s2" class="item">s1,s2</a></strong></dt>
 
 </dl>
+</dd>
 </dl>
 <p>
 </p>
@@ -459,7 +455,7 @@ make_multiple_custom_sandbox and make_multiple_sandbox</p>
    if a test fails.</pre>
 <p>
 </p>
-<h2><a name="sb__the_sandbox_shortcut">sb - the Sandbox shortcut</a></h2>
+<h2><a name="sb___the_sandbox_shortcut">sb - the Sandbox shortcut</a></h2>
 <p>When you have many sandboxes, even the simple exercise of typing the path to the appropriate 'use' script can be tedious and seemingly slow.</p>
 <p>If saving a few keystrokes is important, you may consider using <code>sb</code>, the sandbox shortcut.
 You invoke 'sb' with a version number, without dots or underscores. The shortcut script will try its best at finding the right directory.</p>
@@ -472,7 +468,7 @@ You invoke 'sb' with a version number, without dots or underscores. The shortcut
   $ sb 5135 -e &quot;SELECT VERSION()&quot;
   # same as calling 
   # $SANDBOX_HOME/msb_5_1_35/use -e &quot;SELECT VERSION()&quot;</pre>
-<p>Prepending a ``r'' to the version number indicates a replication sandbox. If the directory is found, the script will call the master.</p>
+<p>Prepending a &quot;r&quot; to the version number indicates a replication sandbox. If the directory is found, the script will call the master.</p>
 <pre>
   $ sb r5135
   # same as calling 
@@ -568,17 +564,17 @@ not available at creation time or that would require too much manual labor.</p>
     -h     --help            (-) &lt;1&gt; - this screen</pre>
 <p>
 </p>
-<h2><a name="sbtool__informational_options">sbtool - Informational options</a></h2>
+<h2><a name="sbtool___informational_options">sbtool - Informational options</a></h2>
 <p>
 </p>
-<h3><a name="sbtool_o_info">sbtool -o info</a></h3>
+<h3><a name="sbtool__o_info">sbtool -o info</a></h3>
 <p>Returns configuration options from a Sandbox (if specified) or from all sandboxes 
 under $SANDBOX_HOME (default).
 You can use <code>--search_path</code> to tell sbtool where to start. 
 The return information is formatted as a Perl structure.</p>
 <p>
 </p>
-<h3><a name="sbtool_o_ports">sbtool -o ports</a></h3>
+<h3><a name="sbtool__o_ports">sbtool -o ports</a></h3>
 <p>Lists ports used by the Sandbox. Use <code>--search_path</code> to tell sbtool where to 
 start looking (default is $SANDBOX_HOME). You can also use the <code>--format</code> option
 to influence the outcome. Currently supported are only 'text' and 'perl'.
@@ -586,7 +582,7 @@ If you add the <code>--only_used</code> option, sbtool will return only the port
 currently open.</p>
 <p>
 </p>
-<h3><a name="sbtool_o_range">sbtool -o range</a></h3>
+<h3><a name="sbtool__o_range">sbtool -o range</a></h3>
 <p>Finds N consecutive ports not yet used by the Sandbox. 
 It uses the same options used with 'ports' and 'info'. Additionally, you can
 define the low and high boundaries by means of <code>--min_range</code> and <code>--max_range</code>.
@@ -594,16 +590,16 @@ The size of range to search is 10 ports by default. It can be changed
 with <code>--range_size</code>.</p>
 <p>
 </p>
-<h2><a name="sbtool__modification_options">sbtool - modification options</a></h2>
+<h2><a name="sbtool___modification_options">sbtool - modification options</a></h2>
 <p>
 </p>
-<h3><a name="sbtool_o_port">sbtool -o port</a></h3>
+<h3><a name="sbtool__o_port">sbtool -o port</a></h3>
 <p>Changes port to an existing Sandbox.
 This requires the options <code>--source_dir</code> and <code>--new_port</code> to complete the task.
 If the sandbox is running, it will be stopped.</p>
 <p>
 </p>
-<h3><a name="sbtool_o_copy">sbtool -o copy</a></h3>
+<h3><a name="sbtool__o_copy">sbtool -o copy</a></h3>
 <p>Copies data from one Sandbox to another.
 It only works on <strong>single</strong> sandboxes.
 It requires the <code>--source_dir</code> and <code>--dest_dir</code> options to complete the task.
@@ -612,11 +608,11 @@ of them is still running, it will be stopped. If both source and destination dir
 point to the same directory, the command is not performed.
 At the end of the operation, all the data in the source sandbox is copied to
 the destination sandbox. Existing files will be overwritten. It is advisable, but not
-required, to run a ``./clear'' command on the destination directory before performing 
+required, to run a &quot;./clear&quot; command on the destination directory before performing 
 this task.</p>
 <p>
 </p>
-<h3><a name="sbtool_o_move">sbtool -o move</a></h3>
+<h3><a name="sbtool__o_move">sbtool -o move</a></h3>
 <p>Moves a Sandbox to a different location.
 Unlike 'copy', this operation acts on the whole sandbox, and can move both single
 and multiple sandboxes.
@@ -626,7 +622,7 @@ sandbox is running, it will be stopped before performing the operation.
 After the move, all paths used in the sandbox scripts will be changed.</p>
 <p>
 </p>
-<h3><a name="sbtool_o_tree">sbtool -o tree</a></h3>
+<h3><a name="sbtool__o_tree">sbtool -o tree</a></h3>
 <p>Creates a replication tree, with one master, one or more intermediate level slaves,
 and one or more leaf node slaves for each intermediate level.
 To create the tree, you need to create a multiple nodes sandbox (using <code>make_multiple_sandbox</code>)
@@ -652,7 +648,7 @@ and nodes 7 and 8 as slaves of node 3, you can use either of the following:</p>
     --tree_nodes='1 - 2 3 - 4 5 6|7 8'</pre>
 <p>
 </p>
-<h3><a name="sbtool_o_preserve">sbtool -o preserve</a></h3>
+<h3><a name="sbtool__o_preserve">sbtool -o preserve</a></h3>
 <p>Makes a sandbox permanent.
 It requires the <code>--source_dir</code> option to complete the task.
 This command changes the 'clear' command within the requested sandbox,
@@ -660,7 +656,7 @@ disabling its effects. The sandbox can't be erased using 'clear' or 'clear_all'.
 The 'delete' operation of sbtool will skip a sandbox that has been made permanent.</p>
 <p>
 </p>
-<h3><a name="sbtool_o_unpreserve">sbtool -o unpreserve</a></h3>
+<h3><a name="sbtool__o_unpreserve">sbtool -o unpreserve</a></h3>
 <p>Makes a sandbox NOT permanent.
 It requires the <code>--source_dir</code> option to complete the task.
 This command cancels the changes made by a 'preserve' operation, making a sandbox
@@ -668,7 +664,7 @@ erasable with the 'clear' command. The 'delete' operation can be performed
 successfully on an unpreserved sandbox.</p>
 <p>
 </p>
-<h3><a name="sbtool_o_delete">sbtool -o delete</a></h3>
+<h3><a name="sbtool__o_delete">sbtool -o delete</a></h3>
 <p>Removes a sandbox completely.
 It requires the <code>--source_dir</code> option to complete the task.
 The requested sandbox will be stopped and then deleted completely. 
@@ -730,7 +726,7 @@ You can override this option by setting the TEST_VERSION environment variable.</
 There are two kind of tests: shell and sql the test type is defined by a keyword followed by a colon.</p>
 <p>The 'shell' test requires a 'command', which is passed to a shell.
 The 'expected' label is a string that you expect to find within the shell output.
-If you don't expect anything, you can just say ``expected = OK'', meaning that you will
+If you don't expect anything, you can just say &quot;expected = OK&quot;, meaning that you will
 be satisfied with a ZERO exit code reported by the operating system.
 The 'msg' is the description of the test that is shown to you when the test runs.</p>
 <pre>
@@ -759,19 +755,17 @@ For example, if $SANDBOX_HOME is /home/sb/tests, the line</p>
 </p>
 <h3><a name="perl_based_test_scripts">Perl based test scripts</a></h3>
 <p>In addition to the internal script language, you can also define perl scripts, which will be able to use the $sandbox_home global variable and to call routines defined inside test_sandbox. (see list below)
-To be identified as a Perl script, the user defined test must have the extension ``.sb.pl''</p>
+To be identified as a Perl script, the user defined test must have the extension &quot;.sb.pl&quot;</p>
 <dl>
-<dt><strong><a name="item_ok_shell"><code>ok_shell()</code></a></strong>
+<dt><strong><a name="ok_shell" class="item"><code>ok_shell()</code></a></strong></dt>
 
 <dd>
-<p>The <a href="#item_ok_shell"><code>ok_shell</code></a> function requires a hash reference containing the following labels:
+<p>The <a href="#ok_shell"><code>ok_shell</code></a> function requires a hash reference containing the following labels:
 A 'command', which is passed to a shell.
 The 'expected' label is a string that you expect to find within the shell output.
-If you don't expect anything, you can just say ``expected = OK'', meaning that you will
+If you don't expect anything, you can just say &quot;expected = OK&quot;, meaning that you will
 be satisfied with a ZERO exit code reported by the operating system.
 The 'msg' is the description of the test that is shown to you when the test runs.</p>
-</dd>
-<dd>
 <pre>
   ok_shell($hashref)
   ok_shell({
@@ -780,48 +774,36 @@ The 'msg' is the description of the test that is shown to you when the test runs
         msg      =&gt; 'sandbox creation',
         })</pre>
 </dd>
-</li>
-<dt><strong><a name="item_ok_sql"><code>ok_sql()</code></a></strong>
+<dt><strong><a name="ok_sql" class="item"><code>ok_sql()</code></a></strong></dt>
 
 <dd>
-<p>The <a href="#item_ok_sql"><code>ok_sql</code></a> function requires a hashref containing the following labels:
+<p>The <a href="#ok_sql"><code>ok_sql</code></a> function requires a hashref containing the following labels:
 A 'path', which is the place where the test engine expects to find a 'use' script.
 The 'query' is passed to the above mentioned script and the output is captured for further processing.
 The 'expected' parameter is a string that you want to find in the query output.
 The 'msg' parameter is like the one used with the ok_exec function.</p>
 </dd>
-</li>
-<dt><strong><a name="item_get_bare_version"><code>get_bare_version()</code></a></strong>
+<dt><strong><a name="get_bare_version" class="item"><code>get_bare_version()</code></a></strong></dt>
 
 <dd>
 <p>This function accepts one parameter, which can be either a MySQL tarball name or a version, and returns the bare version found in the input string.
 If called in list mode, it returns also a normalized version string with dots replaced by underscores.</p>
-</dd>
-<dd>
 <pre>
     my $version = get_bare_version('5.1.30'); 
     # returns '5.1.30'</pre>
-</dd>
-<dd>
 <pre>
     my $version = get_bare_version('mysql-5.1.30-OS.tar.gz'); 
     # returns '5.1.30'</pre>
-</dd>
-<dd>
 <pre>
     my ($version,$dir_name) = get_bare_version('mysql-5.1.30-OS.tar.gz'); 
     # returns ('5.1.30', '5_1_30')</pre>
 </dd>
-</li>
-<dt><strong><a name="item_ok">ok</a></strong>
+<dt><strong><a name="ok" class="item">ok</a></strong></dt>
 
 <dd>
 <p>This is a low level function, similar to the one provided by Test::More. You should not need to call this one directly, unless you want to fine tuning a test.</p>
-</dd>
-<dd>
 <p>See the test script t/start_restart_arguments.sb.pl as an example</p>
 </dd>
-</li>
 </dl>
 <p>
 </p>
