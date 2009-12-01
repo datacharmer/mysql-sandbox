@@ -83,7 +83,14 @@ $msb->get_help() if $msb->{options}{'help'};
 # print Dumper(\%{$msb->{options}}, \@ARGV); exit;
 
 for my $opt (keys %{$msb->{options}} ) {
-    if ($default_values{$opt} ne $msb->{options}{$opt} ) {
+    #unless (defined $default_values{$opt} and defined $msb->{options}{$opt} ) {
+    #    print Data::Dumper->Dump([ $default_values{$opt},
+    #    $msb->{options}{$opt}, $opt], ['default','option', 'opt']);
+    #    die "undefined option\n";
+    #}
+    # next unless $default_values{$opt};
+    if ((not defined $default_values{$opt}) 
+       or ($default_values{$opt} ne $msb->{options}{$opt} )) {
         $user_values{$opt} = $msb->{options}{$opt};
     }
 }
@@ -179,6 +186,7 @@ my %skip_options = (
     'socket'     => 1,
     'datadir'    => 1,
     'basedir'    => 1,
+    'tmpdir'     => 1,
     'pid-file'   => 1,
     'server-id'  => 1,
 );
@@ -193,7 +201,9 @@ my %replace_options = (
     _DBPASSWORD_        => 'db_password',
     _OSUSER_            => 'operating_system_user',
     _BASEDIR_           => 'basedir',
+    _TMPDIR_            => 'tmpdir',
     _BINBASH_           => 'binbash',
+    _BINPERL_           => 'binperl',
     _HOME_DIR_          => 'upper_directory',
     _SANDBOXDIR_        => 'sandbox_directory',
     _SERVERPORT_        => 'sandbox_port',
@@ -218,7 +228,6 @@ if ($msb->{options}{check_port} and (! $msb->{options}{no_check_port}) ) {
                     $msb->{options}{'sandbox_directory'}, 
                     $msb->{options}{'upper_directory'}) ;
 }
-
 
 if ($msb->{options}{datadir_from} eq 'archive') {
     print "You have chosen to install with the 'archive' method.\n";
@@ -283,6 +292,15 @@ if ((! $bin_bash) or ( $bin_bash =~ /^no/i) ) {
 
 chomp $bin_bash;
 $msb->{options}{'binbash'} = $bin_bash;
+
+my $bin_perl = `which perl`; ## no critic
+if ((! $bin_perl) or ( $bin_perl =~ /^no/i) ) {
+    die "can't find the 'perl' interpreter\n";
+}
+
+chomp $bin_perl;
+$msb->{options}{'binperl'} = $bin_perl;
+
 my @supported_versions = @{ MySQL::Sandbox::supported_versions() };
 
 #$msb->{options}{'install_version'} = '5.0' unless $msb->{options}{'install_version'};
@@ -297,7 +315,10 @@ if ($msb->{options}{ 'install_version' } eq '3.23' ) {
     $msb->{options}{'mysqld_safe'} = q{safe_mysqld};
 } 
 else {
-    $msb->{options}{'mysql_prompt'} = q/prompt='/ . $msb->{options}{prompt_prefix} . $msb->{options}{prompt_body};
+    $msb->{options}{'mysql_prompt'} = q/prompt=/ . $msb->{options}{prompt_prefix} . $msb->{options}{prompt_body};
+    $msb->{options}{'mysql_prompt'} =~ s/'//g;
+    $msb->{options}{'mysql_prompt'} =~ s/=/='/;
+    $msb->{options}{'mysql_prompt'} .= "'";
     $msb->{options}{'mysqld_safe'} = q{mysqld_safe};
 }
 
@@ -339,7 +360,7 @@ unless ($msb->{options}{no_show}) {
         next if grep { $key eq $_ } qw/more_options help interactive conf_file no_confirm /;
         my $is_array = ref($msb->{options}{$key}) && ref($msb->{options}{$key}) eq 'ARRAY';
         printf "%-30s = %s\n", $key, $is_array ? join q{ ; }, 
-            @{ $msb->{options}{$key} } : $msb->{options}{$key};
+            @{ $msb->{options}{$key} } : ($msb->{options}{$key} || '');
         next unless $msb->{options}{$key};
         next if $msb->{options}{$key} =~ /^ \s* $/x;
     }
@@ -400,6 +421,7 @@ set_sandbox_dir_scripts();
 
 my $sandbox_directory = sprintf('%s/%s', $msb->{options}{'upper_directory'}, $msb->{options}{'sandbox_directory'});
 
+
 #if ($curdir eq $sandbox_directory) {
 #    die "installation directory and destination directory are the same. Can't install\n";
 #}
@@ -424,6 +446,21 @@ else {
     if (! $result ) {
         die "error creating $sandbox_directory\n";
     }
+}
+
+my $sandbox_tmpdir = sprintf '%s/tmp', $sandbox_directory;
+if ($msb->{options}{'tmpdir'}) {
+    $sandbox_tmpdir = $msb->{options}{'tmpdir'};
+}
+else {
+    $msb->{options}{'tmpdir'} = $sandbox_tmpdir;
+}
+if ( -f $sandbox_tmpdir) {
+    die "Can't create directory $sandbox_tmpdir (a file of the same name exists)\n";
+}
+unless (-d $sandbox_tmpdir) {
+    mkdir $sandbox_tmpdir
+        or die "Error creating $sandbox_tmpdir ($!)\n";
 }
 
 for my $file_spec ( @file_list) {  #, @doc_file_list) {

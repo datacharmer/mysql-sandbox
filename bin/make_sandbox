@@ -118,7 +118,7 @@ elsif  ( $where_to_install =~ m{^(/.+)/(mysql\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.
         if ($which_tar) {
             chomp $which_tar;
             $tar_executable = $which_tar;
-            my $tar_version = qx($tar_executable --help)
+            my $tar_version = qx($tar_executable --version)
                 or die "can't find tar program\n";
             unless ($tar_version =~ /(?:bsdtar|gnu\s+tar)/i) {
                 die "this version of tar is not supported\n";

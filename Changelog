@@ -1,3 +1,11 @@
+3.0.06	01-Dec-2009
+	- Fixed bug in prompt definition. A stray quote was added at the start of
+	each user-defined prompt.
+	- Fixed Bug#456949 "each sandbox should have a dedicated temporary
+	directory".
+	- Fixed Bug#439226 "sandbox_action script uses wrong version of Perl"
+	- Improved documentation to resolve Bug#392996 "make install Sandbox.pm path
+	issues".
 3.0.05   12-Sep-2009
 	- Fixed Bug#428274 make_sandbox fails on Mac OSX 10.6 "snow Leopard"
     - Increased starting timeout from 20 to 60, because some recent versions

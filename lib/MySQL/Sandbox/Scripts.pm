@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.5";
+our $VERSION="3.0.06";
 
 our @MANIFEST = (
 'clear.sh',
@@ -122,6 +122,15 @@ my %parse_options_low_level_make_sandbox = (
                                             'Base directory for MySQL (default: /usr/local/mysql)'
                                          ]
                             },
+   tmpdir                => {
+                                value => undef, 
+                                parse => 'tmpdir=s' ,               
+                                so    =>  65,
+                                help  => [
+                                            'Temporary directory for MySQL (default: Sandbox_directory/tmp)'
+                                         ]
+                            },
+
     my_file               => {
                                 value => q{},                 
                                 parse => 'm|my_file=s',                
@@ -186,7 +195,7 @@ my %parse_options_low_level_make_sandbox = (
                             },
 
     prompt_body          => {
-                                value => q/ [\h] {\u} (\d) > '/,      
+                                value => q/ [\h] {\u} (\d) > /,      
                                 parse => 'prompt_body=s', 
                                 so    => 135,
                                 help  => [
@@ -898,6 +907,7 @@ port                            = _SERVERPORT_
 socket                          = /tmp/mysql_sandbox_SERVERPORT_.sock
 basedir                         = _BASEDIR_
 datadir                         = _HOME_DIR_/_SANDBOXDIR_/data
+tmpdir                          = _TMPDIR_
 pid-file                        = _HOME_DIR_/_SANDBOXDIR_/data/mysql_sandbox_SERVERPORT_.pid
 #log-slow-queries               = _HOME_DIR_/_SANDBOXDIR_/data/msandbox-slow.log
 #log                            = _HOME_DIR_/_SANDBOXDIR_/data/msandbox.log
@@ -1081,7 +1091,7 @@ done
 echo "($PWD) The old scripts have been saved as filename.path.bak"
 CHANGE_PATHS_SCRIPT
     'sandbox_action.pl' => <<'SANDBOX_ACTION_SCRIPT',
-#!/usr/bin/perl
+#!_BINPERL_
 __LICENSE__
 use strict;
 use warnings;

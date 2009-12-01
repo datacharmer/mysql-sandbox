@@ -9,8 +9,10 @@
 
 <body style="background-color: white">
 
-<p><a name="__index__"></a></p>
+
 <!-- INDEX BEGIN -->
+<div name="index">
+<p><a name="__index__"></a></p>
 
 <ul>
 
@@ -19,8 +21,8 @@
 	<li><a href="#installing_mysql__sandbox">Installing MySQL::Sandbox</a></li>
 	<ul>
 
-		<li><a href="#the_easy_way__as_root">the easy way - as root</a></li>
-		<li><a href="#the_ambitious_way__as_unprivileged_user">the ambitious way - as unprivileged user</a></li>
+		<li><a href="#the_easy_way___as_root">the easy way - as root</a></li>
+		<li><a href="#the_ambitious_way___as_unprivileged_user">the ambitious way - as unprivileged user</a></li>
 	</ul>
 
 	<li><a href="#single_server_recipes">SINGLE SERVER RECIPES</a></li>
@@ -29,7 +31,7 @@
 		<li><a href="#creating_a_single_sandbox">Creating a single sandbox</a></li>
 		<li><a href="#easily_creating_more_sandboxes_after_the_first_one">Easily creating more sandboxes after the first one</a></li>
 		<li><a href="#using_a_single_sandbox">Using a single sandbox</a></li>
-		<li><a href="#creating_a_single_sandbox_with_userdefined_port_and_directory">Creating a single sandbox with user-defined port and directory</a></li>
+		<li><a href="#creating_a_single_sandbox_with_user_defined_port_and_directory">Creating a single sandbox with user-defined port and directory</a></li>
 		<li><a href="#creating_a_single_sandbox_with_automatic_port_checking">Creating a single sandbox with automatic port checking</a></li>
 		<li><a href="#creating_a_single_sandbox_with_a_specific_option_file">Creating a single sandbox with a specific option file</a></li>
 		<li><a href="#creating_a_single_sandbox_from_a_source_directory">Creating a single sandbox from a source directory</a></li>
@@ -78,16 +80,18 @@
 	<li><a href="#testing_with_sandboxes">Testing with sandboxes</a></li>
 	<ul>
 
-		<li><a href="#running_the_builtin_test_suite">Running the built-in test suite</a></li>
+		<li><a href="#running_the_built_in_test_suite">Running the built-in test suite</a></li>
 		<li><a href="#creating_and_running_your_own_tests">Creating and running your own tests</a></li>
 	</ul>
 
 	<li><a href="#copyright">COPYRIGHT</a></li>
 	<li><a href="#legal_notice">LEGAL NOTICE</a></li>
 </ul>
+
+<hr name="index" />
+</div>
 <!-- INDEX END -->
 
-<hr />
 <p>
 </p>
 <h1><a name="name">NAME</a></h1>
@@ -109,14 +113,14 @@ A presentation on this matter is available at Slideshare
 <a href="http://www.slideshare.net/datacharmer/mysql-sandbox-3">http://www.slideshare.net/datacharmer/mysql-sandbox-3</a></p>
 <p>
 </p>
-<h2><a name="the_easy_way__as_root">the easy way - as root</a></h2>
+<h2><a name="the_easy_way___as_root">the easy way - as root</a></h2>
 <p>This is so easy, that I am almost ashamed to show it.
 Anyway, here goes.</p>
 <pre>
   # cpan MySQL::Sandbox</pre>
 <p>
 </p>
-<h2><a name="the_ambitious_way__as_unprivileged_user">the ambitious way - as unprivileged user</a></h2>
+<h2><a name="the_ambitious_way___as_unprivileged_user">the ambitious way - as unprivileged user</a></h2>
 <p>It is not difficult, but it requires some steps that depend on your environment.
 To simplify the example, let's assume that you are using perl 5.8.8 and you want 
 to install in $HOME/usr/local.</p>
@@ -173,38 +177,26 @@ a repository for such binaries, under $SANDBOX_BINARY, which by default
 is $HOME/opt/mysql
 If you have such a directory, you have two choices.</p>
 <dl>
-<dt><strong><a name="item_manually">manually</a></strong>
+<dt><strong><a name="manually" class="item">manually</a></strong></dt>
 
 <dd>
 <p>Expand the tarball, and move it under $HOME/opt/mysql (or set $SANDBOX_BINARY to a path that suits you better). Name the directory with the version number. For example:</p>
-</dd>
-<dd>
 <pre>
    cd $HOME/opt/mysql
    gunzip -c /path/to/mysql-5.1.34-osx10.5-x86.tar.gz | tar -xf -
    mv mysql-5.1.34-osx10.5-x86 5.1.34</pre>
-</dd>
-<dd>
 <p>Now, next time you want to install a sandbox using 5.1.34, all you need to do is say</p>
-</dd>
-<dd>
 <pre>
   make_sandbox 5.1.34</pre>
 </dd>
-</li>
-<dt><strong><a name="item_automatically">automatically</a></strong>
+<dt><strong><a name="automatically" class="item">automatically</a></strong></dt>
 
 <dd>
 <p>If you want to combine installation and centralization of the binaries in one go, you can:</p>
-</dd>
-<dd>
 <pre>
     make_sandbox /path/to/mysql-5.1.34-osx10.5-x86.tar.gz --export_binaries</pre>
-</dd>
-<dd>
 <p>The expanded tarball is copied to the $SANDBOX_BINARY path, and you can refer to the version number only for future installations.</p>
 </dd>
-</li>
 </dl>
 <p>
 </p>
@@ -249,7 +241,7 @@ If you don't remember where it is, the default location is $HOME/sandboxes/msb_X
 <p>Notice that this script is created when the sandbox is installed. It is heavily customized for that sandbox only, and it is not replaceable by the same script from another sandbox. Even if you move it to another directory, it will still refer to the sandbox in which it was created. See 'moving a sandbox' for a safe way of moving a sandbox with all its scripts to a different directory.</p>
 <p>
 </p>
-<h2><a name="creating_a_single_sandbox_with_userdefined_port_and_directory">Creating a single sandbox with user-defined port and directory</a></h2>
+<h2><a name="creating_a_single_sandbox_with_user_defined_port_and_directory">Creating a single sandbox with user-defined port and directory</a></h2>
 <p>When you create a sandbox, you can fine tune the final product by adding options. You can list of all the available options easily:</p>
 <pre>
     low_level_make_sandbox --help</pre>
@@ -369,7 +361,7 @@ Otherwise, the script calls 'clear' (clear_all if it is a group sandbox) and the
 <p>MySQL Sandbox has been created with testing in mind. As such, the sandboxes are expendable, and there are some commands to get rid of them easily and quickly.
 However, you don't want always to do this.
 Sometimes, you need to keep the data for some time, to record it, or to copy it somewhere, or to use it for some similar testing. Whatever the reason, in these cases you don't want your data to disappear accidentally.
-The 'preserve' command, part of the sbtool, disables the 'clear' script in your sandbox, to avoid unpleasant ``oh no'' moments.
+The 'preserve' command, part of the sbtool, disables the 'clear' script in your sandbox, to avoid unpleasant &quot;oh no&quot; moments.
 Notice that nothing will protect you against hastily typed 'DROP DATABASE' queries! If you really need your data around, make a copy!</p>
 <pre>
   sbtool -o preserve \
@@ -655,7 +647,7 @@ If you create a replication sandbox, you can set different options for the maste
 <h1><a name="testing_with_sandboxes">Testing with sandboxes</a></h1>
 <p>
 </p>
-<h2><a name="running_the_builtin_test_suite">Running the built-in test suite</a></h2>
+<h2><a name="running_the_built_in_test_suite">Running the built-in test suite</a></h2>
 <p>Download and expand the MySQL Sandbox package</p>
 <pre>
     perl Makefile.PL
