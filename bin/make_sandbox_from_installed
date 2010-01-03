@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # make_sandbox_from_installed
 #    The MySQL Sandbox
-#    Copyright (C) 2006,2007,2008 Giuseppe Maxia, MySQL AB
+#    Copyright (C) 2006-2010 Giuseppe Maxia
 #    Contacts: http://datacharmer.org
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -35,8 +35,6 @@ if ( -d $new_version) {
     die "directory $new_version already exists. Choose another name or location\n"
 }
 
-mkdir $new_version 
-    or die "can't create $new_version ($!)\n";
 my @binaries = (
     {files => 'my*',                from => 'bin/',     to => 'bin'},
     {files => 'resolveip',          from => 'bin/',     to => 'bin'},
@@ -123,6 +121,8 @@ unless (grep { /share/ } @commands) {
 #use Data::Dumper;
 #print Dumper \@commands; 
 #exit;
+mkdir $new_version 
+    or die "can't create $new_version ($!)\n";
 
 chdir $new_version;
 for my $dir (qw(bin lib share)) {

@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 # low_level_make_sandbox
 #    The MySQL Sandbox
-#    Copyright (C) 2006,2007,2008 Giuseppe Maxia, MySQL AB
+#    Copyright (C) 2006-2010 Giuseppe Maxia
 #    Contacts: http://datacharmer.org
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -578,7 +578,12 @@ sub copy_and_replace {
     
     $script_content =~ s/__LICENSE__/$license_text/;
     for my $key ( keys %replace_options) {
-        $script_content =~ s/ $key /$msb->{options}{$replace_options{$key}}/xg;
+        my $new_value = $msb->{options}{$replace_options{$key}};
+        if (    ($key eq '_DBUSER_') 
+            and ($destination_filename =~ /my\.sandbox.cnf/)) {
+            $new_value =~ s/\@.*//g; 
+        }
+        $script_content =~ s/ $key /$new_value/xg;
     }        
     print $TO $script_content;
     close $TO;
@@ -715,7 +720,7 @@ sub set_sandbox_dir_scripts {
         return;
     }
     copy_and_replace('sandbox_action.pl', $sandboxdir);
-    for my $name (qw(start stop clear use send_kill restart)) {
+    for my $name (qw(start stop clear use send_kill restart status )) {
         open my $FH, q{>}, "$sandboxdir/${name}_all"
             or die "can't create ${name}_all in $sandboxdir\n";
         print $FH "#!$msb->{options}{'binbash'}\n";
