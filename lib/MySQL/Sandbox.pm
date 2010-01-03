@@ -36,7 +36,8 @@ BEGIN {
     }
 }
 
-my @supported_versions = qw( 3.23 4.0 4.1 5.0 5.1 5.2 5.3 5.4 5.5 6.0);
+my @supported_versions = qw( 3.23 4.0 4.1 5.0 5.1 5.2 5.3 5.4 
+    5.5 5.6 5.7 5.8 6.0);
 
 our $sandbox_options_file    = "my.sandbox.cnf";
 # our $sandbox_current_options = "current_options.conf";
@@ -138,7 +139,7 @@ sub credits {
     my ($self) = @_;
     my $CREDITS = 
           qq(    The MySQL Sandbox,  version $VERSION\n) 
-        . qq(    (C) 2006,2007,2008,2009 Giuseppe Maxia\n);
+        . qq(    (C) 2006-2010 Giuseppe Maxia\n);
     return $CREDITS;
 }
 
@@ -1215,7 +1216,7 @@ Bash shell
 
 Version 3.0
 
-Copyright (C) 2006,2007,2008,2009  Giuseppe Maxia
+Copyright (C) 2006-2010 Giuseppe Maxia
 
 Home Page  http://launchpad.net/mysql-sandbox/
 

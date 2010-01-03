@@ -16,6 +16,7 @@ our @MANIFEST = (
 'clear.sh',
 'my.sandbox.cnf',
 'start.sh',
+'status.sh',
 'restart.sh',
 'stop.sh',
 'send_kill.sh',
@@ -756,6 +757,24 @@ else
 fi
 
 START_SCRIPT
+
+    'status.sh' => <<'STATUS_SCRIPT',
+#!_BINBASH_
+__LICENSE__
+SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
+
+if [ -f $PIDFILE ]
+then
+    echo "_SANDBOXDIR_ on"
+    exit 0
+else
+    echo "_SANDBOXDIR_ off"
+    exit 1
+fi
+
+STATUS_SCRIPT
+
 'restart.sh' => <<'RESTART_SCRIPT',
 #!_BINBASH_
 __LICENSE__
@@ -1035,7 +1054,7 @@ PERL_SCRIPT2='s/sandbox$old/sandbox$new/g;'
 PERL_SCRIPT3='s/\b$old\b/$new/' 
 PERL_SCRIPT="$PERL_SCRIPT1 $PERL_SCRIPT2 $PERL_SCRIPT3"
 
-SCRIPTS1="start stop send_kill clear restart my.sandbox.cnf "
+SCRIPTS1="start stop send_kill clear status restart my.sandbox.cnf "
 SCRIPTS2="load_grants my use $0"
 SCRIPTS="$SCRIPTS1 $SCRIPTS2"
 for SCRIPT in $SCRIPTS
@@ -1080,7 +1099,7 @@ PERL_SCRIPT1='BEGIN{$old=shift;$new=shift};'
 PERL_SCRIPT2='s/$old/$new/g' 
 PERL_SCRIPT="$PERL_SCRIPT1 $PERL_SCRIPT2"
 
-SCRIPTS1="start stop send_kill clear restart my.sandbox.cnf "
+SCRIPTS1="start stop send_kill clear status restart my.sandbox.cnf "
 SCRIPTS2="load_grants my use $0"
 SCRIPTS="$SCRIPTS1 $SCRIPTS2"
 
@@ -1099,7 +1118,7 @@ use MySQL::Sandbox;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
 
-my $action_list = 'use|start|stop|clear|restart|send_kill';
+my $action_list = 'use|start|stop|status|clear|restart|send_kill';
 my $action = shift
     or die "action required {$action_list}\n";
 $action =~/^($action_list)$/ 
@@ -1145,7 +1164,7 @@ SANDBOX_ACTION_SCRIPT
 
 my $license_text = <<'LICENSE';
 #    The MySQL Sandbox
-#    Copyright (C) 2006,2007,2008,2009 Giuseppe Maxia
+#    Copyright (C) 2006-2010 Giuseppe Maxia
 #    Contacts: http://datacharmer.org
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -1207,7 +1226,7 @@ For a reference manual, see L<MySQL::Sandbox>. For a cookbook, see L<MySQL::Sand
 
 Version 3.0
 
-Copyright (C) 2006,2007,2008,2009  Giuseppe Maxia
+Copyright (C) 2006-2010 Giuseppe Maxia
 
 Home Page  http://launchpad.net/mysql-sandbox/
 
