@@ -540,6 +540,7 @@ sub clone_sandbox_data {
     find (
             {
             no_chdir => 1,
+            follow => 1,
             wanted   => sub {
                 my $dir   = $File::Find::dir;
                 my $fname = $File::Find::name;

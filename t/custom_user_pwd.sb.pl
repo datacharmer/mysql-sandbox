@@ -12,6 +12,7 @@ my $custom_user_name= $user;
 my $custom_password= 'newpassword';
 ok_exec( {
     command   => "make_sandbox $TEST_VERSION "
+                 ." --no_confirm "
                  ." --sandbox_directory=$dir_name " 
                  ." --db_user=$custom_user_name "
                  ." --db_password=$custom_password ",
@@ -25,7 +26,7 @@ ok_sql({
     expected  => $TEST_VERSION,
     msg       => 'server is accessible',
 });
-$ENV{MYCLIENT_OPTIONS} = undef;
+$ENV{MYCLIENT_OPTIONS} = '';
 ok_exec( {
     command   => "sbtool -o delete -s $sandbox_home/$dir_name ", 
     expected  => 'has been removed',

@@ -191,7 +191,7 @@ chmod 0755, 'restart_all';
 $msb->write_to('use_all', '>', '#!/bin/sh');
 my $node_list = join(' ', (1 .. @versions ) );
 
-$msb->write_to('use_all', '>>', 'if [ "$1" == "" ]');
+$msb->write_to('use_all', '>>', 'if [ "$1" = "" ]');
 $msb->write_to('use_all', '>>', 'then');
 $msb->write_to('use_all', '>>', '  echo "syntax: $0 command"');
 $msb->write_to('use_all', '>>', '  exit 1');

@@ -22,7 +22,7 @@ our @EXPORT_OK= qw( is_port_open
                     use_env
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.06";
+our $VERSION="3.0.07";
 our $DEBUG;
 
 BEGIN {
@@ -260,6 +260,7 @@ sub get_sb_info {
     find(
         {
             no_chdir => 1,
+            follow  => 1,
             wanted   => sub {
                 if ( $seen_dir eq $File::Find::dir ) {
                     return;

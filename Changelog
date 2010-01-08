@@ -1,3 +1,7 @@
+3.0.07	08-Jan-2010
+	- Fixed bud in make_multiple_custom_sandbox. With some versions of bash,
+	  it broke on tests with "use_all"
+	- fixed bug on symlink access on some platforms.
 3.0.06	03-Jan-2010
 	- Fixed bug in prompt definition. A stray quote was added at the start of
 	each user-defined prompt.
