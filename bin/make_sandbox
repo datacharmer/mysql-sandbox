@@ -147,8 +147,14 @@ elsif  ( $where_to_install =~ m{^(/.+)/(mysql\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.
                 $binary_base = $default_binary_base;
             }
         }
-        rename $new_dir, $new_name
-            or die "can't rename $new_dir to $new_name";
+        my $rename_result = system "mv  $new_dir $new_name";
+        if ($rename_result) {
+            die "can't rename $new_dir to $new_name";
+        }
+        # some versions of Perl and OS can't perform a rename across file systems
+        # Bug #504789
+        #rename $new_dir, $new_name
+        #    or die "can't rename $new_dir to $new_name";
 
         system "chmod -R ogu+r $new_name "; # Not sandbox related.
                                             # It is needed if the user wants 
