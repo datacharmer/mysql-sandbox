@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.07";
+our $VERSION="3.0.08";
 
 our @MANIFEST = (
 'clear.sh',
@@ -934,7 +934,8 @@ _MORE_OPTIONS_
 
 MY_SANDBOX_SCRIPT
 
-    'USING' => <<'USING_SCRIPT',
+    'USING' => <<USING_SCRIPT,
+Created with MySQL Sandbox $VERSION
 Currently using _INSTALL_VERSION_ with basedir _BASEDIR_
 
 USING_SCRIPT

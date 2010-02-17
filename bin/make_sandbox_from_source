@@ -134,7 +134,15 @@ sub get_source_version {
         or die "can't find configure.in\n";
     my $version;
     while (my $line = <$CONFIG>) {
-        if ($line =~ /AM_INIT_AUTOMAKE\D+(\d\.\d.\d+)/) {
+        if ($line =~ /
+                    (?:AM_INIT_AUTOMAKE
+                    |
+                    AC_INIT)        # either of these macros
+                    \D+             # followed by one or more non digit
+                    (?:(?i)mysql)   # followed by "mysql" in any case
+                    \D+             # followed by one or more non digit
+                    (\d\.\d.\d+)    # capture the version
+                    /x) {
             $version = $1;
             last;
         }
