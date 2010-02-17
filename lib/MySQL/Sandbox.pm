@@ -22,7 +22,7 @@ our @EXPORT_OK= qw( is_port_open
                     use_env
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.07";
+our $VERSION="3.0.08";
 our $DEBUG;
 
 BEGIN {

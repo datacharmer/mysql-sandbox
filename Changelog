@@ -1,3 +1,8 @@
+3.0.08	17-Feb-2010
+	- Fixed make_sandbox_from_source failure due to changes in modified 
+	  configure.in (Thanks to Padraig O'Sullivan for noticing)
+	- modified the "USING" file, which now includes the Sandbox version
+	- Changed default test version from 5.0.77 to 5.0.86
 3.0.07	08-Jan-2010
 	- Fixed bud in make_multiple_custom_sandbox. With some versions of bash,
 	  it broke on tests with "use_all"
