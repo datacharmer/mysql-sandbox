@@ -130,31 +130,70 @@ sub build_tarball {
 }
 
 sub get_source_version {
-    open my $CONFIG, q{<}, 'configure.in'
-        or die "can't find configure.in\n";
+    #
+    # Parses 'Makefile' for server version.
+    #
+    # 'Makefile' exists only after the server is compiled
+    # but this is just as well in our case, since we only
+    # need to run this script after the server is fully built.
+    # This method should be more robust than parsing 
+    # configure.in
+    #
+    open my $MAKEFILE, q{<}, 'Makefile'
+        or die "can't find Makefile\n";
     my $version;
-    while (my $line = <$CONFIG>) {
+    while (my $line = <$MAKEFILE>) {
         if ($line =~ /
-                    (?:AM_INIT_AUTOMAKE
-                    |
-                    AC_INIT)        # either of these macros
-                    \D+             # followed by one or more non digit
-                    (?:(?i)mysql)   # followed by "mysql" in any case
-                    \D+             # followed by one or more non digit
-                    (\d\.\d.\d+)    # capture the version
-                    /x) {
+               ^                      # start of line
+               \s*                    # optional whitespace
+               MYSQL_NO_DASH_VERSION  # literal 
+               \s*                    # optional whitespace
+               =                      # equals sign
+               \s*                    # optional whitespace
+               (\d\.\d.\d+)           # capture the version
+               \s*                    # optional whitespace
+               $                      # end of line
+               /x) {
             $version = $1;
             last;
         }
     }
-    close $CONFIG;
+    close $MAKEFILE;
     if ($version) {
         return $version;
     }
     else {
-        die "can't find a version in configure.in\n";
+        die "can't find a version in Makefile\n";
     }
 }
+
+
+#sub get_source_version {
+#    open my $CONFIG, q{<}, 'configure.in'
+#        or die "can't find configure.in\n";
+#    my $version;
+#    while (my $line = <$CONFIG>) {
+#        if ($line =~ /
+#                    (?:AM_INIT_AUTOMAKE
+#                    |
+#                    AC_INIT)        # either of these macros
+#                    \D+             # followed by one or more non digit
+#                    (?:(?i)mysql)   # followed by "mysql" in any case
+#                    \D+             # followed by one or more non digit
+#                    (\d\.\d.\d+)    # capture the version
+#                    /x) {
+#            $version = $1;
+#            last;
+#        }
+#    }
+#    close $CONFIG;
+#    if ($version) {
+#        return $version;
+#    }
+#    else {
+#        die "can't find a version in configure.in\n";
+#    }
+#}
 
 sub last_tarball {
     my %files = map {file_age($_)} 

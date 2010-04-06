@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.08";
+our $VERSION="3.0.09";
 
 our @MANIFEST = (
 'clear.sh',
@@ -722,6 +722,23 @@ export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
 MYSQLD_SAFE="$BASEDIR/bin/_MYSQLDSAFE_"
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
+if [ ! -f $MYSQLD_SAFE ]
+then
+    echo "mysqld_safe not found in $BASEDIR/bin/"
+    exit 1
+fi
+MYSQLD_SAFE_OK=`sh -n $MYSQLD_SAFE 2>&1`
+if [ "$MYSQLD_SAFE_OK" == "" ]
+then
+    if [ "$SBDEBUG" == "2" ] 
+    then
+        echo "$MYSQLD_SAFE OK"
+    fi
+else
+    echo "$MYSQLD_SAFE has errors"
+    echo "((( $MYSQLD_SAFE_OK )))"
+    exit 1
+fi
 TIMEOUT=60
 if [ -f $PIDFILE ]
 then
@@ -754,6 +771,7 @@ then
     echo " sandbox server started"
 else
     echo " sandbox server not started yet"
+    exit 1
 fi
 
 START_SCRIPT
@@ -877,10 +895,18 @@ then
         echo 'drop database `'$D'`' | ./use 
     done
     VERSION=`./use -N -B  -e 'select version()'`
+    if [ `perl -le 'print $ARGV[0] ge "5.0" ? "1" : "0" ' "$VERSION"` = "1" ]
+    then
+        ./use -e "truncate mysql.proc"
+        ./use -e "truncate mysql.func"
+    fi
     if [ `perl -le 'print $ARGV[0] ge "5.1" ? "1" : "0" ' "$VERSION"` = "1" ]
     then
         ./use -e "truncate mysql.general_log"
         ./use -e "truncate mysql.slow_log"
+        ./use -e "truncate mysql.plugin"
+        ./use -e "truncate mysql.proc"
+        ./use -e "truncate mysql.func"
     fi
 fi
 

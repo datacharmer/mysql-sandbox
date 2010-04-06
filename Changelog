@@ -1,3 +1,11 @@
+3.0.09	25-Mar-2010
+	- added a check in the 'start' script to verify that mysqld_safe exists
+	  and does can run properly.
+	- Added an exit code to the 'start' script to alert when the server does
+	  not start
+	- added help to make_sandbox_from_installed. Added /usr/sbin as source
+	directory
+	- added instructions to the 'clear' script to remove functions and plugins 
 3.0.08	17-Feb-2010
 	- Fixed make_sandbox_from_source failure due to changes in modified 
 	  configure.in (Thanks to Padraig O'Sullivan for noticing)
