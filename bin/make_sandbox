@@ -60,6 +60,34 @@ $where_to_install =~ s{ / \s* $ }{}x;
 
 $where_to_install =~ s/^\s*\~/$ENV{HOME}/x;
 
+if ( $where_to_install =~ m{\.\./}) # it is a tricky path
+{
+    die "relative paths must not contain '../' \n";
+}
+
+
+# explicit current directory relative path 
+if  ( ((-f $where_to_install)             # the file exists
+      and ( $where_to_install =~ m{^\./}) # it identifiues the current directory
+      )
+    ) {
+    $where_to_install =~ s[^\./][$ENV{PWD}/] ;
+    unless ( -f $where_to_install ) {
+        die "file not found in current directory ($where_to_install)\n";
+    }
+}
+
+# relative path 
+if  ( ((-f $where_to_install)             # the file exists
+      and ( $where_to_install !~ m{^/})   # it is not an absolute path 
+      )
+    ) {
+    $where_to_install = $ENV{PWD} . '/' . $where_to_install;
+    unless ( -f $where_to_install ) {
+        die "file not found in current directory ($where_to_install)\n";
+    }
+}
+
 # current directory
 if  ( $where_to_install =~ m{^mysql\D+\d+\.\d+\.\d+.*\.tar\.gz$ }x ) { 
     $where_to_install = $ENV{PWD} . '/' . $where_to_install;

@@ -26,6 +26,28 @@ runs_as_root();
 
 my $new_version = shift
     or die "version needed\n";
+if ($new_version =~ /^(-h|--help)$/) {
+    print MySQL::Sandbox::credits();
+    print<<END_HELP;
+
+This script tries to create a sandbox using already installed binaries.
+Since these binaries can be in several different places, the script 
+creates a container with symbolic links, where the binaries 
+(their links, actually) are arranged as MySQL Sandbox expects them to be.
+
+To use this version, change directory to a place where you want to 
+store this symbolic links container, and invoke
+
+  make_sandbox_from_installed X.X.XX [options]
+
+    where X.X.XX is the version number. 
+    You can then pass any options accepted by make_sandbox.
+END_HELP
+
+    exit(1);
+
+}
+
 $new_version =~ /^\d+\.\d+\.\d+$/ 
     or die "invalid version format (required #.#.##)\n";
 
@@ -42,6 +64,7 @@ my @binaries = (
     {files => 'mysql*',             from => 'lib64/',   to => 'lib', optional => 1},
     {files => 'mysql*',             from => 'lib/',     to => 'lib', optional => 1},
     {files => 'mysql*',             from => 'libexec/', to => 'bin', optional =>1},
+    {files => 'mysql*',             from => 'sbin/',    to => 'bin', optional =>1},
     {files => 'mysql/',             from => 'share/',   to => 'share', optional =>1},
 );
 
@@ -52,15 +75,24 @@ my @prefixes = (
     '/usr/local/mysql',
 );
 
-my $found_mysqld =0;
-my $found_install_db =0;
-my $found_libraries =0;
+my $found_mysqld        = 0;
+my $found_install_db    = 0;
+my $found_libraries     = 0;
 
 for my $prefix (@prefixes) {
-    if ((-x "$prefix/bin/mysqld") or (-x "$prefix/libexec/mysqld")) {
+    if (
+       (-x "$prefix/bin/mysqld") 
+       or (-x "$prefix/libexec/mysqld")
+       or (-x "$prefix/sbin/mysqld")
+       ) 
+    {
         $found_mysqld =1;
     }
-    if ((-x "$prefix/bin/mysql_install_db") or (-x "$prefix/scripts/mysql_install_db")) {
+    if (
+        (-x "$prefix/bin/mysql_install_db") 
+        or (-x "$prefix/scripts/mysql_install_db")
+        ) 
+    {
         $found_install_db =1;
     }
     if ( glob("$prefix/lib/mysql/libmysqlclient*") 
