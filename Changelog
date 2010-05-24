@@ -1,6 +1,16 @@
+3.0.11	24-May-2010
+	- Fixed bug in ./clear script. In version 5.5 and bigger, it erased
+	  the performance_schema database, which should not be removed. If it
+	  exists, its tables are now truncated.
+	- Fixed bug in ./clear script. The removal of databases was not
+	  executed in a clean mode.
+	- Added a script to install plugins in ./drafts 
+3.0.10	04-May-2010
+	- Fixed the help() function. It displayed an example that was only
+	appropriate for a single sandbox, but not for group ones.
 3.0.09	25-Mar-2010
 	- added a check in the 'start' script to verify that mysqld_safe exists
-	  and does can run properly.
+	  and can run properly.
 	- Added an exit code to the 'start' script to alert when the server does
 	  not start
 	- added help to make_sandbox_from_installed. Added /usr/sbin as source
