@@ -22,7 +22,7 @@ our @EXPORT_OK= qw( is_port_open
                     use_env
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.09";
+our $VERSION="3.0.11";
 our $DEBUG;
 
 BEGIN {
@@ -128,9 +128,12 @@ sub get_help {
 
    print $self->credits(),
           "syntax: $PROGRAM_NAME [options] \n", 
-          $HELP_MSG, 
-        "\nExample:\n",
-        "     $PROGRAM_NAME --my_file=large --sandbox_directory=my_sandbox\n\n";
+          $HELP_MSG; 
+          # This example is only relevant for a single sandbox, but it is
+          # wrong for a multiple sandbox.
+          #, 
+          #"\nExample:\n",
+          #"     $PROGRAM_NAME --my_file=large --sandbox_directory=my_sandbox\n\n";
 
     exit(1);
 }

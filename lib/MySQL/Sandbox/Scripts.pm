@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.09";
+our $VERSION="3.0.11";
 
 our @MANIFEST = (
 'clear.sh',
@@ -589,6 +589,7 @@ our %sbtool_supported_operations = (
     delete => 'removes a sandbox completely',
     preserve => 'makes a sandbox permanent',
     unpreserve => 'makes a sandbox NOT permanent',
+    plugin => 'adds plugin support to a sandbox (innodb,semisynch)',
 );
 
 our %sbtool_supported_formats = (
@@ -596,6 +597,11 @@ our %sbtool_supported_formats = (
     perl => 'fully structured information in Perl code',
 );
 
+#our %sbtool_supported_plugins = (
+#    innodb => 'innodb plugin (5.1)',
+#    semisync => 'semi synchrounus replication (5.5)',
+#    gearman => 'Gearman UDF',
+#);
 
 my %parse_options_sbtool = (
     operation => {
@@ -701,6 +707,12 @@ my %parse_options_sbtool = (
         parse => 'v|verbose',
         value => 0,
         help  => 'prints more info on some operations'
+    },
+    plugin => {
+        so       => 170,
+        parse    => 'plugin=s',
+        value    => undef,
+        help     => 'install given plugin in sandbox',
     },
     help => {
         so    => 999,
@@ -890,11 +902,11 @@ PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 #
 if [ -f $PIDFILE ]
 then
-    for D in `echo "show databases " | ./use -B -N | grep -v "^mysql$" | grep -v "^information_schema$"` 
+    for D in `echo "show databases " | ./use -B -N | grep -v "^mysql$" | grep -iv "^information_schema$" | grep -iv "^performance_schema"` 
     do
-        echo 'drop database `'$D'`' | ./use 
+        echo "set sql_mode=ansi_quotes;drop database \"$D\"" | ./use 
     done
-    VERSION=`./use -N -B  -e 'select version()'`
+    VERSION=`./use -N -B  -e 'select left(version(),3)'`
     if [ `perl -le 'print $ARGV[0] ge "5.0" ? "1" : "0" ' "$VERSION"` = "1" ]
     then
         ./use -e "truncate mysql.proc"
@@ -902,11 +914,17 @@ then
     fi
     if [ `perl -le 'print $ARGV[0] ge "5.1" ? "1" : "0" ' "$VERSION"` = "1" ]
     then
-        ./use -e "truncate mysql.general_log"
-        ./use -e "truncate mysql.slow_log"
-        ./use -e "truncate mysql.plugin"
-        ./use -e "truncate mysql.proc"
-        ./use -e "truncate mysql.func"
+        for T in general_log slow_log plugin proc func
+        do
+            ./use -e "truncate mysql.$T"
+        done
+    fi
+    if [ `perl -le 'print $ARGV[0] ge "5.5" ? "1" : "0" ' "$VERSION"` = "1" ]
+    then
+        for T in `./use -N -B -e 'show tables from performance_schema'`
+        do
+            ./use -e "truncate performance_schema.$T"
+        done
     fi
 fi
 
@@ -927,7 +945,7 @@ rm -f data/*.err-old
 #
 # remove all databases if any
 #
-for D in `ls -d data/*/ | grep -w -v mysql ` 
+for D in `ls -d data/*/ | grep -w -v mysql | grep -iv performance_schema` 
 do
     rm -rf $D
 done
