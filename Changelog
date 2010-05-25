@@ -1,3 +1,10 @@
+3.0.12	25-May-2010
+	- fixed bug in test_sandbox. Due to a change in behavior in the mysql
+	  client, where './use -B -N' with a \G terminated query  does not
+	  show the headers since 5.1.43, We need to take into account the pre 
+	  and post fix behaviors in the test.
+	- Integrated set_plugins into sbtool
+	- Updated documentation
 3.0.11	24-May-2010
 	- Fixed bug in ./clear script. In version 5.5 and bigger, it erased
 	  the performance_schema database, which should not be removed. If it

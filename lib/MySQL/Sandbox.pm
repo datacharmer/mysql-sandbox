@@ -22,7 +22,7 @@ our @EXPORT_OK= qw( is_port_open
                     use_env
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.11";
+our $VERSION="3.0.12";
 our $DEBUG;
 
 BEGIN {
@@ -922,6 +922,7 @@ not available at creation time or that would require too much manual labor.
          'delete'   removes a sandbox completely
          'preserve' makes a sandbox permanent
          'unpreserve' makes a sandbox NOT permanent
+         'plugin'   installs a given plugin
     -s     --source_dir      (s) <> - source directory for move,copy
     -d     --dest_dir        (s) <> - destination directory for move,copy
     -n     --new_port        (s) <> - new port while moving a sandbox
@@ -938,6 +939,8 @@ not available at creation time or that would require too much manual labor.
            --mid_nodes       (s) <> - description of the middle nodes (x x x)
            --leaf_nodes      (s) <> - description of the leaf nodes (x x|x x x|x x)
            --tree_dir        (s) <> - which directory contains the tree nodes
+           --plugin          (s) <> - which plugin needs to be installed
+           --plugin_file     (s) <> - which plugin template file should be used
     -v     --verbose         (-) <> - prints more info on some operations
     -h     --help            (-) <1> - this screen
 
@@ -1048,6 +1051,37 @@ It requires the C<--source_dir> option to complete the task.
 The requested sandbox will be stopped and then deleted completely. 
 WARNING! No confirmation is asked!
 
+=head3 sbtool -o plugin
+
+Installs a given plugin into a sandbox.
+It requires the C<--source_dir> and C<--plugin> options to complete the task.
+The plugin indicated must be defined in the plugin template file, which is by default installed in C<$SANDBOX_HOME>. 
+Optionally, you can indicate a different plugin template with the C<--plugin_file> option.
+By default, sbtool looks for the plugin template file in the sandbox directory that is the target of the installation. If it is not found there, it will look at C<$SANDBOX_HOME> before giving up with an error.
+
+=head4 Plugin template
+
+The Plugin template is a Perl script containing the definition of the templates you want to install.
+Each plugin must have at least one target B<Server type>, which could be one of I<all_servers>, I<master>, or I<slave>. It is allowed to have more than one target types in the same plugin. 
+
+Each server type, in turn, must have at least one section named B<operation_sequence>, an array reference containing the list of the actions to perform. Such actions can be regular scripts in each sandbox (start, stop, restart, clear) or one of the following template sections:
+
+=over 3
+
+=item options_file 
+
+It is the list of lines to add to an options file, under the C<[mysqld]> label.
+
+=item sql_commands 
+
+It is a list of queries to execute. Every query must have appropriate semicolons as required. If no semicolon are found in the list, no queries are executed.
+
+=item startup_file
+
+It is a file, named I<startup.sql>, to be created under the data directory. It will contain the lines indicated in this section.
+You must remember to add a line 'init-file=startup.sql' to the options_file section.
+
+=back
 
 =head1 TESTING
 
