@@ -324,7 +324,11 @@ sub get_sql_result {
     print "(sql) $query\n" if $verbose;
     if ( -f "$sb/use" ) {
         # print qq(<echo "$query" | $sb/use -N -B >\n);
-        my $output = qx(echo "$query" | $sb/use -N -B );
+        my $command = 'use -N -B ';
+        if ($query =~ /show\s+slave\s+status.*\\G/i) {
+            $command = 'use -B';
+        }
+        my $output = qx(echo "$query" | $sb/$command );
         if (defined $output) {
             chomp $output;
         }

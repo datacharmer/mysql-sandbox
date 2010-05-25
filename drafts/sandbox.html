@@ -71,6 +71,12 @@
 			<li><a href="#sbtool__o_preserve">sbtool -o preserve</a></li>
 			<li><a href="#sbtool__o_unpreserve">sbtool -o unpreserve</a></li>
 			<li><a href="#sbtool__o_delete">sbtool -o delete</a></li>
+			<li><a href="#sbtool__o_plugin">sbtool -o plugin</a></li>
+			<ul>
+
+				<li><a href="#plugin_template">Plugin template</a></li>
+			</ul>
+
 		</ul>
 
 	</ul>
@@ -544,6 +550,7 @@ not available at creation time or that would require too much manual labor.</p>
          'delete'   removes a sandbox completely
          'preserve' makes a sandbox permanent
          'unpreserve' makes a sandbox NOT permanent
+         'plugin'   installs a given plugin
     -s     --source_dir      (s) &lt;&gt; - source directory for move,copy
     -d     --dest_dir        (s) &lt;&gt; - destination directory for move,copy
     -n     --new_port        (s) &lt;&gt; - new port while moving a sandbox
@@ -560,6 +567,8 @@ not available at creation time or that would require too much manual labor.</p>
            --mid_nodes       (s) &lt;&gt; - description of the middle nodes (x x x)
            --leaf_nodes      (s) &lt;&gt; - description of the leaf nodes (x x|x x x|x x)
            --tree_dir        (s) &lt;&gt; - which directory contains the tree nodes
+           --plugin          (s) &lt;&gt; - which plugin needs to be installed
+           --plugin_file     (s) &lt;&gt; - which plugin template file should be used
     -v     --verbose         (-) &lt;&gt; - prints more info on some operations
     -h     --help            (-) &lt;1&gt; - this screen</pre>
 <p>
@@ -669,6 +678,38 @@ successfully on an unpreserved sandbox.</p>
 It requires the <code>--source_dir</code> option to complete the task.
 The requested sandbox will be stopped and then deleted completely. 
 WARNING! No confirmation is asked!</p>
+<p>
+</p>
+<h3><a name="sbtool__o_plugin">sbtool -o plugin</a></h3>
+<p>Installs a given plugin into a sandbox.
+It requires the <code>--source_dir</code> and <code>--plugin</code> options to complete the task.
+The plugin indicated must be defined in the plugin template file, which is by default installed in <code>$SANDBOX_HOME</code>. 
+Optionally, you can indicate a different plugin template with the <code>--plugin_file</code> option.
+By default, sbtool looks for the plugin template file in the sandbox directory that is the target of the installation. If it is not found there, it will look at <code>$SANDBOX_HOME</code> before giving up with an error.</p>
+<p>
+</p>
+<h4><a name="plugin_template">Plugin template</a></h4>
+<p>The Plugin template is a Perl script containing the definition of the templates you want to install.
+Each plugin must have at least one target <strong>Server type</strong>, which could be one of <em>all_servers</em>, <em>master</em>, or <em>slave</em>. It is allowed to have more than one target types in the same plugin.</p>
+<p>Each server type, in turn, must have at least one section named <strong>operation_sequence</strong>, an array reference containing the list of the actions to perform. Such actions can be regular scripts in each sandbox (start, stop, restart, clear) or one of the following template sections:</p>
+<dl>
+<dt><strong><a name="options_file" class="item">options_file</a></strong></dt>
+
+<dd>
+<p>It is the list of lines to add to an options file, under the <code>[mysqld]</code> label.</p>
+</dd>
+<dt><strong><a name="sql_commands" class="item">sql_commands</a></strong></dt>
+
+<dd>
+<p>It is a list of queries to execute. Every query must have appropriate semicolons as required. If no semicolon are found in the list, no queries are executed.</p>
+</dd>
+<dt><strong><a name="startup_file" class="item">startup_file</a></strong></dt>
+
+<dd>
+<p>It is a file, named <em>startup.sql</em>, to be created under the data directory. It will contain the lines indicated in this section.
+You must remember to add a line 'init-file=startup.sql' to the options_file section.</p>
+</dd>
+</dl>
 <p>
 </p>
 <hr />

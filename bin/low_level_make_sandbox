@@ -720,6 +720,7 @@ sub set_sandbox_dir_scripts {
         return;
     }
     copy_and_replace('sandbox_action.pl', $sandboxdir);
+    copy_and_replace('plugin.conf', $sandboxdir);
     for my $name (qw(start stop clear use send_kill restart status )) {
         open my $FH, q{>}, "$sandboxdir/${name}_all"
             or die "can't create ${name}_all in $sandboxdir\n";

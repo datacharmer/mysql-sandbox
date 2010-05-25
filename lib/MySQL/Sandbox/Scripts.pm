@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.11";
+our $VERSION="3.0.12";
 
 our @MANIFEST = (
 'clear.sh',
@@ -714,6 +714,12 @@ my %parse_options_sbtool = (
         value    => undef,
         help     => 'install given plugin in sandbox',
     },
+    plugin_file => {
+        so       => 180,
+        parse    => 'plugin_file=s',
+        value    => undef,
+        help     => 'plugin configuration file to use instead of default plugin.conf',
+    },
     help => {
         so    => 999,
         parse => 'h|help',
@@ -1202,6 +1208,116 @@ for my $dir (@dirs) {
 }
 
 SANDBOX_ACTION_SCRIPT
+    'plugin.conf' => <<'PLUGIN_CONF',
+#
+# Plugin configuration file
+# To use this template, see 
+# sbtool -o plugin 
+#
+$plugin_definition = 
+{
+innodb =>    {
+    minimum_version => '5.1.45',
+    all_servers => 
+        {
+        operation_sequence => [qw(stop options_file start sql_commands )],
+        options_file => 
+            [
+            'ignore_builtin_innodb',
+            'plugin-load='
+             .'innodb=ha_innodb_plugin.so;'
+             .'innodb_trx=ha_innodb_plugin.so;'
+             .'innodb_locks=ha_innodb_plugin.so;'
+             .'innodb_lock_waits=ha_innodb_plugin.so;'
+             .'innodb_cmp=ha_innodb_plugin.so;'
+             .'innodb_cmp_reset=ha_innodb_plugin.so;'
+             .'innodb_cmpmem=ha_innodb_plugin.so;'
+             .'innodb_cmpmem_reset=ha_innodb_plugin.so',
+            'default-storage-engine=InnoDB',
+            'innodb_file_per_table=1',
+            'innodb_file_format=barracuda',
+            'innodb_strict_mode=1',
+            ],
+        sql_commands => 
+            [
+                'select @@innodb_version;',
+            ],
+        startup_file => [ ],
+        },
+    },
+semisynch => {
+    minimum_version => '5.5.2',
+
+    master => 
+        {
+            operation_sequence => [qw(stop options_file start sql_commands )],
+            options_file => 
+                [
+                'plugin-load=rpl_semi_sync_master=semisync_master.so',
+                'rpl_semi_sync_master_enabled=1'
+                ],
+            sql_commands => 
+                [
+                    'select @@rpl_semi_sync_master_enabled;'
+                ],
+            startup_file => []
+        },
+    slave => 
+        {
+            operation_sequence => [qw(stop options_file start sql_commands )],
+            options_file => 
+                [
+                'plugin-load=rpl_semi_sync_slave=semisync_slave.so',
+                'rpl_semi_sync_slave_enabled=1'
+                ],
+            sql_commands => 
+                [
+                    'select @@rpl_semi_sync_slave_enabled;'
+                ],
+            startup_file => []
+        },
+    },
+gearman =>    {
+    minimum_version => '5.0',
+    all_servers => 
+        {
+        operation_sequence => [qw(start sql_commands options_file 
+                                startup_file restart )],
+        options_file => 
+            [
+            'init-file=startup.sql'
+            ],
+        sql_commands => 
+            [
+            'CREATE FUNCTION gman_do RETURNS STRING
+                SONAME "libgearman_mysql_udf.so";',
+            'CREATE FUNCTION gman_do_high RETURNS STRING
+                SONAME "libgearman_mysql_udf.so";',
+            'CREATE FUNCTION gman_do_low RETURNS STRING
+                SONAME "libgearman_mysql_udf.so";',
+            'CREATE FUNCTION gman_do_background RETURNS STRING
+                SONAME "libgearman_mysql_udf.so";',
+            'CREATE FUNCTION gman_do_high_background RETURNS STRING
+                SONAME "libgearman_mysql_udf.so";',
+            'CREATE FUNCTION gman_do_low_background RETURNS STRING
+                SONAME "libgearman_mysql_udf.so";',
+            'CREATE AGGREGATE FUNCTION gman_sum RETURNS INTEGER
+                SONAME "libgearman_mysql_udf.so";',
+            'CREATE FUNCTION gman_servers_set RETURNS STRING
+                SONAME "libgearman_mysql_udf.so";',                
+            ],
+        startup_file => 
+            [ 
+            'set @a := (select gman_servers_set("127.0.0.1"));',
+            'use test ;',
+            'create table if not exists startup (msg text, ts timestamp);',
+            'insert into startup (msg) values (@a);',
+            ]
+        },
+    },
+};
+
+PLUGIN_CONF
 
 );
 
