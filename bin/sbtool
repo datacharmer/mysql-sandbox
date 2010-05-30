@@ -34,6 +34,7 @@ use MySQL::Sandbox qw(
                 get_ports
                 get_ranges
                 get_option_file_contents 
+                sbinstr
                 get_sb_info);
 
 use MySQL::Sandbox::Scripts;
@@ -89,6 +90,7 @@ sub croak_die {
     }
 }
 
+
 for my $op ( keys %{$msb->{parse_options}} ) {
     if ( $msb->{parse_options}{$op}{accepted} ) {
         my %accepted = %{ $msb->{parse_options}{$op}{accepted} };
@@ -100,6 +102,7 @@ for my $op ( keys %{$msb->{parse_options}} ) {
     }
 }
 
+sbinstr( ' operation ' . $msb->{options}{operation} );
 for my $dir (qw(source_dir dest_dir tree_dir search_path)) {
     if ($msb->{options}{$dir}) {
         $msb->{options}{$dir} =~ s/^\s*~/$ENV{HOME}/;
@@ -159,6 +162,7 @@ else {
 
 sub get_help {
     my ($msg) = @_;
+    print MySQL::Sandbox::credits();
     if ($msg) {
         print '*' x 50;
         print "\n", $msg, "\n";

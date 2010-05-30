@@ -21,7 +21,7 @@ use strict;
 use warnings;
 # use Data::Dumper;
 use English qw( -no_match_vars ); 
-use MySQL::Sandbox qw( runs_as_root);
+use MySQL::Sandbox qw( runs_as_root sbinstr);
  
 #my $install_dir = $PROGRAM_NAME;
 #$install_dir =~ s{/\w+(\.pl)?$}{};
@@ -274,6 +274,8 @@ if ( -d "$binary_base/$bare_basedir" ) {
     unless (grep {$_ eq '--no_show'} @install_options) {
         print "Executing low_level_make_sandbox ", join( " \\\n\t", @install_options ), "\n";
     }
+    sbinstr( " low_level_make_sandbox called with params <"
+            . join(";", @install_options) . ">");
     exec "low_level_make_sandbox", @install_options;
 }
 else {

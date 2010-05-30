@@ -22,7 +22,7 @@ use warnings;
 use English qw( -no_match_vars ); 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox qw( find_safe_port_and_directory exists_in_path runs_as_root use_env);
+use MySQL::Sandbox qw( find_safe_port_and_directory exists_in_path runs_as_root use_env sbinstr);
 use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
@@ -550,6 +550,7 @@ print
       #"use $PROGRAM_NAME --conf_file=current_options.conf\n",
       #('-' x 40), "\n",
       "Your sandbox server was installed in ", use_env($sandbox_directory), "\n";
+      sbinstr( "sandbox installed in " . use_env($sandbox_directory));
 
 sub copy_and_replace {
     my ($filename,  $destination_dir, $destination_filename) = @_ ;
@@ -577,6 +578,10 @@ sub copy_and_replace {
         or die "invalid script content for <$filename>\n";
     
     $script_content =~ s/__LICENSE__/$license_text/;
+    my $SBINSTR_SH_TEXT = $MySQL::Sandbox::SBINSTR_SH_TEXT;
+
+    $script_content =~ s/__SBINSTR_SH__/$SBINSTR_SH_TEXT/;
+
     for my $key ( keys %replace_options) {
         my $new_value = $msb->{options}{$replace_options{$key}};
         if (    ($key eq '_DBUSER_') 

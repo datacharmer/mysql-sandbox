@@ -20,6 +20,7 @@ our @EXPORT_OK= qw( is_port_open
                     get_ports
                     get_ranges
                     use_env
+                    sbinstr
                     get_option_file_contents ) ;
 
 our $VERSION="3.0.12";
@@ -33,6 +34,12 @@ BEGIN {
 
     if ( -d "$ENV{HOME}/sandboxes" ) {
         $ENV{SANDBOX_HOME} = $ENV{SANDBOX_HOME} || "$ENV{HOME}/sandboxes";
+    }
+
+    unless ( $ENV{SANDBOX_BINARY} ) {
+        if ( -d "$ENV{HOME}/opt/mysql") {
+            $ENV{SANDBOX_BINARY} = "$ENV{HOME}/opt/mysql";
+        }
     }
 }
 
@@ -48,6 +55,14 @@ our %default_base_port = (
     multiple    =>  7000,
     custom      =>  5000,
 ); 
+
+our $SBINSTR_SH_TEXT =<<'SBINSTR_SH_TEXT';
+if [ -f "$SBINSTR" ] 
+then
+    echo "[`basename $0`] - `date "+%Y-%m-%d %H:%M:%S"` - $@" >> $SBINSTR
+fi
+SBINSTR_SH_TEXT
+
 
 
 sub new {
@@ -126,9 +141,53 @@ sub get_help {
         # $HELP_MSG .= "\n";
    }
 
+   my $VAR_HELP = 
+    "\nVARIABLES affecting this program: \n"
+        . "\t\$SBDEBUG : DEBUG LEVEL (" 
+            . ($ENV{SBDEBUG} || 0) . ")\n"
+        . "\t\$SBVERBOSE : DEBUG LEVEL (same as \$SBDEBUG) (" 
+            . ($ENV{SBVERBOSE} || 0)  . ")\n"
+
+        . "\t\$SANDBOX_HOME : root of all sandbox installations (" 
+            . use_env($ENV{SANDBOX_HOME}) . ")\n"
+
+        . "\t\$SANDBOX_BINARY : where to search for binaries (" 
+            . use_env($ENV{SANDBOX_BINARY}) . ")\n"
+   ;
+
+    if ( $PROGRAM_NAME =~ /replication|multiple/ ) { 
+        $VAR_HELP .= 
+            "\t\$NODE_OPTIONS : options to pass to all node installations (" 
+            . ($ENV{NODE_OPTIONS} || '') . ")\n"
+    }
+
+    if ( $PROGRAM_NAME =~ /replication/ ) { 
+        $VAR_HELP .= 
+            "\t\$MASTER_OPTIONS : options to pass to the master installation (" 
+            . ($ENV{MASTER_OPTIONS} || '') . ")\n"
+
+           . "\t\$SLAVE_OPTIONS : options to pass to all slave installations (" 
+            . ($ENV{SLAVE_OPTIONS} || '' ) . ")\n"
+    }
+   my $target = '';
+   if ( grep {$PROGRAM_NAME =~ /$_/ } 
+          qw( make_sandbox make_replication_sandbox
+              make_multiple_sandbox make_multiple_sandbox ) )
+   {
+        $target = '{tarball|dir|version}';
+        $HELP_MSG =
+              "tarball = the full path to a MySQL binary tarball\n"
+            . "dir     = the path to an expanded MySQL binary tarball\n"
+            . "version = the simple version number of the expanded tarball\n"
+            . "          if it is under \$SANDBOX_BINARY and renamed as the\n "
+            . "          version number.\n\n"
+            . $HELP_MSG;
+   } 
+    
    print $self->credits(),
-          "syntax: $PROGRAM_NAME [options] \n", 
-          $HELP_MSG; 
+          "syntax: $PROGRAM_NAME [options] $target \n", 
+          $HELP_MSG,
+          $VAR_HELP; 
           # This example is only relevant for a single sandbox, but it is
           # wrong for a multiple sandbox.
           #, 
@@ -162,6 +221,9 @@ sub write_to {
     open my $FILE, $mode, $fname
         or die "can't open file $fname\n";
     print $FILE $contents, "\n";
+    if (($mode eq '>') && ( $contents =~ m/\#!\/bin\/sh/ ) ) {
+        print $FILE $SBINSTR_SH_TEXT;    
+    }
     close $FILE;
 }
 
@@ -418,6 +480,7 @@ sub use_env{
             'HOME', 
             'SANDBOX_HOME',
     );
+    return '' unless $path;
     for my $var (@vars) {
         if ($path =~ /^$ENV{$var}/) {
             $path =~ s/$ENV{$var}/\$$var/;
@@ -427,7 +490,26 @@ sub use_env{
     return $path;
 }
 
-
+sub sbinstr {
+    my ($msg) = @_;
+    unless ($ENV{SBINSTR}) {
+        return;
+    }
+    my $pname = $PROGRAM_NAME;
+    unless ($DEBUG) {
+        $pname =~ s{.*/}{};
+    }
+    open my $FH, '>>', $ENV{SBINSTR}
+        or die "can't write to $ENV{SBINSTR} ($!)\n";
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+    $mon++;
+    $year +=1900;
+    print $FH "[$pname] - ", 
+        sprintf('%4d-%02d%02d %02d:%02d:%02d', 
+                $year, $mon, $mday, $hour, $min, $sec), 
+        " - $msg \n";
+    close $FH;
+} 
 
 1;
 __END__

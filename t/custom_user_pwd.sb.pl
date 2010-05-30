@@ -3,8 +3,8 @@ my $ver = '5.0.86';
 my $TEST_VERSION = $ENV{TEST_VERSION} || $ver;
 
 my @users = (
-    'newuser',
     'newuser@127.0.0.1',
+    'newuser',
 );
 
 for my $user (@users) {
@@ -23,10 +23,10 @@ $ENV{MYCLIENT_OPTIONS} = '-h 127.0.0.1';
 ok_sql({
     path      => "$sandbox_home/$dir_name",
     query     => "SELECT VERSION()",
-    expected  => $TEST_VERSION,
+    expected  => "$TEST_VERSION",
     msg       => 'server is accessible',
 });
-$ENV{MYCLIENT_OPTIONS} = '';
+# $ENV{MYCLIENT_OPTIONS} = '';
 ok_exec( {
     command   => "sbtool -o delete -s $sandbox_home/$dir_name ", 
     expected  => 'has been removed',

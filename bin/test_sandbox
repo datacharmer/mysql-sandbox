@@ -40,7 +40,7 @@ sub tprint;
 sub tprintf;
 
 sub get_exec_result ;
-my $use_open3 = 1;
+my $use_open3 = 0;
 
 eval "use IPC::Open3";
 if ($@) {
@@ -289,7 +289,7 @@ sub get_exec_result {
 
 sub get_exec_result_qx {
     my ($cmd) = @_; 
-    print "(shell) $cmd\n" if $verbose;
+    print "qx(shell) $cmd\n" if $verbose;
     my $output = qx($cmd );
     if ($?) {
         die ("error executing $cmd ($!)\n");
@@ -300,17 +300,21 @@ sub get_exec_result_qx {
 
 sub get_exec_result_open3 {
     my ($cmd) = @_; 
-    print "(shell) $cmd\n" if $verbose;
+    print "o3(shell) $cmd\n" if $verbose;
     my ($out, $in, $err) = (undef, undef, 1);
     my $result = open3($in, $out, $err, $cmd );
     my $output ='';
+    my $err_output ='';
     while (my $line = <$out>) {
         $output .= $line;
     }
-    if ($?) {
-        die ("error executing $cmd ($!)\n");
+    while (my $line = <$err>) {
+        $err_output .= $line;
     }
-    print "o3(shell) $output\n" if $verbose;
+    if ($? or $err_output) {
+        die ("error executing $cmd ($! - $err_output)\n");
+    }
+    print "o3(shell) $output - $err_output\n" if $verbose;
     return $output;
 }
 
@@ -430,11 +434,17 @@ sub ok ($;$) {
 sub run_single_test {
     my ($ver, $version, $bare_version) = @_;
     ok_exec( {
-            command => "make_sandbox $ver --no_confirm", 
+            command  => "make_sandbox $ver --no_confirm", 
             expected => 'sandbox server started',
             msg      => "single SB ($bare_version) started"
             });
-    ok_sql( {
+    ok( -f "$sandbox_home/plugin.conf", "plugin template file found");
+    ok_exec( {
+            command  => "perl -c $sandbox_home/plugin.conf > /dev/null 2>&1", 
+            expected => 'ok',
+            msg      => "plugin template compiles OK"
+            });
+     ok_sql( {
             path     => "$sandbox_home/msb_$version", 
             query    => 'select version(), @@server_id',
             expected => $bare_version,
@@ -498,12 +508,26 @@ sub ok_exec {
             croak "parameter <$p> not defined\n";
         }
     }
-    my $result = get_exec_result($params->{'command'});
+    my $return_code_wanted = 0;
+    
+    if (ref $params->{'expected'}) {
+        $return_code_wanted = grep { /^ok$/i} @{ $params->{'expected'}};
+    }
+    else {
+        $return_code_wanted = $params->{'expected'} =~ /^ok$/i;
+    }
+    my $result;
+    if ($return_code_wanted) {
+        $result = get_exec_result_qx($params->{'command'});
+    }
+    else {
+        $result = get_exec_result($params->{'command'});
+    }
     if ($verbose) {
         print $result, "\n";
     }
     if (! ref $params->{'expected'} ) {
-        if ($params->{'expected'} =~ /^ok$/i) {
+        if ($return_code_wanted) {
             return ok($CHILD_ERROR == 0 , $params->{'msg'});
         }
         elsif ($params->{'expected'} =~ s/^\!//) {
@@ -518,7 +542,8 @@ sub ok_exec {
         for my $expected (@{$params->{'expected'}}) {
             $count++;
             if ($expected =~ /^ok$/i) {
-                ok($CHILD_ERROR == 0 , $params->{'msg'} . "-[$count]");
+                ok( $CHILD_ERROR == 0 , 
+                    $params->{'msg'} . "-[$count]");
             }
             elsif ($expected =~ s/^\!//) {
                 ok( $result !~ /\Q$expected\E/, $params->{'msg'} . "-[$count]" );
