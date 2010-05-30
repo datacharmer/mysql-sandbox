@@ -22,7 +22,7 @@ use warnings;
 use English qw( -no_match_vars ); 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox qw(get_ranges runs_as_root use_env);
+use MySQL::Sandbox qw(get_ranges runs_as_root use_env sbinstr);
 use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
@@ -346,10 +346,10 @@ for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
 }
 
 $msb->write_to('initialize_slaves', '>', "#!/bin/sh");
-$msb->write_to('initialize_slaves', '>', "");
-$msb->write_to('initialize_slaves', '>', "# Don't use directly.");
-$msb->write_to('initialize_slaves', '>', "# This script is called by 'start_all' when needed");
-$msb->write_to('initialize_slaves', '>', "");
+$msb->write_to('initialize_slaves', '>>', "");
+$msb->write_to('initialize_slaves', '>>', "# Don't use directly.");
+$msb->write_to('initialize_slaves', '>>', "# This script is called by 'start_all' when needed");
+$msb->write_to('initialize_slaves', '>>', "");
 for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
     print "starting slave $slave\n";
     system "./node$slave/start"
@@ -382,6 +382,12 @@ system q( perl -i -pe 's/(-u root) (--password=)/$1/g' initialize_slaves );
 
 chdir $current_dir;
 print "replication directory installed in ", use_env($replication_directory), "\n";
+
+#
+# instrumentation
+#
+sbinstr( "replication_directory installed in  <"
+        . use_env($replication_directory) . ">");
 
 sub make_circular_replication {
     my $cmd =  "make_multiple_sandbox --circular";

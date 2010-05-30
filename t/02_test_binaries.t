@@ -7,8 +7,16 @@ use strict;
 use warnings;
 use lib './t';
 use Test_Helper;
-use Test::More tests => 36;
+use Test::More;
 
+BEGIN {
+        if ($^O =~ /^win/i) {
+            plan skip_all => 'This module is not for Windows'
+        }
+        else {
+            plan tests => 36;
+        }
+}
 # 7 tests
 ok_shell_result( "msandbox",
             ['available',

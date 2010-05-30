@@ -32,6 +32,17 @@ our @MANIFEST = (
 'sandbox_action.pl',
 );
 
+#my $SBINSTR_SH_TEXT =<<'SBINSTR_SH_TEXT';
+#if [ -f "$SBINSTR" ] 
+#then
+#    echo "[`basename $0`] - `date "+%Y-%m-%d %H:%M:%S"` - $@" >> $SBINSTR
+#fi
+#SBINSTR_SH_TEXT
+
+#sub sbinstr_sh_text {
+#    return $MySQL::Sandbox::SBINSTR_SH_TEXT;
+#}
+
 sub manifest {
     return @MANIFEST;
 }
@@ -740,6 +751,7 @@ export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
 MYSQLD_SAFE="$BASEDIR/bin/_MYSQLDSAFE_"
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
+__SBINSTR_SH__
 if [ ! -f $MYSQLD_SAFE ]
 then
     echo "mysqld_safe not found in $BASEDIR/bin/"
@@ -799,6 +811,7 @@ START_SCRIPT
 __LICENSE__
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
+__SBINSTR_SH__
 
 if [ -f $PIDFILE ]
 then
@@ -815,6 +828,7 @@ STATUS_SCRIPT
 #!_BINBASH_
 __LICENSE__
 
+__SBINSTR_SH__
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 $SBDIR/stop
 $SBDIR/start $@
@@ -829,6 +843,7 @@ export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
 MYSQL_ADMIN="$BASEDIR/bin/mysqladmin"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
+__SBINSTR_SH__
 
 if [ -f $PIDFILE ]
 then
@@ -836,8 +851,8 @@ then
     then
         echo "stop slave" | $SBDIR/use -u root
     fi
-    # echo "$MYSQL_ADMIN --defaults-file=$SBDIR/my.sandbox.cnf shutdown"
-    $MYSQL_ADMIN --defaults-file=$SBDIR/my.sandbox.cnf shutdown
+    # echo "$MYSQL_ADMIN --defaults-file=$SBDIR/my.sandbox.cnf $MYCLIENT_OPTIONS shutdown"
+    $MYSQL_ADMIN --defaults-file=$SBDIR/my.sandbox.cnf $MYCLIENT_OPTIONS shutdown
     sleep 1
 fi
 if [ -f $PIDFILE ]
@@ -853,6 +868,7 @@ __LICENSE__
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 TIMEOUT=30
+__SBINSTR_SH__
 if [ -f $PIDFILE ]
 then
     MYPID=`cat $PIDFILE`
@@ -889,6 +905,7 @@ BASEDIR=_BASEDIR_
 MYSQL="$BASEDIR/bin/mysql"
 export MYSQL_HISTFILE="$SBDIR/.mysql_history"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
+__SBINSTR_SH__
 if [ -f $PIDFILE ]
 then
     $MYSQL --defaults-file=$SBDIR/my.sandbox.cnf $MYCLIENT_OPTIONS "$@"
@@ -903,6 +920,7 @@ __LICENSE__
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 cd $SBDIR
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
+__SBINSTR_SH__
 #
 # attempt to drop databases gracefully
 #
@@ -925,13 +943,13 @@ then
             ./use -e "truncate mysql.$T"
         done
     fi
-    if [ `perl -le 'print $ARGV[0] ge "5.5" ? "1" : "0" ' "$VERSION"` = "1" ]
-    then
-        for T in `./use -N -B -e 'show tables from performance_schema'`
-        do
-            ./use -e "truncate performance_schema.$T"
-        done
-    fi
+    #if [ `perl -le 'print $ARGV[0] ge "5.5" ? "1" : "0" ' "$VERSION"` = "1" ]
+    #then
+    #    for T in `./use -N -B -e 'show tables from performance_schema'`
+    #    do
+    #        ./use -e "truncate performance_schema.$T"
+    #    done
+    #fi
 fi
 
 ./stop
@@ -1017,6 +1035,7 @@ then
     echo "syntax my sql{dump|binlog|admin} arguments"
     exit
 fi
+__SBINSTR_SH__
 
 SBDIR=_HOME_DIR_/_SANDBOXDIR_
 BASEDIR=_BASEDIR_
@@ -1084,6 +1103,7 @@ PROXY_START_SCRIPT
 #!_BINBASH_
 __LICENSE__
 
+__SBINSTR_SH__
 OLD_PORT=_SERVERPORT_
 
 if [ "$1" = "" ]
@@ -1126,6 +1146,7 @@ else
     OLD_SB_LOCATION=$1
 fi
 
+__SBINSTR_SH__
 if [ "$2" = "" ]
 then
     NEW_SB_LOCATION=$PWD
@@ -1165,7 +1186,7 @@ CHANGE_PATHS_SCRIPT
 __LICENSE__
 use strict;
 use warnings;
-use MySQL::Sandbox;
+use MySQL::Sandbox qw(sbinstr);
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
 
@@ -1175,6 +1196,7 @@ my $action = shift
 $action =~/^($action_list)$/ 
     or die "action must be one of {$action_list}\n";
 my $sandboxdir = $0;
+sbinstr($action);
 $sandboxdir =~ s{[^/]+$}{};
 $sandboxdir =~ s{/$}{};
 my $command = $ARGV[0];

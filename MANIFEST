@@ -31,6 +31,8 @@ t/09_test_multiple_port_checking.t
 t/10_check_start_restart.t
 t/11_replication_parameters.t
 t/12_custom_user_pwd.t
+t/13_innodb_plugin_install.t
+t/14_semi_synch_plugin_install.t
 t/group_port_checking.sb
 t/single_port_checking.sb
 t/check_single_server.sb
@@ -39,4 +41,6 @@ t/start_restart_arguments.sb
 t/start_restart_arguments.sb.pl
 t/replication_parameters.sb.pl
 t/custom_user_pwd.sb.pl
+t/innodb_plugin_install.sb.pl
+t/semi_synch_plugin_install.sb.pl
 
