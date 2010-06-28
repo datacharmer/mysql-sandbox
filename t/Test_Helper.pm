@@ -9,7 +9,7 @@ BEGIN {
         exit;
     }
 
-    if ($^O =~ /^win/i) {
+    if ($^O =~ /^(?:mswin|win)/i) {
         skip_all ('This module is not for Windows');        
     }
     use MySQL::Sandbox;

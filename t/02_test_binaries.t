@@ -10,7 +10,7 @@ use Test_Helper;
 use Test::More;
 
 BEGIN {
-        if ($^O =~ /^win/i) {
+    if ($^O =~ /^(?:mswin|win)/i) {
             plan skip_all => 'This module is not for Windows'
         }
         else {

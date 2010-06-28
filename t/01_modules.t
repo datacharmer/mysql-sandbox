@@ -3,7 +3,7 @@ use warnings;
 use Test::More ;
 
 BEGIN {
-    if ($^O =~ /^win/i) {
+    if ($^O =~ /^(?:mswin|win)/i) {
         diag 'NOT SUPPORTED ON WINDOWS';
         plan skip_all => 'This module is not for Windows';        
     }

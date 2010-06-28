@@ -7,7 +7,7 @@ WriteMakefile(
     NAME              => 'MySQL::Sandbox',
     VERSION_FROM      => 'lib/MySQL/Sandbox.pm', # finds $VERSION
     PREREQ_PM         => {
-                            'File::Find' => 1.1,
+                            'File::Find' => 1.0,
                             'Socket'     => 1.7,
                          }, 
     EXE_FILES         => [

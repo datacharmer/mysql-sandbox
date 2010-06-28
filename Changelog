@@ -1,3 +1,6 @@
+3.0.13	28-Jun-2010
+	- fixed minor problems in the test suite about testing on Windows
+	- added a prototype for MySQL Cluster integration
 3.0.12	29-May-2010
 	- Fixed bug in test_sandbox. When a test evaluates only the result code
 	  and there is no output from a failing command, test_result was not able

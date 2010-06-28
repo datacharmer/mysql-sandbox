@@ -28,6 +28,10 @@ our $DEBUG;
 
 BEGIN {
     $DEBUG = $ENV{'SBDEBUG'} || $ENV{'SBVERBOSE'} || 0;
+    unless ($ENV{HOME}) {
+        die "This module is not meant for an operating system\n"
+            . "that does not recognize \$HOME\n";
+    }
     unless ( $ENV{SANDBOX_HOME} ) { 
         $ENV{SANDBOX_HOME} = "$ENV{HOME}/sandboxes";
     }
