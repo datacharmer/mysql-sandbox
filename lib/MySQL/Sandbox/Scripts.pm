@@ -17,6 +17,7 @@ our @MANIFEST = (
 'my.sandbox.cnf',
 'start.sh',
 'status.sh',
+'msb.sh',
 'restart.sh',
 'stop.sh',
 'send_kill.sh',
@@ -742,6 +743,46 @@ my %parse_options_sbtool = (
 # --- START SCRIPTS IN CODE ---
 
 my %scripts_in_code = (
+    'msb.sh' => <<'MSB_SCRIPT',
+#!_BINBASH_    
+__LICENSE__
+
+ACCEPTED="{start|stop|restart|clear|send_kill|status}"
+if [ "$1" == "" ]
+then
+        echo "argument required $ACCEPTED"
+        exit 1
+fi
+
+SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+CMD=$1
+shift
+
+if [ -x "$SBDIR/$CMD" ]
+then
+    $SBDIR/$CMD "$@"
+else
+    echo "unrecognized command '$CMD'"
+    echo "accepted: $ACCEPTED"
+    exit 1 
+fi
+
+#case $CMD in
+#      start)  $SBDIR/start "$@"   ;;
+#    restart)  $SBDIR/restart "$@" ;;
+#       stop)  $SBDIR/stop "$@"    ;;
+#      clear)  $SBDIR/clear "$@"    ;;
+#  send_kill)  $SBDIR/send_kill "$@"    ;;
+#     status)  $SBDIR/status "$@"  ;;
+#    *)  
+#        echo "unrecognized command '$CMD'"
+#        echo "accepted: $ACCEPTED"
+#        exit 1 
+#        ;;
+#esac
+
+MSB_SCRIPT
+
     'start.sh' => <<'START_SCRIPT',
 #!_BINBASH_
 __LICENSE__

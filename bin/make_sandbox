@@ -250,6 +250,10 @@ unless ( grep { $simple_version eq $_ } @supported_versions) {
     die "unsupported version $simple_version\n";
 }
 
+if ($release < 10) {
+    $release = '0' . $release;
+}
+
 my $port = ($major . $minor. $release) ;
 
 if ($port < 1024) {

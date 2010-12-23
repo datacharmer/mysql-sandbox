@@ -1,4 +1,12 @@
-3.0.13	28-Jun-2010
+3.0.15	23-Dec-2010
+	- added a 'msb' script to each sandbox, to mimick the mysql.server script
+	- fixed test visualization bug for Mac OSX with case insensitive storage
+	- fixed algorithm to convert version number to ports
+	- fixed test suite for MySQL 5.5 (can't disable innodb for testing)
+3.0.14	31-Aug-2010 (not released)
+	- Added a 'rsandbox' user with REPLICATION SLAVE grants for replication
+	  systems
+3.0.13	28-Jun-2010 (not released)
 	- fixed minor problems in the test suite about testing on Windows
 	- added a prototype for MySQL Cluster integration
 3.0.12	29-May-2010

@@ -140,8 +140,8 @@ $msb->write_to($circular_replication_script, '>',
 q(
 #!/bin/bash
 TMPL1="change master to master_host='127.0.0.1',"
-TMPL2="master_user='msandbox',"
-TMPL3="master_password='msandbox',"
+TMPL2="master_user='rsandbox',"
+TMPL3="master_password='rsandbox',"
 TMPL4="master_port"
 TMPL="$TMPL1 $TMPL2 $TMPL3 $TMPL4"
 ));
@@ -282,7 +282,7 @@ $msb->write_to('check_slaves', '>>', 'for NNUM in ' . $node_list );
 $msb->write_to('check_slaves', '>>', 'do' );
 $msb->write_to('check_slaves', '>>', '  echo "node # $NNUM"');
 $msb->write_to('check_slaves', '>>', "  $group_directory/node\$NNUM/use -N -e "
-            . " 'show slave status\\G' | grep Running" );
+            . " 'show slave status\\G' | grep Running:" );
 $msb->write_to('check_slaves', '>>', 'done ' );
 chmod 0755, 'check_slaves';
 
@@ -308,7 +308,14 @@ if ($msb->{options}{'circular'}) {
                 . "else\n"
                 . "  $group_directory/use_all 'start slave' \n"
                 . "fi"); 
-    
+   
+    #
+    # Creates the replication user in all nodes
+    #
+    system qq( MYCLIENT_OPTIONS='-u root' ./use_all 'grant replication slave on *.* 
+        to "rsandbox"\@"127.%" identified by "rsandbox"')
+            and die "can't create slave user";
+  
     my $result = system($circular_replication_script);
     if ($result) {
         die ("error starting up circular replication ($!)\n");       
