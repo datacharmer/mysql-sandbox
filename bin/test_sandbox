@@ -747,6 +747,13 @@ sub run_tuning_test {
     my $version = $bare_version;
     $version =~ s/\./_/g;
 
+    if ($bare_version =~ /^5\.5/ ) {
+         for my $i ( 1 .. 6) { 
+            print "ok - skipped (this test is not available in MySQL 5.5)\n";
+         }
+         return;
+    }
+
     ok_exec({ command  => "make_sandbox $ver --no_confirm -c skip-innodb -c sql_mode=strict_all_tables",
               expected => 'sandbox server started',
               msg      => 'tuning server created',

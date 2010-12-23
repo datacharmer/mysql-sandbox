@@ -784,6 +784,8 @@ There are 2 database users installed by default:
  +-----------------+-------------+-------------------------------+
  |  root@localhost | msandbox    | all on *.* with grant option  |
  |  msandbox@%     | msandbox    | all on *.*                    |
+ |  rsandbox@127.% | rsandbox    | REPLICATION SLAVE             |
+ |                 |             | (only replication sandboxes)  |
  +-----------------+-------------+-------------------------------+
 
 =head2 Ports and sockets

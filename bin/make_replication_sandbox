@@ -335,7 +335,7 @@ $msb->write_to('check_slaves', '>>', 'for NNUM in ' . $slave_list );
 $msb->write_to('check_slaves', '>>', 'do' );
 $msb->write_to('check_slaves', '>>', '  echo "slave # $NNUM"');
 $msb->write_to('check_slaves', '>>', "  $replication_directory/node\$NNUM/use -e "
-            . " 'show slave status\\G' | grep Running" );
+            . " 'show slave status\\G' | grep Running:" );
 $msb->write_to('check_slaves', '>>', 'done ' );
 chmod 0755, 'check_slaves';
 
@@ -361,14 +361,21 @@ for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
       qq( echo 'CHANGE MASTER TO )
            . qq( master_host="127.0.0.1", )
            . qq( master_port=$replication_port, )
-           . qq( master_user="msandbox", )
-           . qq( master_password="msandbox" )
+           . qq( master_user="rsandbox", )
+           . qq( master_password="rsandbox" )
            . qq(' | $replication_directory/node$slave/use -u root --password= ) );
 
     $msb->write_to('initialize_slaves', '>>', 
             qq( echo 'START SLAVE' )
            . qq( | $replication_directory/node$slave/use -u root --password= ) );
 }
+
+#
+# Creates the replication user
+#
+system qq(./m -u root -e 'grant replication slave on *.* 
+    to "rsandbox"\@"127.%" identified by "rsandbox"')
+        and die "can't create slave user";
 
 chmod 0755, "initialize_slaves";
 system "./initialize_slaves"

@@ -476,13 +476,19 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         $script = sprintf '%s/bin/mysql_install_db', $msb->{options}{basedir} ;
     }
     if ( -x $script ) {
+
+        my $osx_options = '';
+        if ($OSNAME =~ /darwin/) {
+            $osx_options = '--lower_case_table_names=2';
+        }
         
+        my $additional_options ="$osx_options";
         my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data', 
             $script,
             $msb->{options}{operating_system_user},
             $msb->{options}{basedir},
             $sandbox_directory;
-        my $result = qx($cmd);
+        my $result = qx($cmd $additional_options);
         if ($CHILD_ERROR) {
             die "error while creating grant tables\n$result\n";
         }
