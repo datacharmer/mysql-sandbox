@@ -71,6 +71,12 @@ unless ($msb->{options}{server_version}) {
         or $msb->get_help('server version required');
 }
 
+for my $opt (qw(repl_user repl_password remote_access)) {
+    if (defined $msb->{options}{$opt}) {
+        $MySQL::Sandbox::default_users{$opt} = $msb->{options}{$opt};
+    }
+}
+
 my $base_version ;
 my $release_no;
 my $dashed_version ;
@@ -187,6 +193,9 @@ my $install_master_command  = qq(
     --upper_directory=$replication_directory \\
     --sandbox_directory=master \\
     --sandbox_port=$replication_port \\
+    --repl_user=$msb->{options}{repl_user} \\
+    --repl_password=$msb->{options}{repl_password} \\
+    --remote_access=$msb->{options}{remote_access} \\
     --load_grants \\
     --prompt_prefix=master \\
     -c log-bin=mysql-bin \\
@@ -221,6 +230,9 @@ for my $slave (1 .. $msb->{options}{how_many_slaves}) {
     --no_load_grants \\
     --prompt_prefix=slave$slave \\
     --sandbox_port=$slave_port \\
+    --repl_user=$msb->{options}{repl_user} \\
+    --repl_password=$msb->{options}{repl_password} \\
+    --remote_access=$msb->{options}{remote_access} \\
     -c server-id=$slave_id \\
     -c report-host=SBslave$slave \\
     -c report-port=$replication_port \\
@@ -335,7 +347,7 @@ $msb->write_to('check_slaves', '>>', 'for NNUM in ' . $slave_list );
 $msb->write_to('check_slaves', '>>', 'do' );
 $msb->write_to('check_slaves', '>>', '  echo "slave # $NNUM"');
 $msb->write_to('check_slaves', '>>', "  $replication_directory/node\$NNUM/use -e "
-            . " 'show slave status\\G' | grep Running:" );
+            . qq( 'show slave status\\G' | grep "\\(Running:\\|Master_Log_Pos\\|\\<Master_Log_File\\)") );
 $msb->write_to('check_slaves', '>>', 'done ' );
 chmod 0755, 'check_slaves';
 
@@ -361,8 +373,8 @@ for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
       qq( echo 'CHANGE MASTER TO )
            . qq( master_host="127.0.0.1", )
            . qq( master_port=$replication_port, )
-           . qq( master_user="rsandbox", )
-           . qq( master_password="rsandbox" )
+           . qq( master_user="$MySQL::Sandbox::default_users{'repl_user'}", )
+           . qq( master_password="$MySQL::Sandbox::default_users{'repl_password'}" )
            . qq(' | $replication_directory/node$slave/use -u root --password= ) );
 
     $msb->write_to('initialize_slaves', '>>', 
@@ -373,9 +385,10 @@ for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
 #
 # Creates the replication user
 #
-system qq(./m -u root -e 'grant replication slave on *.* 
-    to "rsandbox"\@"127.%" identified by "rsandbox"')
-        and die "can't create slave user";
+##system qq(./m -u root -e 'grant replication slave on *.* )
+##    . qq( to "$MySQL::Sandbox::default_users{'repl_user'}"\@"127.%" ) 
+##    . qq( identified by "$MySQL::Sandbox::default_users{'repl_password'}"')
+##        and die "can't create slave user";
 
 chmod 0755, "initialize_slaves";
 system "./initialize_slaves"

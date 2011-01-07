@@ -33,6 +33,8 @@ t/11_replication_parameters.t
 t/12_custom_user_pwd.t
 t/13_innodb_plugin_install.t
 t/14_semi_synch_plugin_install.t
+t/15_user_privileges.t
+t/user_privileges.sb
 t/group_port_checking.sb
 t/single_port_checking.sb
 t/check_single_server.sb

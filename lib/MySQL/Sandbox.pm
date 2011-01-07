@@ -23,7 +23,7 @@ our @EXPORT_OK= qw( is_port_open
                     sbinstr
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.12";
+our $VERSION="3.0.17";
 our $DEBUG;
 
 BEGIN {
@@ -59,6 +59,16 @@ our %default_base_port = (
     multiple    =>  7000,
     custom      =>  5000,
 ); 
+
+our %default_users = (
+    db_user                => 'msandbox',
+    remote_access          => '127.%',
+    db_password            => 'msandbox',
+    ro_user                => 'msandbox_ro',
+    rw_user                => 'msandbox_rw',
+    repl_user              => 'rsandbox',
+    repl_password          => 'rsandbox',
+);
 
 our $SBINSTR_SH_TEXT =<<'SBINSTR_SH_TEXT';
 if [ -f "$SBINSTR" ] 

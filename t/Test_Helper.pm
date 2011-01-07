@@ -83,6 +83,7 @@ sub find_plugindir {
         my @dirs =  sort { $b cmp $a } 
                     grep { ($_ ge $minimum_version) && ($_ le $maximum_version) }
                     map { m{(\d\.\d\.\d+)/?$}; $1 }
+                        grep { /\d+\.\d+\.\d+/ } 
                         grep { -d $_ } 
                             glob("$ENV{SANDBOX_BINARY}/*/" ) ;
         unless (@dirs) {

@@ -785,7 +785,7 @@ sub run_tuning_test {
     # my $sandbox_dirs = get_exec_result("ls -d $sandbox_home/msb_$version/data/*/ | wc -l ");
     my $sandbox_dirs = how_many_dirs("$sandbox_home/msb_$version/data");
 
-    ok($sandbox_dirs == 2 , "single SB ($bare_version) - effective clear ");
+    ok($sandbox_dirs == ($bare_version ge '5.5'? 2 : 3) , "single SB ($bare_version) - effective clear ");
 
     tprint "** cleaning up - please wait\n";
     my $clear_all = get_exec_result("$sandbox_home/clear_all");
@@ -1018,7 +1018,7 @@ sub run_smoke_test {
             $verbose);
     my $sandbox_dirs = how_many_dirs("$sandbox_home/msb_$version/data");
 
-    ok($sandbox_dirs == 2 , "single SB ($bare_version) - effective clean up ");
+    ok($sandbox_dirs == ($bare_version ge '5.5'? 3 : 2) , "single SB ($bare_version) - effective clean up ");
 
     tprint "** cleaning up - please wait\n";
     my $clear = get_exec_result("$sandbox_home/msb_$version/clear");

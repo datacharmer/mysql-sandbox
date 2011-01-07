@@ -1,3 +1,14 @@
+3.0.17	07-Jan-2011
+	- incompatible change: default mask for msandbox user is now '127.%'
+	instead of '%'. You can resume the old mask with --remote_access='%'
+	- added low privilege users msandbox_ro (SELECT EXECUTE), msandbox_rw (SELECT INSERT
+	UPDATE CREATE DROP LOCK EXECUTE), and rsandbox (REPLICATION SLAVE)
+	- fixed bug in test_smoke (assumed 2 directories after cleaning, but 5.5
+	has also performance_schema)
+3.0.16	30-Dec-2010
+	- fixed bug in TestHelper (wrong assumption on all directories in
+	$SANDBOX_BINARIES containing MySQL files)
+	- added information to check_slaves to report master logfile and position
 3.0.15	23-Dec-2010
 	- added a 'msb' script to each sandbox, to mimick the mysql.server script
 	- fixed test visualization bug for Mac OSX with case insensitive storage

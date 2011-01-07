@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.12";
+our $VERSION="3.0.17";
 
 our @MANIFEST = (
 'clear.sh',
@@ -174,19 +174,67 @@ my %parse_options_low_level_make_sandbox = (
                                          ]
                             },
     db_user               => {
-                                value => 'msandbox',      
+                                value => $MySQL::Sandbox::default_users{'db_user'},
                                 parse => 'u|db_user=s'  ,              
                                 so    => 100,
                                 help  => [
-                                            'user for global access to mysql (Default: sandbox)'
+                                            'user for global access to mysql (Default: '
+                                            .  $MySQL::Sandbox::default_users{'db_user'} . ')'
                                          ]
                             },
-    db_password           => {
-                                value => 'msandbox',      
+     remote_access        => {
+                                value => $MySQL::Sandbox::default_users{'remote_access'},
+                                parse => 'remote_access=s'  ,              
+                                so    => 101,
+                                help  => [
+                                            'network access for mysql users (Default: '
+                                            .  $MySQL::Sandbox::default_users{'remote_access'} . ')'
+                                         ]
+                            },
+    ro_user              => {
+                                value => $MySQL::Sandbox::default_users{'ro_user'},
+                                parse => 'ro_user=s'  ,              
+                                so    => 102,
+                                help  => [
+                                            'user for read-only access to mysql (Default: ' 
+                                            .  $MySQL::Sandbox::default_users{'ro_user'} . ')'
+                                         ]
+                            },
+
+     rw_user              => {
+                                value => $MySQL::Sandbox::default_users{'rw_user'},
+                                parse => 'rw_user=s'  ,              
+                                so    => 104,
+                                help  => [
+                                            'user for read-write access to mysql (Default: ' 
+                                            .  $MySQL::Sandbox::default_users{'rw_user'} . ')'
+                                         ]
+                            },
+      repl_user           => {
+                                value => $MySQL::Sandbox::default_users{'repl_user'},
+                                parse => 'repl_user=s'  ,              
+                                so    => 106,
+                                help  => [
+                                            'user for replication access to mysql (Default: ' 
+                                            .  $MySQL::Sandbox::default_users{'repl_user'} . ')'
+                                         ]
+                            },
+     db_password           => {
+                                value =>  $MySQL::Sandbox::default_users{'db_password'},      
                                 parse => 'p|db_password=s'  ,              
                                 so    => 110,
                                 help  => [
-                                            'password for global access to mysql (Default: sandbox)'
+                                            'password for global access to mysql (Default: '
+                                            .  $MySQL::Sandbox::default_users{'db_password'} . ')'
+                                         ]
+                            },
+      repl_password      => {
+                                value =>  $MySQL::Sandbox::default_users{'repl_password'},      
+                                parse => 'repl_password=s'  ,              
+                                so    => 112,
+                                help  => [
+                                            'password for replication access to mysql (Default: '
+                                            .  $MySQL::Sandbox::default_users{'repl_password'} . ')'
                                          ]
                             },
     my_clause             => {
@@ -390,6 +438,35 @@ my %parse_options_replication = (
                                          ] 
                             },
  
+    repl_user           => {
+                                value => $MySQL::Sandbox::default_users{'repl_user'},
+                                parse => 'repl_user=s',                  
+                                so    => 60,
+                                help  => [
+                                            'user with replication slave privileges.',
+                                            '(default: '. $MySQL::Sandbox::default_users{'repl_user'} . ')'
+                                         ] 
+                            },
+
+    repl_password           => {
+                                value => $MySQL::Sandbox::default_users{'repl_password'},
+                                parse => 'repl_password=s',                  
+                                so    => 60,
+                                help  => [
+                                            'password for user with replication slave privileges.',
+                                            '(default: '. $MySQL::Sandbox::default_users{'repl_password'} . ')'
+                                         ] 
+                            },
+     remote_access        => {
+                                value => $MySQL::Sandbox::default_users{'remote_access'},
+                                parse => 'remote_access=s'  ,              
+                                so    => 61,
+                                help  => [
+                                            'network access for mysql users (Default: '
+                                            .  $MySQL::Sandbox::default_users{'remote_access'} . ')'
+                                         ]
+                            },
+ 
     interactive           => {
                                 value => 0,                  
                                 parse => 'interactive',                  
@@ -490,6 +567,35 @@ my %parse_options_many = (
                                          ] 
                             },
 
+    repl_user           => {
+                                value => $MySQL::Sandbox::default_users{'repl_user'},
+                                parse => 'repl_user=s',                  
+                                so    => 60,
+                                help  => [
+                                            'user with replication slave privileges.',
+                                            '(default: '. $MySQL::Sandbox::default_users{'repl_user'} . ')'
+                                         ] 
+                            },
+
+    repl_password           => {
+                                value => $MySQL::Sandbox::default_users{'repl_password'},
+                                parse => 'repl_password=s',                  
+                                so    => 60,
+                                help  => [
+                                            'password for user with replication slave privileges.',
+                                            '(default: '. $MySQL::Sandbox::default_users{'repl_password'} . ')'
+                                         ] 
+                            },
+     remote_access        => {
+                                value => $MySQL::Sandbox::default_users{'remote_access'},
+                                parse => 'remote_access=s'  ,              
+                                so    => 61,
+                                help  => [
+                                            'network access for mysql users (Default: '
+                                            .  $MySQL::Sandbox::default_users{'remote_access'} . ')'
+                                         ]
+                            },
+ 
     interactive           => {
                                 value => 0,                  
                                 parse => 'interactive',                  
@@ -1053,7 +1159,17 @@ USING_SCRIPT
 
 use mysql;
 set password=password('_DBPASSWORD_');
-grant all on *.* to _DBUSER_ identified by '_DBPASSWORD_';
+grant all on *.* to _DBUSER_@'_REMOTE_ACCESS_' identified by '_DBPASSWORD_';
+grant all on *.* to _DBUSER_@'localhost' identified by '_DBPASSWORD_';
+grant SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,
+    SHOW DATABASES,CREATE TEMPORARY TABLES,LOCK TABLES, EXECUTE 
+    on *.* to _DBUSERRW_@'localhost' identified by '_DBPASSWORD_';
+grant SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,
+    SHOW DATABASES,CREATE TEMPORARY TABLES,LOCK TABLES, EXECUTE 
+    on *.* to _DBUSERRW_@'_REMOTE_ACCESS_' identified by '_DBPASSWORD_';
+grant SELECT,EXECUTE on *.* to _DBUSERRO_@'_REMOTE_ACCESS_' identified by '_DBPASSWORD_';
+grant SELECT,EXECUTE on *.* to _DBUSERRO_@'localhost' identified by '_DBPASSWORD_';
+grant REPLICATION SLAVE on *.* to _DBUSERREPL_@'_REMOTE_ACCESS_' identified by '_DB_REPL_PASSWORD_';
 delete from user where password='';
 delete from db where user='';
 flush privileges;

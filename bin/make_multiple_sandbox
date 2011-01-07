@@ -62,6 +62,12 @@ unless ($msb->{options}{server_version}) {
         or $msb->get_help('server version required');
 }
 
+for my $opt (qw(repl_user repl_password remote_access)) {
+    if (defined $msb->{options}{$opt}) {
+        $MySQL::Sandbox::default_users{$opt} = $msb->{options}{$opt};
+    }
+}
+
 my $base_version ;
 my $release_no;
 my $dashed_version ;
@@ -137,13 +143,13 @@ my $circular_replication_script = "$group_directory/set_circular_replication.sh"
 
 if ($msb->{options}{'circular'}) {
 $msb->write_to($circular_replication_script, '>', 
-q(
+qq(
 #!/bin/bash
 TMPL1="change master to master_host='127.0.0.1',"
-TMPL2="master_user='rsandbox',"
-TMPL3="master_password='rsandbox',"
+TMPL2="master_user='$MySQL::Sandbox::default_users{'repl_user'}',"
+TMPL3="master_password='$MySQL::Sandbox::default_users{'repl_password'}',"
 TMPL4="master_port"
-TMPL="$TMPL1 $TMPL2 $TMPL3 $TMPL4"
+TMPL="\$TMPL1 \$TMPL2 \$TMPL3 \$TMPL4"
 ));
 $msb->write_to($circular_replication_script, '>>', "$group_directory/use_all 'stop slave' ");
 }
@@ -176,6 +182,9 @@ for my $node (1 .. $msb->{options}{how_many_nodes}) {
     --sandbox_directory=node$node \\
     --no_confirm \\
     --no_check_port \\
+    --repl_user=$msb->{options}{repl_user} \\
+    --repl_password=$msb->{options}{repl_password} \\
+    --remote_access=$msb->{options}{remote_access} \\
     --prompt_prefix=node$node \\
     --sandbox_port=$node_port \\
     -c server-id=$node_id \\
@@ -312,9 +321,10 @@ if ($msb->{options}{'circular'}) {
     #
     # Creates the replication user in all nodes
     #
-    system qq( MYCLIENT_OPTIONS='-u root' ./use_all 'grant replication slave on *.* 
-        to "rsandbox"\@"127.%" identified by "rsandbox"')
-            and die "can't create slave user";
+    ## system qq( MYCLIENT_OPTIONS='-u root' ./use_all 'grant replication slave on *.* )
+    ##    . qq( to "$MySQL::Sandbox::default_users{'repl_user'}"\@"127.%" ) . 
+    ##    . qq(identified by "$MySQL::Sandbox::default_users{'repl_password'}"')
+    ##        and die "can't create slave user";
   
     my $result = system($circular_replication_script);
     if ($result) {
