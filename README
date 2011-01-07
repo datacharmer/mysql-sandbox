@@ -89,12 +89,12 @@ MAKING SANDBOXES
     You can create a group of sandboxes without any replication among its
     members. If you need three servers of the same version, you can use
 
-     $ make_multiple_sandbox /path/to/tarball 
+     $ make_multiple_sandbox /path/to/tarball
 
     If you need servers of different versions in the same group, you may
     like
 
-     $ make_multiple_custom_sandbox /path/to/tarball1 path/to/tarball2 /path/to/tb3 
+     $ make_multiple_custom_sandbox /path/to/tarball1 path/to/tarball2 /path/to/tb3
 
     Assuming that each tarball is from a different version, you will group
     three servers under one directory, with the handy sandbox scripts to
@@ -118,7 +118,7 @@ MAKING SANDBOXES
 
     You can then add all the options you need at the end. For example:
 
-     $ make_sandbox_from_source $HOME/build/5.0 single --export_binaries --check_port 
+     $ make_sandbox_from_source $HOME/build/5.0 single --export_binaries --check_port
 
     or
 
@@ -239,6 +239,8 @@ USING A SANDBOX
      +-----------------+-------------+-------------------------------+
      |  root@localhost | msandbox    | all on *.* with grant option  |
      |  msandbox@%     | msandbox    | all on *.*                    |
+     |  rsandbox@127.% | rsandbox    | REPLICATION SLAVE             |
+     |                 |             | (only replication sandboxes)  |
      +-----------------+-------------+-------------------------------+
 
   Ports and sockets
@@ -570,7 +572,7 @@ SBTool the Sandbox helper
         --leaf_nodes='4 5 6|7 8'
 
      sbtool --tree_dir=/path/to/source \
-        --tree_nodes='1 - 2 3 - 4 5 6|7 8' 
+        --tree_nodes='1 - 2 3 - 4 5 6|7 8'
 
    sbtool -o preserve
     Makes a sandbox permanent. It requires the "--source_dir" option to

@@ -198,7 +198,12 @@ my %skip_options = (
 my %replace_options = (
     _INSTALL_VERSION_   => 'install_version',
     _DBUSER_            => 'db_user',
+    _REMOTE_ACCESS_     => 'remote_access',
+    _DBUSERRO_          => 'ro_user',
+    _DBUSERRW_          => 'rw_user',
+    _DBUSERREPL_        => 'repl_user',
     _DBPASSWORD_        => 'db_password',
+    _DB_REPL_PASSWORD_  => 'repl_password',
     _OSUSER_            => 'operating_system_user',
     _BASEDIR_           => 'basedir',
     _TMPDIR_            => 'tmpdir',
@@ -211,6 +216,18 @@ my %replace_options = (
     _MYSQL_PROMPT_      => 'mysql_prompt',
     _MYSQLDSAFE_        => 'mysqld_safe',
 );
+
+if ($msb->{options}{db_user} =~ /\@/) {
+    my ($user, $host) = split /\@/, $msb->{options}{db_user};
+    $msb->{options}{db_user} = $user;
+    $msb->{options}{remote_access} = $host; 
+}
+
+for my $opt (qw(db_user remote_access ro_user rw_user repl_user db_password repl_password)) {
+    if (defined $msb->{options}{$opt}) {
+        $MySQL::Sandbox::default_users{$opt} = $msb->{options}{$opt};
+    }
+}
 
 unless (
         ($msb->{options}{'sandbox_port'} =~ /^ \d{3,} $ /x)  

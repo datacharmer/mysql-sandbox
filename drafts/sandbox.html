@@ -4,7 +4,7 @@
 <head>
 <title>MySQL::Sandbox - Quickly installs MySQL side server, either standalone or in groups</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<link rev="made" href="mailto:gmax@gmac3.local" />
+<link rev="made" href="mailto:_postfix@neige.apple.com" />
 </head>
 
 <body style="background-color: white">
@@ -285,55 +285,64 @@ directory that servers two purposes:</p>
 <p>The sandbox directory of the instance you just created contains
 some handy scripts to manage your server easily and in isolation.</p>
 <dl>
-<dt><strong><a name="start" class="item">start</a></strong></dt>
+<dt><strong><a name="start" class="item">start</a></strong>
 
-<dt><strong><a name="restart" class="item">restart</a></strong></dt>
+<dt><strong><a name="restart" class="item">restart</a></strong>
 
-<dt><strong><a name="stop" class="item">stop</a></strong></dt>
+<dt><strong><a name="stop" class="item">stop</a></strong>
 
 <dd>
 <p>&quot;./start&quot;, &quot;./restart&quot;, and &quot;./stop&quot; do what their name suggests.
 <a href="#start"><code>start</code></a> and <a href="#restart"><code>restart</code></a> accept parameters that are eventually passed to the server. e.g.:</p>
+</dd>
+<dd>
 <pre>
   ./start --skip-innodb</pre>
+</dd>
+<dd>
 <pre>
   ./restart --event-scheduler=disabled</pre>
 </dd>
-<dt><strong><a name="use" class="item">use</a></strong></dt>
+</li>
+<dt><strong><a name="use" class="item">use</a></strong>
 
 <dd>
 <p>&quot;./use&quot; calls the command line client with the appropriate parameters,</p>
 </dd>
-<dt><strong><a name="clear" class="item">clear</a></strong></dt>
+</li>
+<dt><strong><a name="clear" class="item">clear</a></strong>
 
 <dd>
 <p>&quot;./clear&quot; stops the server and removes everything from the data directory, letting you ready to start from scratch.</p>
 </dd>
-<dt><strong><a name="multiple_server_sandbox" class="item">multiple server sandbox</a></strong></dt>
+</li>
+<dt><strong><a name="multiple_server_sandbox" class="item">multiple server sandbox</a></strong>
 
 <dd>
 <p>On a replication sandbox, you have the same commands, with a &quot;_all&quot;
 suffix, meaning that you propagate the command to all the members.
 Then you have &quot;./m&quot; as a shortcut to use the master, &quot;./s1&quot; and &quot;./s2&quot;
 to access the slaves (and &quot;s3&quot;, &quot;s4&quot; ... if you define more).</p>
+</dd>
+<dd>
 <p>In group sandboxes without a master slave relationship (circular replication and multiple sandboxes) the nodes can be accessed by ./n1, ./n2, ./n3, and so on.</p>
+</dd>
 <dl>
-<dt><strong><a name="start_all" class="item">start_all</a></strong></dt>
+<dt><strong><a name="start_all" class="item">start_all</a></strong>
 
-<dt><strong><a name="restart_all" class="item">restart_all</a></strong></dt>
+<dt><strong><a name="restart_all" class="item">restart_all</a></strong>
 
-<dt><strong><a name="stop_all" class="item">stop_all</a></strong></dt>
+<dt><strong><a name="stop_all" class="item">stop_all</a></strong>
 
-<dt><strong><a name="use_all" class="item">use_all</a></strong></dt>
+<dt><strong><a name="use_all" class="item">use_all</a></strong>
 
-<dt><strong><a name="clear_all" class="item">clear_all</a></strong></dt>
+<dt><strong><a name="clear_all" class="item">clear_all</a></strong>
 
-<dt><strong><a name="m" class="item">m</a></strong></dt>
+<dt><strong><a name="m" class="item">m</a></strong>
 
-<dt><strong><a name="s1_s2" class="item">s1,s2</a></strong></dt>
+<dt><strong><a name="s1_s2" class="item">s1,s2</a></strong>
 
 </dl>
-</dd>
 </dl>
 <p>
 </p>
@@ -345,6 +354,8 @@ to access the slaves (and &quot;s3&quot;, &quot;s4&quot; ... if you define more)
  +-----------------+-------------+-------------------------------+
  |  root@localhost | msandbox    | all on *.* with grant option  |
  |  msandbox@%     | msandbox    | all on *.*                    |
+ |  rsandbox@127.% | rsandbox    | REPLICATION SLAVE             |
+ |                 |             | (only replication sandboxes)  |
  +-----------------+-------------+-------------------------------+</pre>
 <p>
 </p>
@@ -693,22 +704,25 @@ By default, sbtool looks for the plugin template file in the sandbox directory t
 Each plugin must have at least one target <strong>Server type</strong>, which could be one of <em>all_servers</em>, <em>master</em>, or <em>slave</em>. It is allowed to have more than one target types in the same plugin.</p>
 <p>Each server type, in turn, must have at least one section named <strong>operation_sequence</strong>, an array reference containing the list of the actions to perform. Such actions can be regular scripts in each sandbox (start, stop, restart, clear) or one of the following template sections:</p>
 <dl>
-<dt><strong><a name="options_file" class="item">options_file</a></strong></dt>
+<dt><strong><a name="options_file" class="item">options_file</a></strong>
 
 <dd>
 <p>It is the list of lines to add to an options file, under the <code>[mysqld]</code> label.</p>
 </dd>
-<dt><strong><a name="sql_commands" class="item">sql_commands</a></strong></dt>
+</li>
+<dt><strong><a name="sql_commands" class="item">sql_commands</a></strong>
 
 <dd>
 <p>It is a list of queries to execute. Every query must have appropriate semicolons as required. If no semicolon are found in the list, no queries are executed.</p>
 </dd>
-<dt><strong><a name="startup_file" class="item">startup_file</a></strong></dt>
+</li>
+<dt><strong><a name="startup_file" class="item">startup_file</a></strong>
 
 <dd>
 <p>It is a file, named <em>startup.sql</em>, to be created under the data directory. It will contain the lines indicated in this section.
 You must remember to add a line 'init-file=startup.sql' to the options_file section.</p>
 </dd>
+</li>
 </dl>
 <p>
 </p>
@@ -798,7 +812,7 @@ For example, if $SANDBOX_HOME is /home/sb/tests, the line</p>
 <p>In addition to the internal script language, you can also define perl scripts, which will be able to use the $sandbox_home global variable and to call routines defined inside test_sandbox. (see list below)
 To be identified as a Perl script, the user defined test must have the extension &quot;.sb.pl&quot;</p>
 <dl>
-<dt><strong><a name="ok_shell" class="item"><code>ok_shell()</code></a></strong></dt>
+<dt><strong><a name="ok_shell" class="item"><code>ok_shell()</code></a></strong>
 
 <dd>
 <p>The <a href="#ok_shell"><code>ok_shell</code></a> function requires a hash reference containing the following labels:
@@ -807,6 +821,8 @@ The 'expected' label is a string that you expect to find within the shell output
 If you don't expect anything, you can just say &quot;expected = OK&quot;, meaning that you will
 be satisfied with a ZERO exit code reported by the operating system.
 The 'msg' is the description of the test that is shown to you when the test runs.</p>
+</dd>
+<dd>
 <pre>
   ok_shell($hashref)
   ok_shell({
@@ -815,7 +831,8 @@ The 'msg' is the description of the test that is shown to you when the test runs
         msg      =&gt; 'sandbox creation',
         })</pre>
 </dd>
-<dt><strong><a name="ok_sql" class="item"><code>ok_sql()</code></a></strong></dt>
+</li>
+<dt><strong><a name="ok_sql" class="item"><code>ok_sql()</code></a></strong>
 
 <dd>
 <p>The <a href="#ok_sql"><code>ok_sql</code></a> function requires a hashref containing the following labels:
@@ -824,27 +841,38 @@ The 'query' is passed to the above mentioned script and the output is captured f
 The 'expected' parameter is a string that you want to find in the query output.
 The 'msg' parameter is like the one used with the ok_exec function.</p>
 </dd>
-<dt><strong><a name="get_bare_version" class="item"><code>get_bare_version()</code></a></strong></dt>
+</li>
+<dt><strong><a name="get_bare_version" class="item"><code>get_bare_version()</code></a></strong>
 
 <dd>
 <p>This function accepts one parameter, which can be either a MySQL tarball name or a version, and returns the bare version found in the input string.
 If called in list mode, it returns also a normalized version string with dots replaced by underscores.</p>
+</dd>
+<dd>
 <pre>
     my $version = get_bare_version('5.1.30'); 
     # returns '5.1.30'</pre>
+</dd>
+<dd>
 <pre>
     my $version = get_bare_version('mysql-5.1.30-OS.tar.gz'); 
     # returns '5.1.30'</pre>
+</dd>
+<dd>
 <pre>
     my ($version,$dir_name) = get_bare_version('mysql-5.1.30-OS.tar.gz'); 
     # returns ('5.1.30', '5_1_30')</pre>
 </dd>
-<dt><strong><a name="ok" class="item">ok</a></strong></dt>
+</li>
+<dt><strong><a name="ok" class="item">ok</a></strong>
 
 <dd>
 <p>This is a low level function, similar to the one provided by Test::More. You should not need to call this one directly, unless you want to fine tuning a test.</p>
+</dd>
+<dd>
 <p>See the test script t/start_restart_arguments.sb.pl as an example</p>
 </dd>
+</li>
 </dl>
 <p>
 </p>

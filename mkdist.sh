@@ -21,7 +21,9 @@ make
 make test
 if [ "$2" == "install" ] 
 then
+    echo "DOING!!"
     make install
+    echo "DONE!!"
 else
     if [  -f $HOME/workdir/new_sandbox/dists/MySQL-Sandbox-$VERSION.tar.gz ]
     then
