@@ -434,7 +434,7 @@ sub ok ($;$) {
 sub run_single_test {
     my ($ver, $version, $bare_version) = @_;
     ok_exec( {
-            command  => "make_sandbox $ver --no_confirm", 
+            command  => "make_sandbox $ver -- --no_confirm", 
             expected => 'sandbox server started',
             msg      => "single SB ($bare_version) started"
             });
@@ -754,7 +754,7 @@ sub run_tuning_test {
          return;
     }
 
-    ok_exec({ command  => "make_sandbox $ver --no_confirm -c skip-innodb -c sql_mode=strict_all_tables",
+    ok_exec({ command  => "make_sandbox $ver -- --no_confirm -c skip-innodb -c sql_mode=strict_all_tables",
               expected => 'sandbox server started',
               msg      => 'tuning server created',
             });
@@ -829,7 +829,7 @@ sub run_smoke_test {
     my $previous_mysqld = get_number_of_processes('mysqld');
     my $previous_mysqld_safe = get_number_of_processes('mysqld_safe');
 
-    ok_exec({ command => "make_sandbox $ver --no_confirm",
+    ok_exec({ command => "make_sandbox $ver -- --no_confirm",
               expected => 'sandbox server started',
               msg      => "single SB ($bare_version) started"
             });
@@ -1043,14 +1043,14 @@ sub run_sbtool_test {
     # preparing sandboxes
     #
     my $first_sandbox = get_exec_result(
-            "make_sandbox $ver --no_confirm --sandbox_port=5100 --sandbox_directory=first_sb", 
+            "make_sandbox $ver -- --no_confirm --sandbox_port=5100 --sandbox_directory=first_sb", 
             $verbose);
     ok( $first_sandbox =~ /sandbox server started/,
             "first SB (5100) started" );
 
 
     my $second_sandbox = get_exec_result(
-            "make_sandbox $ver --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb", 
+            "make_sandbox $ver -- --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb", 
             $verbose);
     ok( $second_sandbox =~ /sandbox server started/,
             "second SB (5200) started" );
@@ -1149,7 +1149,7 @@ sub run_sbtool_test {
     ok($delete_sandbox =~ /has been removed/, 'delete active sandbox');
 
     $second_sandbox = get_exec_result(
-            "make_sandbox $ver --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb", 
+            "make_sandbox $ver -- --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb", 
             $verbose);
     ok( $second_sandbox =~ /sandbox server started/,
             "second SB (5200) started" );

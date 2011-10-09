@@ -4,7 +4,7 @@
 # single server
 #
 shell:
-command     = make_sandbox $TEST_VERSION --no_confirm --sandbox_directory=single_server
+command     = make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=single_server
 expected    = sandbox server started
 msg         = server 1 started
 

@@ -8,7 +8,7 @@ my $TEST_VERSION = $ENV{TEST_VERSION} || $ver;
 my ($bare_version, $version) = get_bare_version ($ver);
 my @test_sb = (
     { 
-        command     => "make_sandbox $TEST_VERSION --no_confirm --sandbox_directory=single_server",
+        command     => "make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=single_server",
         expected    => "sandbox server started",
         msg         => "server 1 started",
         dir_name    => 'single_server',

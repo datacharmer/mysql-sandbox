@@ -142,7 +142,7 @@ for my $ver_counter (0 .. $#versions) {
     print "installing node $node\n";
     my $install_node = '';
     my $install_node_command = qq(
-     make_sandbox $versions[$ver_counter] \\
+     make_sandbox $versions[$ver_counter] -- \\
      --datadir_from=script \\
      --upper_directory=$group_directory \\
      --sandbox_directory=node$node \\

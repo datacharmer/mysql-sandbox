@@ -22,35 +22,39 @@ use warnings;
 # use Data::Dumper;
 use English qw( -no_match_vars ); 
 use MySQL::Sandbox qw( runs_as_root sbinstr);
+use Getopt::Long ;
  
-#my $install_dir = $PROGRAM_NAME;
-#$install_dir =~ s{/\w+(\.pl)?$}{};
-
-#unless ( $ENV{SANDBOX_HOME} ) { 
-#    $ENV{SANDBOX_HOME} = "$ENV{HOME}/sandboxes";
-#}
-
-# eval "use lib q($install_dir)";
-
-my $msb = MySQL::Sandbox->new();
-
-runs_as_root();
-
-my $where_to_install = shift
-    or die "syntax $PROGRAM_NAME {VERSION|tarball_full_name} [options]\n";
-
-my %options;
-if ( $ARGV[0] && ($ARGV[0] eq '--export_binaries')) {
-    shift;
-    $options{export_binaries}++;
-}
-
 
 my $default_binary_base = $ENV{SANDBOX_BINARY} || ($ENV{HOME} . '/opt/mysql');
 unless ( -d  $default_binary_base ) {
     $default_binary_base = '/opt/mysql';
 }
 my $binary_base = $ENV{'BINARY_BASE'} || $default_binary_base;
+
+my @prefixes = ('mysql', 'percona', 'mariadb');
+my $default_prefix= 'mysql';
+my %options = (
+   export_binaries => 0,
+   add_prefix	   => '', 
+
+);
+
+my $msb = MySQL::Sandbox->new();
+
+runs_as_root();
+
+
+GetOptions(
+    export_binaries => \$options{export_binaries},
+    'add_prefix=s'  => \$options{add_prefix},
+    'help'          => \$options{help},
+) or get_help('+++');
+
+get_help() if $options{help};
+
+my $where_to_install = shift
+    or get_help("Binary tarball or expanded tarball directory needed\n");
+
 
 my $version;
 
@@ -68,28 +72,31 @@ if ( $where_to_install =~ m{\.\./}) # it is a tricky path
 
 # explicit current directory relative path 
 if  ( ((-f $where_to_install)             # the file exists
-      and ( $where_to_install =~ m{^\./}) # it identifiues the current directory
+      and ( $where_to_install =~ m{^\./}) # it identifies the current directory
       )
     ) {
     $where_to_install =~ s[^\./][$ENV{PWD}/] ;
-    unless ( -f $where_to_install ) {
+    unless ( ( -f $where_to_install) or (-d $where_to_install) ) {
         die "file not found in current directory ($where_to_install)\n";
     }
 }
 
 # relative path 
-if  ( ((-f $where_to_install)             # the file exists
+if  ( (( (-f $where_to_install)  or ( -d $where_to_install))  # the file exists
       and ( $where_to_install !~ m{^/})   # it is not an absolute path 
       )
     ) {
     $where_to_install = $ENV{PWD} . '/' . $where_to_install;
-    unless ( -f $where_to_install ) {
+    unless ( ( -f $where_to_install) or (-d $where_to_install) ) {
         die "file not found in current directory ($where_to_install)\n";
     }
 }
 
+my $prefix_regex = join('|', @prefixes );
+$prefix_regex = qr/(?:$prefix_regex)/i;
+
 # current directory
-if  ( $where_to_install =~ m{^mysql\D+\d+\.\d+\.\d+.*\.tar\.gz$ }x ) { 
+if  ( $where_to_install =~ m{^$prefix_regex\D+\d+\.\d+\.\d+.*\.tar\.gz$ }x ) { 
     $where_to_install = $ENV{PWD} . '/' . $where_to_install;
     unless ( -f $where_to_install ) {
         die "file not found in current directory ($where_to_install)\n";
@@ -101,6 +108,7 @@ if  ( $where_to_install =~ /^(\d+)\.(\d+)\.(\d+)/x ) {
     ($major, $minor, $release) =  ($1, $2, $3);
     $version = $where_to_install;
 }
+
 # absolute version directory
 elsif  ( $where_to_install =~ m{^(/.+)/(\d+)\.(\d+)\.(\d+)$}x ) { 
     ($binary_base, $major, $minor, $release) =  ($1, $2, $3, $4);
@@ -109,8 +117,19 @@ elsif  ( $where_to_install =~ m{^(/.+)/(\d+)\.(\d+)\.(\d+)$}x ) {
         die "directory not found ($where_to_install)\n";
     }
 }
+
+# absolute version directory with prefix
+elsif  ( $where_to_install =~ m{^(/.+)/.*(\d)\.(\d+)\.(\d+)$}x ) { 
+    ($binary_base, $major, $minor, $release) =  ($1, $2, $3, $4);
+    # print ">>$binary_base, $major, $minor, $release\n"; exit;
+    $version = "$major.$minor.$release";
+    unless ( -d $where_to_install ) {
+        die "directory not found ($where_to_install)\n";
+    }
+}
+
 # full path to tarball
-elsif  ( $where_to_install =~ m{^(/.+)/(mysql\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.gz$ }x ) { 
+elsif  ( $where_to_install =~ m{^(/.+)/($prefix_regex\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.gz$ }x ) { 
     my $new_dir;
     unless ( -f $where_to_install ) {
         die "tarball file not found ($where_to_install)\n";
@@ -119,7 +138,7 @@ elsif  ( $where_to_install =~ m{^(/.+)/(mysql\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.
     print "unpacking $where_to_install\n";
     $version = "$major.$minor.$release";
     my $tar_executable='no_such_program';
-    my $full_new_dir = "$binary_base/$version";
+    my $full_new_dir = "$binary_base/$options{add_prefix}$version";
     if ( -d $full_new_dir ) {
         $where_to_install = $full_new_dir;
     }
@@ -163,12 +182,12 @@ elsif  ( $where_to_install =~ m{^(/.+)/(mysql\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.
         if ($result) {
             die "error unpacking $tar_file ($!)\n";
         }
-        my $new_name = $version;
+        my $new_name = $options{add_prefix} . $version;
         if ($options{export_binaries} && ( -d $default_binary_base)) {
             $new_name = "$default_binary_base/$version";
             if ( -d $new_name) {
                 warn "can't export to $binary_base. Directory $version already exists!\n";
-                $new_name = $version;
+                $new_name = $options{add_prefix}  . $version;
             }
             else {
                 $full_new_dir = $new_name;
@@ -203,9 +222,8 @@ elsif ($where_to_install =~ m{^/.*(?<!\.tar\.gz)$} ) {
 }
 # nothing was recognized. Print help
 else {
-    get_help();
+    get_help("Failed to parse arguments\n");
 }
-
 
 sub get_help {
     my ($msg) = @_;
@@ -218,11 +236,12 @@ sub get_help {
               '*' x $len, "\n";
     }
     print <<SYNTAX;
-usage: ./make_sandbox version [options] {VERSION|tarball_full_name}.
+usage: ./make_sandbox version [options] {VERSION|tarball_full_name} -- [more options]
 
   --export_binaries    exports the new binary to $binary_base
+  --add_prefix=NAME    add given prefix to renamed tarball directory
 
-Additionally, you can pass any option accepted by "low_level_make_sandbox"
+Additionally, you can pass any option accepted by "low_level_make_sandbox" after '--'
 SYNTAX
 
     print "You should provide either a version from '$binary_base' \n",
@@ -263,6 +282,7 @@ if ($port < 1024) {
 if ( -d "$binary_base/$bare_basedir" ) {
 
     my $text_version = $version;
+    # $text_version =~ tr/./_/d; ## no critic
     $text_version =~ s/\./_/g; 
     my @install_options = (
                 "--basedir=$binary_base/$bare_basedir", 
@@ -285,5 +305,4 @@ if ( -d "$binary_base/$bare_basedir" ) {
 else {
     die "there is no $bare_basedir directory under $binary_base\n";
 }
-
 

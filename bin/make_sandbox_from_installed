@@ -170,4 +170,4 @@ for my $command (@commands) {
 }
 
 $ENV{SANDBOX_BINARY} = $current_dir;
-system "make_sandbox $new_version @ARGV";
+system "make_sandbox $new_version -- @ARGV";
