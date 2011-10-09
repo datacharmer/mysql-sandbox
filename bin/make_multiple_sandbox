@@ -169,7 +169,7 @@ for my $node (1 .. $msb->{options}{how_many_nodes}) {
             . ' '
             . '-c report-host=SBnode' . $node 
             . ' '
-            . "-c report-port=$master_node_port" ;
+            . "-c report-port=$node_port" ;
     } 
     $additional_node_options .=  q{ };
     my $node_id = 100 + $node;

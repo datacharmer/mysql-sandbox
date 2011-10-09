@@ -4,7 +4,7 @@
 <head>
 <title>MySQL::Sandbox::Recipes - A cookbook for MySQL Sandbox</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<link rev="made" href="mailto:_postfix@neige.apple.com" />
+<link rev="made" href="mailto:_mdnsresponder@fifth.apple.com" />
 </head>
 
 <body style="background-color: white">
@@ -117,6 +117,7 @@ A presentation on this matter is available at Slideshare
 <p>This is so easy, that I am almost ashamed to show it.
 Anyway, here goes.</p>
 <pre>
+  $ sudo su -
   # cpan MySQL::Sandbox</pre>
 <p>
 </p>
@@ -131,8 +132,8 @@ to install in $HOME/usr/local.</p>
 <li>
 <p>Set the variables that you will need</p>
 <pre>
-    mkdir $HOME/usr/local
-    export PATH=$HOME/usr/local/bin
+    mkdir -p $HOME/usr/local
+    export PATH=$HOME/usr/local/bin:$PATH
     export PERL5LIB=$HOME/usr/local/lib/perl5/site_perl/5.8.8</pre>
 </li>
 <li>
@@ -177,38 +178,26 @@ a repository for such binaries, under $SANDBOX_BINARY, which by default
 is $HOME/opt/mysql
 If you have such a directory, you have two choices.</p>
 <dl>
-<dt><strong><a name="manually" class="item">manually</a></strong>
+<dt><strong><a name="manually" class="item">manually</a></strong></dt>
 
 <dd>
 <p>Expand the tarball, and move it under $HOME/opt/mysql (or set $SANDBOX_BINARY to a path that suits you better). Name the directory with the version number. For example:</p>
-</dd>
-<dd>
 <pre>
    cd $HOME/opt/mysql
    gunzip -c /path/to/mysql-5.1.34-osx10.5-x86.tar.gz | tar -xf -
    mv mysql-5.1.34-osx10.5-x86 5.1.34</pre>
-</dd>
-<dd>
 <p>Now, next time you want to install a sandbox using 5.1.34, all you need to do is say</p>
-</dd>
-<dd>
 <pre>
   make_sandbox 5.1.34</pre>
 </dd>
-</li>
-<dt><strong><a name="automatically" class="item">automatically</a></strong>
+<dt><strong><a name="automatically" class="item">automatically</a></strong></dt>
 
 <dd>
 <p>If you want to combine installation and centralization of the binaries in one go, you can:</p>
-</dd>
-<dd>
 <pre>
     make_sandbox /path/to/mysql-5.1.34-osx10.5-x86.tar.gz --export_binaries</pre>
-</dd>
-<dd>
 <p>The expanded tarball is copied to the $SANDBOX_BINARY path, and you can refer to the version number only for future installations.</p>
 </dd>
-</li>
 </dl>
 <p>
 </p>
