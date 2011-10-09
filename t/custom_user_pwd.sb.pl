@@ -11,7 +11,7 @@ for my $user (@users) {
 my $custom_user_name= $user;
 my $custom_password= 'newpassword';
 ok_exec( {
-    command   => "make_sandbox $TEST_VERSION "
+    command   => "make_sandbox $TEST_VERSION  -- "
                  ." --no_confirm "
                  ." --sandbox_directory=$dir_name " 
                  ." --db_user=$custom_user_name "

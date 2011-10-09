@@ -205,7 +205,7 @@ sub install_and_restart {
     $uversion =~ s/\./_/g;
     my $run_installer = 1;
     if ($application eq 'single') {
-        $cmd =  'make_sandbox ' . ($tarball || $version) . ' --no_confirm';
+        $cmd =  'make_sandbox ' . ($tarball || $version) . ' -- --no_confirm';
         if ( -d "$ENV{SANDBOX_HOME}/msb_$uversion") {
             $run_installer = 0;
         }

@@ -23,7 +23,7 @@ my %plugin_version = (
 my @test_sb = (
     { 
         type        => 'exec',
-        command     => "make_sandbox $TEST_VERSION --no_confirm "
+        command     => "make_sandbox $TEST_VERSION -- --no_confirm "
                         . "--sandbox_directory=single_server",
         expected    => "sandbox server started",
         msg         => "single server started",

@@ -1,3 +1,12 @@
+3.0.19	09-Oct-2011
+	- INCOMPATIBLE CHANGE: make_sandbox now requires '--' before adding
+	options supported by low_level_make_sandbox
+	- INCOMPATIBLE CHANGE: the option --export_binaries for make_sandbox must
+	be inserted BEFORE the tarball name
+	- make_sandbox now recognizes Percona and MariaDB binaries 
+	- make_sandbox accepts the option --add_prefix=NAME, which will be added
+	to the version number of the rename expanded tarball. (e.g.
+	--add_prefix=yell mysql-5.1.8-linux.tar.gz will create yell5.1.58)
 3.0.18	08-Oct-2011
 	- fixed CPAN Ticket 70470 MySQL::Sandbox - make_sandbox warns with Perl 5.14 and 5.14.1
 	- Fixed report-port in replication. The port used was the master's, but it

@@ -176,7 +176,7 @@ for my $node (1 .. $msb->{options}{how_many_nodes}) {
     print "installing node $node\n";
     my $install_node = '';
     my $install_node_command = qq(
-    make_sandbox $msb->{options}{server_version} \\
+    make_sandbox $msb->{options}{server_version} -- \\
     --datadir_from=script \\
     --upper_directory=$group_directory \\
     --sandbox_directory=node$node \\

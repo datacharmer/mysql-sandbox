@@ -186,7 +186,7 @@ $additional_master_options .=  q{ };
 $additional_slave_options  .=  q{ };
 my $install_master='';
 my $install_master_command  = qq(
-   make_sandbox $msb->{options}{server_version} \\
+   make_sandbox $msb->{options}{server_version} -- \\
     --datadir_from=script \\
     --no_confirm \\
     --no_check_port \\
@@ -222,7 +222,7 @@ for my $slave (1 .. $msb->{options}{how_many_slaves}) {
    my $slave_id = 100 + $slave;
    print "installing slave $slave\n";
    my $install_slave_command = qq(
-    make_sandbox $msb->{options}{server_version} \\
+    make_sandbox $msb->{options}{server_version} -- \\
     --datadir_from=script \\
     --upper_directory=$replication_directory \\
     --sandbox_directory=node$slave \\

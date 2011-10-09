@@ -16,7 +16,7 @@
 # The 'msg' is the description of the test
 # that is shown to you when the test runs.
 shell:
-command  = make_sandbox $TEST_VERSION --no_confirm --sandbox_directory=msb_XXXX
+command  = make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=msb_XXXX
 expected = sandbox server started
 msg      = sandbox creation
 

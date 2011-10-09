@@ -3,7 +3,7 @@
 ###########################################
 
 shell:
-command  = make_sandbox $TEST_VERSION --no_confirm --sandbox_directory=msb_XXXX
+command  = make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=msb_XXXX
 expected = sandbox server started
 msg      = sandbox creation
 
@@ -226,7 +226,7 @@ msg      = replication sandbox removed
 #################################################
 
 shell:
-command  = make_sandbox $TEST_VERSION --no_confirm --sandbox_directory=msb_XXXX --remote_access=%
+command  = make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=msb_XXXX --remote_access=%
 expected = sandbox server started
 msg      = sandbox creation
 

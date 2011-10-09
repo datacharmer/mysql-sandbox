@@ -3,12 +3,12 @@
 #
 
 shell:
-command     = make_sandbox 5.0.86 --sandbox_port=8000 --no_confirm
+command     = make_sandbox 5.0.86 -- --sandbox_port=8000 --no_confirm
 expected    = sandbox server started
 msg         = server 1 started
 
 shell:
-command     = make_sandbox 5.0.86 --sandbox_port=8000 --check_port --no_confirm
+command     = make_sandbox 5.0.86 -- --sandbox_port=8000 --check_port --no_confirm
 expected    = sandbox server started
 msg         = server 2 started
 
