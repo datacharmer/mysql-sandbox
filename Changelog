@@ -1,3 +1,7 @@
+3.0.18	08-Oct-2011
+	- fixed CPAN Ticket 70470 MySQL::Sandbox - make_sandbox warns with Perl 5.14 and 5.14.1
+	- Fixed report-port in replication. The port used was the master's, but it
+	should be the slave's
 3.0.17	07-Jan-2011
 	- incompatible change: default mask for msandbox user is now '127.%'
 	instead of '%'. You can resume the old mask with --remote_access='%'

@@ -297,7 +297,7 @@ sub make_tree {
 
         unless ($HAS_REPORT) {
           system qq(  echo "report-host=node$mid_node" >> $dir/node$mid_node/my.sandbox.cnf) ;
-          system qq(  echo "report-port=$N1PORT" >> $dir/node$mid_node/my.sandbox.cnf) ;
+          system qq(  echo "report-port=$MID_NODE_PORT" >> $dir/node$mid_node/my.sandbox.cnf) ;
         } 
         unless ( $HAS_UPDATES) {
             print  "enabling node $mid_node to relay updates\n";
@@ -316,7 +316,7 @@ sub make_tree {
             unless ( -e  $LEAF_NODE_INFO->{opt}{socket}) {
                 system "$dir/node$leaf_node/start";
             }
-            check_report($dir,$leaf_node, 1, $MID_NODE_PORT); 
+            check_report($dir,$leaf_node, 1, $MID_NODE_PORT, $LN_PORT); 
             system qq($dir/n$leaf_node -e "stop slave");
             system qq($dir/n$leaf_node -e "$CHANGE_MASTER_Q $MID_NODE_PORT");
             system qq($dir/n$leaf_node -e "start slave");
@@ -336,11 +336,11 @@ sub make_tree {
 }
 
 sub check_report {
-    my ($dir, $node, $restart, $master_port) = @_;
+    my ($dir, $node, $restart, $master_port, $this_node_port) = @_;
     my $HAS_REPORT=`grep "report-host" $dir/node$node/my.sandbox.cnf`;
     unless ($HAS_REPORT) {
         system qq(echo "report-host=node$node" >> $dir/node$node/my.sandbox.cnf);
-        system qq(echo "report-port=$master_port" >> $dir/node$node/my.sandbox.cnf);
+        system qq(echo "report-port=$this_node_port" >> $dir/node$node/my.sandbox.cnf);
         if ($restart) {
             system qq($dir/node$node/restart);
         }

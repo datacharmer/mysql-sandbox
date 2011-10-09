@@ -235,7 +235,7 @@ for my $slave (1 .. $msb->{options}{how_many_slaves}) {
     --remote_access=$msb->{options}{remote_access} \\
     -c server-id=$slave_id \\
     -c report-host=SBslave$slave \\
-    -c report-port=$replication_port \\
+    -c report-port=$slave_port \\
     -c log-bin=mysql-bin $additional_slave_options
     );
     my $install_slave ='';

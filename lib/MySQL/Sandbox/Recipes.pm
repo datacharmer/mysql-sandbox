@@ -1,6 +1,6 @@
 package MySQL::Sandbox::Recipes;
 
-our $VERSION="3.0.17";
+our $VERSION="3.0.18";
 
 1;
 __END__
@@ -27,6 +27,7 @@ L<http://www.slideshare.net/datacharmer/mysql-sandbox-3>
 This is so easy, that I am almost ashamed to show it.
 Anyway, here goes.
 
+  $ sudo su -
   # cpan MySQL::Sandbox
 
 =head2 the ambitious way - as unprivileged user
@@ -45,8 +46,8 @@ Download MySQL Sandbox tarball from cpan
 
 Set the variables that you will need
 
-    mkdir $HOME/usr/local
-    export PATH=$HOME/usr/local/bin
+    mkdir -p $HOME/usr/local
+    export PATH=$HOME/usr/local/bin:$PATH
     export PERL5LIB=$HOME/usr/local/lib/perl5/site_perl/5.8.8
 
 =item 3 

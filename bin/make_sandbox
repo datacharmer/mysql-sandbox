@@ -263,7 +263,7 @@ if ($port < 1024) {
 if ( -d "$binary_base/$bare_basedir" ) {
 
     my $text_version = $version;
-    $text_version =~ tr/./_/d; ## no critic
+    $text_version =~ s/\./_/g; 
     my @install_options = (
                 "--basedir=$binary_base/$bare_basedir", 
                 "--sandbox_directory=msb_$text_version",

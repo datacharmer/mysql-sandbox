@@ -347,7 +347,8 @@ if ( $msb->{options}{'sandbox_directory'} ) {
     }
     unless ( $msb->{options}{ 'no_ver_after_name' } ) {
         my $ver = $msb->{options}{ 'install_version' };
-        $ver =~ tr/./_/d; ## no critic
+        # $ver =~ tr/./_/d; ## no critic
+        $ver =~ s/\./_/g; 
         unless ($msb->{options}{ 'sandbox_directory'} =~ /$ver$/) {
             $msb->{options}{'sandbox_directory'} .= $ver;
             $msb->{options}{ 'no_ver_after_name' } = 1; # 1.6 it will prevent 
@@ -505,6 +506,9 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
             $msb->{options}{operating_system_user},
             $msb->{options}{basedir},
             $sandbox_directory;
+        if ($DEBUG) {
+            print "$cmd $additional_options\n";
+        }
         my $result = qx($cmd $additional_options);
         if ($CHILD_ERROR) {
             die "error while creating grant tables\n$result\n";
