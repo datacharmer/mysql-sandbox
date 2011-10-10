@@ -37,6 +37,7 @@ t/15_user_privileges.t
 t/user_privileges.sb
 t/group_port_checking.sb
 t/single_port_checking.sb
+t/single_port_checking.sb.pl
 t/check_single_server.sb
 t/check_replication.sb
 t/start_restart_arguments.sb

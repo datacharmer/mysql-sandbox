@@ -1,6 +1,7 @@
 3.0.20	10-Oct-2011
 	- Fixed bug in make_sandbox. "--add_prefix" did not work in combination
 	with "--export_binaries"
+	- changed port checking tests to not depend on a specific MySQL version
 3.0.19	09-Oct-2011
 	- INCOMPATIBLE CHANGE: make_sandbox now requires '--' before adding
 	options supported by low_level_make_sandbox
