@@ -690,7 +690,7 @@ TESTING
     to you when the test runs.
 
       shell:
-      command  = make_sandbox 5.1.30 --no_confirm
+      command  = make_sandbox 5.1.30 -- --no_confirm
       expected = sandbox server started
       msg      = sandbox creation
 

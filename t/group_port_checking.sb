@@ -2,6 +2,8 @@
 # test for replication and group sandbox port checking
 #
 
+# DEPRECATED : see group_port_checking.sb.pl
+
 shell:
 command     = make_multiple_sandbox --sandbox_base_port=8000 5.0.86
 expected    = group directory installed

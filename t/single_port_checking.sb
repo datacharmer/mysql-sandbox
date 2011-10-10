@@ -2,6 +2,9 @@
 # test for replication and group sandbox port checking
 #
 
+#
+#  DEPRECATED : replaced by single_port_checking.sb.pl
+#
 shell:
 command     = make_sandbox 5.0.86 -- --sandbox_port=8000 --no_confirm
 expected    = sandbox server started
