@@ -1245,7 +1245,7 @@ be satisfied with a ZERO exit code reported by the operating system.
 The 'msg' is the description of the test that is shown to you when the test runs.
 
   shell:
-  command  = make_sandbox 5.1.30 --no_confirm
+  command  = make_sandbox 5.1.30 -- --no_confirm
   expected = sandbox server started
   msg      = sandbox creation
 
