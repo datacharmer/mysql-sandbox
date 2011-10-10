@@ -1,3 +1,5 @@
+3.0.21	10-Oct-2011
+	- Added test to MANIFEST (and to tarball). Forgotten in previous version
 3.0.20	10-Oct-2011
 	- Fixed bug in make_sandbox. "--add_prefix" did not work in combination
 	with "--export_binaries"
