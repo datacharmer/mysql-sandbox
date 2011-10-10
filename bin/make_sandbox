@@ -184,7 +184,7 @@ elsif  ( $where_to_install =~ m{^(/.+)/($prefix_regex\D+(\d+)\.(\d+)\.(\d+)[^/]*
         }
         my $new_name = $options{add_prefix} . $version;
         if ($options{export_binaries} && ( -d $default_binary_base)) {
-            $new_name = "$default_binary_base/$version";
+            $new_name = "$default_binary_base/$options{add_prefix}$version";
             if ( -d $new_name) {
                 warn "can't export to $binary_base. Directory $version already exists!\n";
                 $new_name = $options{add_prefix}  . $version;

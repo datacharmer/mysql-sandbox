@@ -116,7 +116,7 @@ Now, next time you want to install a sandbox using 5.1.34, all you need to do is
 
 If you want to combine installation and centralization of the binaries in one go, you can:
 
-    make_sandbox /path/to/mysql-5.1.34-osx10.5-x86.tar.gz --export_binaries
+    make_sandbox --export_binaries /path/to/mysql-5.1.34-osx10.5-x86.tar.gz 
 
 The expanded tarball is copied to the $SANDBOX_BINARY path, and you can refer to the version number only for future installations.
 
@@ -180,14 +180,14 @@ You can pass any of the options listed to C<make_sandbox>. In particular, since 
   make_sandbox 5.1.34
   # installs on $SANDBOX_HOME/msb_5_1_34 with port 5134
 
-  make_sandbox 5.1.34 --sandbox_port=7800 --sandbox_directory=mickeymouse
+  make_sandbox 5.1.34 -- --sandbox_port=7800 --sandbox_directory=mickeymouse
   # installs on $SANDBOX_HOME/mickeymouse with port 7800
 
 See the next recipe for an automatic way of getting a different port and directory.
 
 =head2 Creating a single sandbox with automatic port checking
 
-  make_sandbox 5.1.34 --check_port
+  make_sandbox 5.1.34 -- --check_port
 
 This option will check if port 5134 is used. If it is, it will check the next available port, until it finds a free one. 
 In the previous statement context, 'free' means not only 'in use', but also allocated by another sandbox that is currently not running.
@@ -196,13 +196,13 @@ Notice that this option is disabled when you use a group sandbox (replication or
 
 =head2 Creating a single sandbox with a specific option file
 
-  make_sandbox 5.1.34 --my_file=large
+  make_sandbox 5.1.34 -- --my_file=large
 
 This option installs the option file template my-large.cnf, which ships with every MySQL release.
 Similarly, you can choose 'small' or 'huge' to load the appropriate template.
 If you have your favorite option file, you can specify the full path to it
 
-  make_sandbox 5.1.34 --my_file=/path/to/my_smart.cnf
+  make_sandbox 5.1.34 -- --my_file=/path/to/my_smart.cnf
 
 In all cases, the sandbox installer skips all the options that are necessary to keep the sandbox isolated and efficient (user, port,socket,datadir,basedir).
 
@@ -573,7 +573,7 @@ When you need to get rid of the sandbox contents quickly, you can 'unpreserve' i
 The default $SANDBOX_HOME is $HOME/sandboxes, which is suitable for most purposes. If your $HOME is not fit for this task (e.g. if it is located in a NFS partition), you may set a different one on the command line or in your shell startup file.
 
    export SANDBOX_HOME=/my/alternative/directory
-   make_sandbox 5.1.34 --check_port
+   make_sandbox 5.1.34 -- --check_port
 
 The above procedure is also useful when you, for any reasons, want a completely different set of sandboxes for a new batch of tests, and you want to be able to manage all of them at once. To avoid conflicts, you should always use the --check_port option.
 
