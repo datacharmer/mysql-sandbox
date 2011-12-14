@@ -1,3 +1,24 @@
+3.0.23	13-Dec-2011
+    - fixed bug in prefixed version names (e.g.: now you can use make_sandbox
+	ps5.1.57 or mp5.2.10)
+	- Added arguments to deal with node options in replication and multiple
+	sandbox. --node_options, --slave_options, --master_options,
+	--one_slave_options, --one_node_options
+	- added --high_performance option that adds the following features to the
+	configuration file:
+        innodb-thread-concurrency=0
+        sync_binlog=0
+        innodb-log-buffer-size=50M
+        innodb-additional-mem-pool-size=100M
+        max-connections=350
+        max_allowed_packet=48M
+        innodb_buffer_pool_size=512M
+        innodb-log-file-size=50M
+        innodb-flush-method=O_DIRECT
+ 
+3.0.22	26-Oct-2011
+	- Add support for directories named after a prefixed version (my5.1.56,
+	ps5.1.56, giuseppe_5.1.56, etc)
 3.0.21	10-Oct-2011
 	- Added test to MANIFEST (and to tarball). Forgotten in previous version
 3.0.20	10-Oct-2011

@@ -63,6 +63,27 @@ unless ($msb->{options}{server_version}) {
     @ARGV > 0 or $msb->get_help('server version required');
 }
 
+if ($msb->{options}{node_options})
+{
+    $ENV{NODE_OPTIONS} = $msb->{options}{node_options};
+}
+
+if ($msb->{options}{one_node_options})
+{
+    for my $node_opt (@{ $msb->{options}{one_node_options}} )
+    {
+        if ($node_opt =~ /^(\d+):\s*(\S.+)/)
+        {
+            $ENV{"NODE${1}_OPTIONS"} = $2;
+        }
+        else
+        {
+            get_help("invalid format for --one_node_option ($node_opt)");    
+        }
+    }
+}
+
+
 my $replication_port = 0;
 my @base_version ;
 my @dashed_version ;
@@ -140,6 +161,7 @@ for my $ver_counter (0 .. $#versions) {
     my $node = $ver_counter + 1;
     my $node_port = $replication_port+ $node;
     print "installing node $node\n";
+    my $this_node_options = $ENV{"NODE${node}_OPTIONS"} || '';
     my $install_node = '';
     my $install_node_command = qq(
      make_sandbox $versions[$ver_counter] -- \\
