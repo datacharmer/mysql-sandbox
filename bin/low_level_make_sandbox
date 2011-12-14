@@ -99,12 +99,31 @@ for my $opt (keys %{$msb->{options}} ) {
 $msb->{options}{'my_clause'} = [] unless $msb->{options}{'my_clause'} ;
 # print Dumper($msb->{options}{'my_clause'});exit;
 
+if ( $msb->{options}{'high_performance'})
+{
+    my @perf_clauses = ( 
+        'innodb-thread-concurrency=0',
+        'sync_binlog=0',
+        'innodb-log-buffer-size=50M',
+        'innodb-additional-mem-pool-size=50M',
+        'max-connections=350',
+        'max_allowed_packet=48M',
+        'innodb_buffer_pool_size=512M',
+        'innodb-log-file-size=50M',
+        'innodb-flush-method=O_DIRECT'
+    );
+
+    for my $clause (@perf_clauses)
+    { 
+        unshift @{ $msb->{options}{'my_clause'}},  $clause; 
+    }
+}
+
+
 if ($msb->{options}{'interactive'}) {
     $msb->{options}{no_confirm} = 0;
     select_interactively() if $msb->{options}{'interactive'};
 }
-
-$msb->{options}{'my_clause'} = [] unless $msb->{options}{'my_clause'} ;
 
 $DEBUG = 1 if $msb->{options}{'verbose'};
 $msb->{options}{'verbose'} = 1 if $DEBUG;

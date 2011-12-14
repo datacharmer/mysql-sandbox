@@ -71,6 +71,50 @@ unless ($msb->{options}{server_version}) {
         or $msb->get_help('server version required');
 }
 
+if ($msb->{options}{master_options})
+{
+    $ENV{MASTER_OPTIONS} = $msb->{options}{master_options};
+}
+if ($msb->{options}{node_options})
+{
+    $ENV{NODE_OPTIONS} = $msb->{options}{node_options};
+}
+if ($msb->{options}{slave_options})
+{
+    $ENV{SLAVE_OPTIONS} = $msb->{options}{slave_options};
+}
+
+
+if ($msb->{options}{one_node_options})
+{
+    for my $node_opt (@{ $msb->{options}{one_node_options}} )
+    {
+        if ($node_opt =~ /^(\d+):\s*(\S.+)/)
+        {
+            $ENV{"NODE${1}_OPTIONS"} = $2;
+        }
+        else
+        {
+            get_help("invalid format for --one_node_option ($node_opt)");    
+        }
+    }
+}
+if ($msb->{options}{one_slave_options})
+{
+    for my $node_opt (@{ $msb->{options}{one_slave_options}} )
+    {
+        if ($node_opt =~ /^(\d+):\s*(\S.+)/)
+        {
+            $ENV{"SLAVE${1}_OPTIONS"} = $2;
+        }
+        else
+        {
+            get_help("invalid format for --one_slave_option ($node_opt)");    
+        }
+    }
+}
+
+
 for my $opt (qw(repl_user repl_password remote_access)) {
     if (defined $msb->{options}{$opt}) {
         $MySQL::Sandbox::default_users{$opt} = $msb->{options}{$opt};
@@ -201,7 +245,7 @@ my $install_master_command  = qq(
     -c log-bin=mysql-bin \\
     -c server-id=1 $additional_master_options
     );
-    if ($msb->{options}{interactive} 
+if ($msb->{options}{interactive} 
        or ($additional_master_options =~ /\binteractive\b/)) {
     my $result = system($install_master_command);
 }
@@ -221,6 +265,7 @@ for my $slave (1 .. $msb->{options}{how_many_slaves}) {
    my $slave_port = $replication_port+ $slave;
    my $slave_id = 100 + $slave;
    print "installing slave $slave\n";
+   my $this_slave_options = $ENV{"SLAVE${slave}_OPTIONS"} || '';
    my $install_slave_command = qq(
     make_sandbox $msb->{options}{server_version} -- \\
     --datadir_from=script \\
@@ -236,7 +281,7 @@ for my $slave (1 .. $msb->{options}{how_many_slaves}) {
     -c server-id=$slave_id \\
     -c report-host=SBslave$slave \\
     -c report-port=$slave_port \\
-    -c log-bin=mysql-bin $additional_slave_options
+    -c log-bin=mysql-bin $additional_slave_options $this_slave_options
     );
     my $install_slave ='';
     if ($msb->{options}{interactive} 
