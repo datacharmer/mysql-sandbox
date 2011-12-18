@@ -47,4 +47,5 @@ t/replication_parameters.sb.pl
 t/custom_user_pwd.sb.pl
 t/innodb_plugin_install.sb.pl
 t/semi_synch_plugin_install.sb.pl
-
+t/16_replication_options.t
+t/replication_options.sb.pl

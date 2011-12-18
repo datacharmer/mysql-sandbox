@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.23";
+our $VERSION="3.0.24";
 
 our @MANIFEST = (
 'clear.sh',
@@ -246,10 +246,29 @@ my %parse_options_low_level_make_sandbox = (
                                             'it may be used several times',
                                          ]
                             },
-    high_performance      => {
+    master            => {
+                                value => 0,      
+                                parse => 'master', 
+                                so    => 124,
+                                help  => [
+                                            'configures the server as a master (enables binlog and sets server ID)'
+                                         ]
+                            },
+    slaveof           => {
+                                value => undef,      
+                                parse => 'slaveof=s', 
+                                so    => 125,
+                                help  => [
+                                            'Configures the server as a slave of another sandbox ',
+                                            'Requires options for CHANGE MASTER TO, (at least master_port).',
+                                            'If options other than master_port are provided, they will override the defaults',
+                                            'and it will be possible to set a slave for a non-sandbox server'
+                                         ]
+                            },
+      high_performance      => {
                                 value => 0,      
                                 parse => 'high_performance', 
-                                so    => 125,
+                                so    => 126,
                                 help  => [
                                             'configures the server for high performance'
                                          ]

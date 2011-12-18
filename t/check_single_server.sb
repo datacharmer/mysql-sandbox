@@ -31,9 +31,9 @@ msg      = sandbox creation
 # 'shell' test.
 sql:
 path    = $SANDBOX_HOME/msb_XXXX
-query   = select version()
-expected = $TEST_VERSION
-msg      = checking version
+query   = select 10 * 10
+expected = 100
+msg      = checking database response
 
 # All strings starting with a $ are expanded to their 
 # corresponding environment variables. 
