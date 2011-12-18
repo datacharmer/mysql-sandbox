@@ -1,10 +1,16 @@
+3.0.24	17-Dec-2011
+	- added --master option to low_level_make_sandbox (enables binlogs and
+	server-ID)
+	- added --slaveof option to low_level_make_sandbox (creates a slave of
+	another sandbox or regular server)
+	- added tests for the above ones
 3.0.23	13-Dec-2011
     - fixed bug in prefixed version names (e.g.: now you can use make_sandbox
 	ps5.1.57 or mp5.2.10)
 	- Added arguments to deal with node options in replication and multiple
 	sandbox. --node_options, --slave_options, --master_options,
 	--one_slave_options, --one_node_options
-	- added --high_performance option that adds the following features to the
+	- added --high_performance option to low_level_make_sandbox: adds the following features to the
 	configuration file:
         innodb-thread-concurrency=0
         sync_binlog=0

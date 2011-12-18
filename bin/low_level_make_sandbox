@@ -119,6 +119,14 @@ if ( $msb->{options}{'high_performance'})
     }
 }
 
+if ($msb->{options}{'slaveof'} or $msb->{options}{'master'}) 
+{
+    for my $clause (('log-bin=mysql-bin', 'server-id=' . $msb->{options}{sandbox_port} ))
+    { 
+        unshift @{ $msb->{options}{'my_clause'}},  $clause; 
+    }
+}
+
 
 if ($msb->{options}{'interactive'}) {
     $msb->{options}{no_confirm} = 0;
@@ -583,6 +591,40 @@ if ($msb->{options}{load_grants}) {
     # sleep 3;
     system "$sandbox_directory/load_grants"
         and die "can't load grants\n";
+    if ($msb->{options}{master}) {
+        system "$sandbox_directory/use -e 'reset master'";
+    }
+    if ($msb->{options}{slaveof}) {
+        my $cmt = 'CHANGE MASTER TO ';
+        my %cmt_clauses = (
+            master_host => '127.0.0.1',
+            master_port => undef,
+            master_user => 'rsandbox',
+            master_password => 'rsandbox',
+            master_log_file => undef,
+            master_log_pos => undef,
+        );
+        my %apply_clauses = map { $_,$cmt_clauses{$_} } grep { $cmt_clauses{$_} } keys %cmt_clauses;
+        for my $clause ( keys %cmt_clauses) {
+            if ($msb->{options}{slaveof} =~ /$clause\s*=([^,]+)/i)
+            {
+                $apply_clauses{$clause}=$1;
+            }
+        }
+        my $count =0;
+        for my $clause (keys %apply_clauses) {
+            if ($count) {
+                $cmt .= ','; 
+            }
+            else {
+                $count++;
+            }
+            $cmt .= ' ' . $clause . '=' . quote_clause($apply_clauses{$clause});
+        }
+        if ($apply_clauses{master_port}) {
+            system "$sandbox_directory/use -e '$cmt; start slave'";
+        }
+    }
     if ($msb->{options}{no_run}) {
         print "stopping server\n";
         system "$sandbox_directory/stop"
@@ -597,6 +639,17 @@ print
       #('-' x 40), "\n",
       "Your sandbox server was installed in ", use_env($sandbox_directory), "\n";
       sbinstr( "sandbox installed in " . use_env($sandbox_directory));
+
+sub quote_clause {
+    my ($string) = @_;
+    if ($string =~ /^\d+$/) {
+        return $string;
+    }
+    if ($string =~ /^["'].*['"]$/) {
+        return $string;
+    }
+    return qq("$string");
+}
 
 sub copy_and_replace {
     my ($filename,  $destination_dir, $destination_filename) = @_ ;

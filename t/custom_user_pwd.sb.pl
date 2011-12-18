@@ -22,8 +22,8 @@ ok_exec( {
 $ENV{MYCLIENT_OPTIONS} = '-h 127.0.0.1';
 ok_sql({
     path      => "$sandbox_home/$dir_name",
-    query     => "SELECT VERSION()",
-    expected  => "$TEST_VERSION",
+    query     => "SELECT 10 * 10",
+    expected  => "100",
     msg       => 'server is accessible',
 });
 # $ENV{MYCLIENT_OPTIONS} = '';

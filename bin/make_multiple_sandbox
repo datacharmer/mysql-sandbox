@@ -95,10 +95,15 @@ my $replication_port = 0;
 
 my $temp_path = $msb->{options}{server_version};
 $temp_path =~ s{.*/}{};
+my $prefix = '';
+
+if ( $temp_path =~ /^(\D+)\d+/ ) {
+    $prefix = $1;
+}
 if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     $base_version = "$1$2$3";
     $release_no = $3;
-    $dashed_version = "$1_$2_$3";
+    $dashed_version = "${prefix}$1_$2_$3";
     $base_version =~ s/^0+//;
 }
 else {

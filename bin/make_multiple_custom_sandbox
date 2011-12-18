@@ -92,9 +92,13 @@ my $counter =0;
 for my $ver (@versions) {
     my $temp_path = $ver;
     $temp_path =~ s{.*/}{};
+    my $prefix ='';
+    if ( $temp_path =~ /^(\D+)\d+/ ) {
+        $prefix = $1;    
+    }
     if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
         $base_version[$counter] = "$1$2$3";
-        $dashed_version[$counter] = "$1_$2_$3";
+        $dashed_version[$counter] = "${prefix}$1_$2_$3";
         $base_version[$counter] =~ s/^0+//;
         $counter++;
     }

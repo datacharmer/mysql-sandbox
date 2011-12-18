@@ -190,11 +190,10 @@ tprintf "** currently there are (%d) mysqld processes and (%d) mysqld_safe proce
 # starting the tests
 #
 for my $ver (@versions) {
-    my $bare_version = get_bare_version ($ver);
-    my $version = $bare_version;
-    $version =~ s/\./_/g;
+    my ($bare_version, $version) = get_bare_version ($ver);
 
     if ($tests{'single'}) {
+        # print "run_single_test($ver, $version, $bare_version)\n";
         run_single_test($ver, $version, $bare_version);
     }
 
@@ -743,9 +742,7 @@ sub run_tuning_test {
         print "skipping tuning test. It requires version >=5\n";
         return;
     }
-    my $bare_version = get_bare_version($ver);
-    my $version = $bare_version;
-    $version =~ s/\./_/g;
+    my ($bare_version, $version) = get_bare_version($ver);
 
     if ($bare_version =~ /^5\.5/ ) {
          for my $i ( 1 .. 6) { 
@@ -794,11 +791,13 @@ sub run_tuning_test {
 sub get_bare_version {
     my ($ver) = @_;
     $ver =~ s{.*/}{};
-    if ($ver =~ /(\d+\.\d+\.\d+)/) {
+    if ($ver =~ /((?:\w+)?\d+\.\d+\.\d+)/) {
         my $bv = $1;
+        my $underscored_version = $bv;
+        $underscored_version =~ s/\./_/g;
+        $bv =~ s/^\D+//;
+        # print STDERR "$ver, $bv, $underscored_version \n"; exit;
         if (wantarray) {
-            my $underscored_version = $bv;
-            $underscored_version =~ s/\./_/g;
             return ($bv, $underscored_version);
         }
         else {
@@ -816,8 +815,7 @@ sub run_smoke_test {
         tprint "skipping smoke test. It requires version >=5\n";
         return;
     }
-    my $bare_version = get_bare_version($ver);
-    my $version = $bare_version;
+    my ($bare_version, $version) = get_bare_version($ver);
     $version =~ s/\./_/g;
     if ($ver =~ m{(.+)/[^/]+(?:tgz|tar\.gz)$}) {
         my $bindir = $1;
@@ -947,7 +945,10 @@ sub run_smoke_test {
     );
 
     for my $test_engine (@test_engines) {
-        my $major_version = substr($version,0,1);
+        my $major_version = 0; 
+        if ($version =~ /(\d)/) {
+            $major_version = $1;
+        }
         if ($major_version <  $test_engine->{'min_version'} ) {
             next;
         }
