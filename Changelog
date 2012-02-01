@@ -1,3 +1,5 @@
+3.0.25	01-Feb-2012
+	- fixed typos and credits. (Thanks to Mateusz Kijowski for noticing)
 3.0.24	17-Dec-2011
 	- added --master option to low_level_make_sandbox (enables binlogs and
 	server-ID)
