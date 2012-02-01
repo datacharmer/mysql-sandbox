@@ -23,7 +23,7 @@ our @EXPORT_OK= qw( is_port_open
                     sbinstr
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.24";
+our $VERSION="3.0.25";
 our $DEBUG;
 
 BEGIN {
@@ -215,7 +215,7 @@ sub credits {
     my ($self) = @_;
     my $CREDITS = 
           qq(    The MySQL Sandbox,  version $VERSION\n) 
-        . qq(    (C) 2006-2010 Giuseppe Maxia\n);
+        . qq(    (C) 2006-2012 Giuseppe Maxia\n);
     return $CREDITS;
 }
 
@@ -805,7 +805,7 @@ a 5.1.25 server will use port 5125, unless you override the default.
 Replicated and group sandboxes add a delta number to the version
 figure, to avoid clashing with single installations. 
 
-(note: ports can be overriden using -P option during install)
+(note: ports can be overridden using -P option during install)
 
  +--------+-----------------------------+
  | port   | socket                      |
@@ -1352,7 +1352,7 @@ Bash shell
 
 Version 3.0
 
-Copyright (C) 2006-2010 Giuseppe Maxia
+Copyright (C) 2006-2012 Giuseppe Maxia
 
 Home Page  http://launchpad.net/mysql-sandbox/
 

@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.24";
+our $VERSION="3.0.25";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1603,7 +1603,7 @@ PLUGIN_CONF
 
 my $license_text = <<'LICENSE';
 #    The MySQL Sandbox
-#    Copyright (C) 2006-2010 Giuseppe Maxia
+#    Copyright (C) 2006-2012 Giuseppe Maxia
 #    Contacts: http://datacharmer.org
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -1665,7 +1665,7 @@ For a reference manual, see L<MySQL::Sandbox>. For a cookbook, see L<MySQL::Sand
 
 Version 3.0
 
-Copyright (C) 2006-2010 Giuseppe Maxia
+Copyright (C) 2006-2012 Giuseppe Maxia
 
 Home Page  http://launchpad.net/mysql-sandbox/
 

@@ -249,7 +249,7 @@ USING A SANDBOX
     add a delta number to the version figure, to avoid clashing with single
     installations.
 
-    (note: ports can be overriden using -P option during install)
+    (note: ports can be overridden using -P option during install)
 
      +--------+-----------------------------+
      | port   | socket                      |
@@ -785,7 +785,7 @@ REQUIREMENTS
 COPYRIGHT
     Version 3.0
 
-    Copyright (C) 2006-2010 Giuseppe Maxia
+    Copyright (C) 2006-2012 Giuseppe Maxia
 
     Home Page http://launchpad.net/mysql-sandbox/
 
