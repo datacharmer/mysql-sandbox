@@ -36,6 +36,7 @@ my $msb = MySQL::Sandbox->new();
 runs_as_root();
 
 check_sandbox_dir();
+check_tmp_dir();
 my %scripts_in_code = %{ MySQL::Sandbox::Scripts::scripts_in_code() };
 my $license_text = MySQL::Sandbox::Scripts::license_text();
 
@@ -81,6 +82,8 @@ if (@ARGV){
 $msb->get_help() if $msb->{options}{'help'};
 
 # print Dumper(\%{$msb->{options}}, \@ARGV); exit;
+
+$msb->{options}{globaltmpdir} = $ENV{TMPDIR};
 
 for my $opt (keys %{$msb->{options}} ) {
     #unless (defined $default_values{$opt} and defined $msb->{options}{$opt} ) {
@@ -140,7 +143,7 @@ if ( -f "$ENV{'HOME'}/.msandboxrc") {
     if ( $msb->{options}{'conf_file'}) {
         # conf file given. Neet to concatenate default file and 
         # rc file
-        my $tmp_conf_file = '/tmp/msandboxrc.cnf';
+        my $tmp_conf_file = "$ENV{TMPDIR}/msandboxrc.cnf";
         my $result = system (qq( cat $ENV{'HOME'}/.msandboxrc $msb->{options}{'conf_file'} > $tmp_conf_file ));
         if ($result) {
             die "can't create $tmp_conf_file ($CHILD_ERROR)\n";
@@ -234,6 +237,7 @@ my %replace_options = (
     _OSUSER_            => 'operating_system_user',
     _BASEDIR_           => 'basedir',
     _TMPDIR_            => 'tmpdir',
+    _GLOBALTMPDIR_      => 'globaltmpdir',
     _BINBASH_           => 'binbash',
     _BINPERL_           => 'binperl',
     _HOME_DIR_          => 'upper_directory',
@@ -460,9 +464,7 @@ for  my $filename ( @MANIFEST) {
     }
 }
 
-#close $MANIFEST;
-
-set_sandbox_dir_scripts();
+# set_sandbox_dir_scripts();
 
 my $sandbox_directory = sprintf('%s/%s', $msb->{options}{'upper_directory'}, $msb->{options}{'sandbox_directory'});
 
@@ -508,6 +510,10 @@ unless (-d $sandbox_tmpdir) {
         or die "Error creating $sandbox_tmpdir ($!)\n";
 }
 
+
+set_sandbox_dir_scripts();
+
+
 for my $file_spec ( @file_list) {  #, @doc_file_list) {
     copy_and_replace($file_spec->[0], $sandbox_directory, $file_spec->[1]);
 }
@@ -528,10 +534,11 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         }
         
         my $additional_options ="$osx_options";
-        my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data', 
+        my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data --tmpdir=%s/tmp', 
             $script,
             $msb->{options}{operating_system_user},
             $msb->{options}{basedir},
+            $sandbox_directory,
             $sandbox_directory;
         if ($DEBUG) {
             print "$cmd $additional_options\n";
@@ -543,6 +550,13 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         for my $table_name (qw(host user db tables_priv columns_priv)) {
             die "table $table_name not installed\n"
                 unless -f "$sandbox_directory/data/mysql/$table_name.frm";
+        }
+        for my $logfile (qw(ib_logfile0 ib_logfile1))
+        {
+            if ( -f "$sandbox_directory/data/$logfile")
+            {
+                unlink "$sandbox_directory/data/$logfile";
+            }
         }
     }
     else {
@@ -687,6 +701,10 @@ sub copy_and_replace {
             and ($destination_filename =~ /my\.sandbox.cnf/)) {
             $new_value =~ s/\@.*//g; 
         }
+        unless ($new_value)
+        {
+            die "can't find a value for '$key'\n";
+        }
         $script_content =~ s/ $key /$new_value/xg;
     }        
     print $TO $script_content;
@@ -808,12 +826,20 @@ sub select_interactively {
 
 
 sub check_sandbox_dir {
-    my $sandboxdir = $ENV{'SANDBOX_HOME'} || $ENV{'HOME'};
+    my $sandboxdir = $ENV{'SANDBOX_HOME'} || "$ENV{'HOME'}/sandboxes";
     if (! -d $sandboxdir) {
         mkdir $sandboxdir;
         if ( $CHILD_ERROR) {
             die ("can't set sandbox directory $sandboxdir ($CHILD_ERROR)\n");    
         }
+    }
+}
+
+sub check_tmp_dir {
+    my $tmpdir = $ENV{'TMPDIR'} || $ENV{'TEMPDIR'};
+    print ">>$tmpdir\n";
+    if (! -d $tmpdir) {
+        die ("can't find tmp directory $tmpdir\n");    
     }
 }
 

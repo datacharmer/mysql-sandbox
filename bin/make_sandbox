@@ -292,7 +292,7 @@ if ( -d "$binary_base/$bare_basedir" ) {
     $text_version =~ s/\./_/g; 
     my @install_options = (
                 "--basedir=$binary_base/$bare_basedir", 
-                "--sandbox_directory=msb_$text_version",
+                "--sandbox_directory=msb_$options{add_prefix}$text_version",
                 "--install_version=$simple_version",
                 "--sandbox_port=$port",
                 "--no_ver_after_name",

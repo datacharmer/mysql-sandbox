@@ -5,6 +5,7 @@ use Carp;
 use English qw( -no_match_vars ); 
 use Socket;
 use File::Find;
+use Data::Dumper;
 
 use base qw( Exporter);
 our @ISA= qw(Exporter);
@@ -34,6 +35,15 @@ BEGIN {
     }
     unless ( $ENV{SANDBOX_HOME} ) { 
         $ENV{SANDBOX_HOME} = "$ENV{HOME}/sandboxes";
+    }
+
+    unless ($ENV{TMPDIR})
+    {
+        $ENV{TMPDIR} = '/tmp';
+    } 
+    unless ( -d $ENV{TMPDIR})
+    {
+        die "could not find $ENV{TMPDIR}\n";
     }
 
     if ( -d "$ENV{HOME}/sandboxes" ) {
@@ -109,6 +119,7 @@ sub find_safe_port_and_directory {
     my ($wanted_port, $wanted_dir, $upper_directory) = @_;
     my $chosen_port = $wanted_port;
     my ($ports, undef) = get_sb_info( $ENV{SANDBOX_HOME}, undef); 
+    print Dumper($ports);
     while ( is_port_open($chosen_port) or exists $ports->{$chosen_port}) {
         $chosen_port++;
         $chosen_port = first_unused_port($chosen_port);
