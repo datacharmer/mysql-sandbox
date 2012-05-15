@@ -70,6 +70,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => 'msb',    
                                 parse => 'd|sandbox_directory=s',      
                                 so    =>  20,
+                                export => 1,
                                 help  => [
                                             'Where to install the sandbox, under upper-directory'
                                          ] 
@@ -77,6 +78,7 @@ my %parse_options_low_level_make_sandbox = (
     sandbox_port          => {
                                 value => 3310,               
                                 parse => 'P|sandbox_port=i',           
+                                export => 1,
                                 so    =>  30,
                                 help  => [
                                             'The port number to use for the sandbox server.', 
@@ -86,6 +88,7 @@ my %parse_options_low_level_make_sandbox = (
     check_port            => {
                                 value => 0,               
                                 parse => 'check_port',           
+                                export => 1,
                                 so    =>  35,
                                 help  => [
                                             'Check whether the provided port is free,', 
@@ -130,6 +133,7 @@ my %parse_options_low_level_make_sandbox = (
    basedir               => {
                                 value => '/usr/local/mysql', 
                                 parse => 'b|basedir=s' ,               
+                                export => 1,
                                 so    =>  60,
                                 help  => [
                                             'Base directory for MySQL (default: /usr/local/mysql)'
@@ -138,6 +142,7 @@ my %parse_options_low_level_make_sandbox = (
    tmpdir                => {
                                 value => undef, 
                                 parse => 'tmpdir=s' ,               
+                                export => 1,
                                 so    =>  65,
                                 help  => [
                                             'Temporary directory for MySQL (default: Sandbox_directory/tmp)'
@@ -148,6 +153,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => q{},                 
                                 parse => 'm|my_file=s',                
                                 so    =>  70,
+                                export => 1,
                                 help  => [
                                             'which sample my-{small|large|huge}.cnf file should be used',
                                             'for additional configuration',
@@ -177,6 +183,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => $MySQL::Sandbox::default_users{'db_user'},
                                 parse => 'u|db_user=s'  ,              
                                 so    => 100,
+                                export => 1,
                                 help  => [
                                             'user for global access to mysql (Default: '
                                             .  $MySQL::Sandbox::default_users{'db_user'} . ')'
@@ -186,6 +193,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => $MySQL::Sandbox::default_users{'remote_access'},
                                 parse => 'remote_access=s'  ,              
                                 so    => 101,
+                                export => 1,
                                 help  => [
                                             'network access for mysql users (Default: '
                                             .  $MySQL::Sandbox::default_users{'remote_access'} . ')'
@@ -195,6 +203,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => $MySQL::Sandbox::default_users{'ro_user'},
                                 parse => 'ro_user=s'  ,              
                                 so    => 102,
+                                export => 1,
                                 help  => [
                                             'user for read-only access to mysql (Default: ' 
                                             .  $MySQL::Sandbox::default_users{'ro_user'} . ')'
@@ -205,6 +214,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => $MySQL::Sandbox::default_users{'rw_user'},
                                 parse => 'rw_user=s'  ,              
                                 so    => 104,
+                                export => 1,
                                 help  => [
                                             'user for read-write access to mysql (Default: ' 
                                             .  $MySQL::Sandbox::default_users{'rw_user'} . ')'
@@ -214,6 +224,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => $MySQL::Sandbox::default_users{'repl_user'},
                                 parse => 'repl_user=s'  ,              
                                 so    => 106,
+                                export => 1,
                                 help  => [
                                             'user for replication access to mysql (Default: ' 
                                             .  $MySQL::Sandbox::default_users{'repl_user'} . ')'
@@ -223,6 +234,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value =>  $MySQL::Sandbox::default_users{'db_password'},      
                                 parse => 'p|db_password=s'  ,              
                                 so    => 110,
+                                export => 1,
                                 help  => [
                                             'password for global access to mysql (Default: '
                                             .  $MySQL::Sandbox::default_users{'db_password'} . ')'
@@ -232,6 +244,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value =>  $MySQL::Sandbox::default_users{'repl_password'},      
                                 parse => 'repl_password=s'  ,              
                                 so    => 112,
+                                export => 1,
                                 help  => [
                                             'password for replication access to mysql (Default: '
                                             .  $MySQL::Sandbox::default_users{'repl_password'} . ')'
@@ -241,6 +254,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => '',      
                                 parse => 'c|my_clause=s@', 
                                 so    => 120,
+                                export => 1,
                                 help  => [
                                             'option to be inserted in a my.cnf file',
                                             'it may be used several times',
@@ -250,6 +264,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => 0,      
                                 parse => 'master', 
                                 so    => 124,
+                                export => 1,
                                 help  => [
                                             'configures the server as a master (enables binlog and sets server ID)'
                                          ]
@@ -258,6 +273,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => undef,      
                                 parse => 'slaveof=s', 
                                 so    => 125,
+                                export => 1,
                                 help  => [
                                             'Configures the server as a slave of another sandbox ',
                                             'Requires options for CHANGE MASTER TO, (at least master_port).',
@@ -269,6 +285,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => 0,      
                                 parse => 'high_performance', 
                                 so    => 126,
+                                export => 1,
                                 help  => [
                                             'configures the server for high performance'
                                          ]
@@ -277,6 +294,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => 'mysql',      
                                 parse => 'prompt_prefix=s', 
                                 so    => 130,
+                                export => 1,
                                 help  => [
                                             'prefix to use in CLI prompt (default: mysql)',
                                          ]
@@ -286,6 +304,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => q/ [\h] {\u} (\d) > /,      
                                 parse => 'prompt_body=s', 
                                 so    => 135,
+                                export => 1,
                                 help  => [
                                             'options to use in CLI prompt (default:  [\h] {\u} (\d) > )',
                                          ]
@@ -294,6 +313,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => 0,                  
                                 parse => 'force',                      
                                 so    => 140,
+                                export => 1,
                                 help  => [
                                             'Use this option if you want to overwrite existing directories',
                                             'and files during the installation. (Default: disabled)', 
@@ -311,6 +331,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => 0,                  
                                 parse => 'v|verbose',                  
                                 so    => 160,
+                                export => 1,
                                 help  => [
                                             'Use this option to see installation progress (default: disabled)'
                                          ] 
@@ -319,6 +340,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => 0,                  
                                 parse => 'load_grants',                  
                                 so    => 170,
+                                export => 1,
                                 help  => [
                                             'Loads the predefined grants from a SQL file.',
                                             'Useful when installing from script.',
@@ -364,6 +386,7 @@ my %parse_options_low_level_make_sandbox = (
     no_confirm            => {
                                 value => 0, 
                                 parse => 'no_confirm',
+                                export => 1,
                                 so    => 180,
                                 help  => [
                                             'suppress the confirmation request from user',
@@ -1232,12 +1255,12 @@ _MYSQL_PROMPT_
 user            = _DBUSER_
 password        = _DBPASSWORD_
 port            = _SERVERPORT_
-socket          = /tmp/mysql_sandbox_SERVERPORT_.sock
+socket          = _GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock
 
 [mysqld]
 user                            = _OSUSER_
 port                            = _SERVERPORT_
-socket                          = /tmp/mysql_sandbox_SERVERPORT_.sock
+socket                          = _GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock
 basedir                         = _BASEDIR_
 datadir                         = _HOME_DIR_/_SANDBOXDIR_/data
 tmpdir                          = _TMPDIR_
