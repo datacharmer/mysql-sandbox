@@ -1,3 +1,6 @@
+3.0.26	30-Sep-2012
+	- Removed dependency on table mysql.host, which can't be found anymore in
+	MySQL 5.6.7
 3.0.25	01-Feb-2012
 	- fixed typos and credits. (Thanks to Mateusz Kijowski for noticing)
 3.0.24	17-Dec-2011
