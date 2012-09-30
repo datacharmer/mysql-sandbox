@@ -547,7 +547,7 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         if ($CHILD_ERROR) {
             die "error while creating grant tables\n$result\n";
         }
-        for my $table_name (qw(host user db tables_priv columns_priv)) {
+        for my $table_name (qw(user db tables_priv columns_priv)) {
             die "table $table_name not installed\n"
                 unless -f "$sandbox_directory/data/mysql/$table_name.frm";
         }
