@@ -744,9 +744,9 @@ sub run_tuning_test {
     }
     my ($bare_version, $version) = get_bare_version($ver);
 
-    if ($bare_version =~ /^5\.5/ ) {
+    if ($bare_version =~ /^5\.([56])/ ) {
          for my $i ( 1 .. 6) { 
-            print "ok - skipped (this test is not available in MySQL 5.5)\n";
+            print "ok - skipped (this test is not available in MySQL 5.$1)\n";
          }
          return;
     }

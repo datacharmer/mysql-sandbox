@@ -24,7 +24,7 @@ our @EXPORT_OK= qw( is_port_open
                     sbinstr
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.25";
+our $VERSION="3.0.27";
 our $DEBUG;
 
 BEGIN {
@@ -226,7 +226,7 @@ sub credits {
     my ($self) = @_;
     my $CREDITS = 
           qq(    The MySQL Sandbox,  version $VERSION\n) 
-        . qq(    (C) 2006-2012 Giuseppe Maxia\n);
+        . qq(    (C) 2006-2013 Giuseppe Maxia\n);
     return $CREDITS;
 }
 
@@ -1363,7 +1363,7 @@ Bash shell
 
 Version 3.0
 
-Copyright (C) 2006-2012 Giuseppe Maxia
+Copyright (C) 2006-2013 Giuseppe Maxia
 
 Home Page  http://launchpad.net/mysql-sandbox/
 
