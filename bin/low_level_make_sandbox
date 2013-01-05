@@ -543,11 +543,18 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         if ($DEBUG) {
             print "$cmd $additional_options\n";
         }
-        my $result = qx($cmd $additional_options);
-        if ($CHILD_ERROR) {
+        my $result = qx($cmd $additional_options 2>&1);
+        if (($CHILD_ERROR) or ($result && ($result =~ /\berror\b/i))) {
             die "error while creating grant tables\n$result\n";
         }
-        for my $table_name (qw(host user db tables_priv columns_priv)) {
+        if ($DEBUG)
+        {
+            while ($result =~/(.*warning.*)/ig)
+            {
+                print "++ $1\n";
+            }
+        }
+        for my $table_name (qw(user db tables_priv columns_priv)) {
             die "table $table_name not installed\n"
                 unless -f "$sandbox_directory/data/mysql/$table_name.frm";
         }

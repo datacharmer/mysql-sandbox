@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.25";
+our $VERSION="3.0.27";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1068,6 +1068,11 @@ fi
 if [ -f $PIDFILE ]
 then
     echo " sandbox server started"
+    if [ -f $SBDIR/needs_reload ]
+    then
+        $SBDIR/use mysql < $SBDIR/rescue_mysql_dump.sql
+        rm $SBDIR/needs_reload
+    fi
 else
     echo " sandbox server not started yet"
     exit 1
@@ -1212,13 +1217,6 @@ then
             ./use -e "truncate mysql.$T"
         done
     fi
-    #if [ `perl -le 'print $ARGV[0] ge "5.5" ? "1" : "0" ' "$VERSION"` = "1" ]
-    #then
-    #    for T in `./use -N -B -e 'show tables from performance_schema'`
-    #    do
-    #        ./use -e "truncate performance_schema.$T"
-    #    done
-    #fi
 fi
 
 ./stop
@@ -1233,6 +1231,12 @@ rm -f data/ib*
 rm -f data/*.info
 rm -f data/*.err
 rm -f data/*.err-old
+if [ `perl -le 'print $ARGV[0] ge "5.6" ? "1" : "0" ' "$VERSION"` = "1" ]
+then
+    rm -f data/mysql/slave_*
+    rm -f data/mysql/innodb_*
+    touch needs_reload
+fi
 # rm -rf data/test/*
 
 #
@@ -1303,6 +1307,7 @@ GRANTS_MYSQL
 __LICENSE__
 SBDIR=_HOME_DIR_/_SANDBOXDIR_
 echo "source $SBDIR/grants.mysql" | $SBDIR/use -u root --password= 
+$SBDIR/my sqldump mysql > $SBDIR/rescue_mysql_dump.sql
 LOAD_GRANTS_SCRIPT
 
     'my.sh'    => <<'MY_SCRIPT',
@@ -1626,7 +1631,7 @@ PLUGIN_CONF
 
 my $license_text = <<'LICENSE';
 #    The MySQL Sandbox
-#    Copyright (C) 2006-2012 Giuseppe Maxia
+#    Copyright (C) 2006-2013 Giuseppe Maxia
 #    Contacts: http://datacharmer.org
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -1688,7 +1693,7 @@ For a reference manual, see L<MySQL::Sandbox>. For a cookbook, see L<MySQL::Sand
 
 Version 3.0
 
-Copyright (C) 2006-2012 Giuseppe Maxia
+Copyright (C) 2006-2013 Giuseppe Maxia
 
 Home Page  http://launchpad.net/mysql-sandbox/
 

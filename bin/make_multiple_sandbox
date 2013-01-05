@@ -260,7 +260,7 @@ for my $cmd ( qw(start stop clear send_kill ) ) {
     if ($cmd =~ /stop|clear|send_kill/ && $msb->{options}{'circular'}) {
         $msb->write_to ($cmd_fname, 
                 '>>', 
-                qq($group_directory/use_all "slave stop"));
+                qq($group_directory/use_all "stop slave"));
     } 
     for my $node (1 .. $msb->{options}{how_many_nodes} ) {
         $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on node $node'));
