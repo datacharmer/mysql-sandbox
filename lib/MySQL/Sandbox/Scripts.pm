@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.27";
+our $VERSION="3.0.28";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1070,7 +1070,10 @@ then
     echo " sandbox server started"
     if [ -f $SBDIR/needs_reload ]
     then
-        $SBDIR/use mysql < $SBDIR/rescue_mysql_dump.sql
+        if [ -f $SBDIR/rescue_mysql_dump.sql ]
+        then
+            $SBDIR/use mysql < $SBDIR/rescue_mysql_dump.sql
+        fi
         rm $SBDIR/needs_reload
     fi
 else
@@ -1306,7 +1309,12 @@ GRANTS_MYSQL
 #!_BINBASH_
 __LICENSE__
 SBDIR=_HOME_DIR_/_SANDBOXDIR_
-echo "source $SBDIR/grants.mysql" | $SBDIR/use -u root --password= 
+BASEDIR='_BASEDIR_'
+export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
+MYSQL="$BASEDIR/bin/mysql --no-defaults --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock --port=_SERVERPORT_"
+$MYSQL -u root < $SBDIR/grants.mysql
+# echo "source $SBDIR/grants.mysql" | $SBDIR/use -u root --password= 
 $SBDIR/my sqldump mysql > $SBDIR/rescue_mysql_dump.sql
 LOAD_GRANTS_SCRIPT
 
