@@ -123,6 +123,7 @@ for my $opt (qw(repl_user repl_password remote_access)) {
 
 my $base_version ;
 my $release_no;
+my $create_gtid_script=0;
 my $dashed_version ;
 my $replication_port = 0;
 my $prefix='';
@@ -138,6 +139,10 @@ if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     $dashed_version = "${prefix}${major}_${minor}_${rev}";
     $base_version =~ s/^0+//;
     $base_version += $major + ($minor * 10) + ($rev * 100);
+    if (($major > 5) or (($major == 5) && ($minor >= 6) && ($rev >= 9 )))
+    {
+        $create_gtid_script=1;
+    } 
 }
 else {
     $msb->get_help("No recognizable version pattern in $msb->{options}{server_version}\n");
@@ -341,6 +346,13 @@ if ( ( -x $mysql_proxy ) &&  ( -f $rw_splitting) ) {
     chmod 0755, 'run_proxy';
 }
 
+if ($create_gtid_script)
+{
+    $msb->write_to('enable_gtid', '>', '#!/bin/bash');
+    $msb->write_to('enable_gtid', '>>', "cd $replication_directory");
+    $msb->write_to('enable_gtid', '>>', './restart_all --master-info-repository=table --relay-log-info-repository=table  --gtid_mode=ON  --log-slave-updates --enforce-gtid-consistency');
+    chmod 0755, 'enable_gtid';
+}
 $msb->write_to('clear_all', '>>', "date > $replication_directory/needs_initialization");
 
 $msb->write_to('start_all', '>>', "if [ -f $replication_directory/needs_initialization ] ");
@@ -424,11 +436,12 @@ for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
            . qq( master_port=$replication_port, )
            . qq( master_user="$MySQL::Sandbox::default_users{'repl_user'}", )
            . qq( master_password="$MySQL::Sandbox::default_users{'repl_password'}" )
-           . qq(' | $replication_directory/node$slave/use -u root --password= ) );
+           . qq(' | $replication_directory/node$slave/use -u root  ) );
 
     $msb->write_to('initialize_slaves', '>>', 
             qq( echo 'START SLAVE' )
-           . qq( | $replication_directory/node$slave/use -u root --password= ) );
+           . qq( | $replication_directory/node$slave/use -u root ) );
+    system "perl -i -pe 's/^password/#password/' ./node$slave/my.sandbox.cnf"
 }
 
 #
@@ -440,6 +453,7 @@ for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
 ##        and die "can't create slave user";
 
 chmod 0755, "initialize_slaves";
+
 system "./initialize_slaves"
         and die "can't initialize slave";
 
@@ -447,7 +461,10 @@ system "./initialize_slaves"
 # For the first run, there is root without password. 
 # After the first run, a password is assigned
 #
-system q( perl -i -pe 's/(-u root) (--password=)/$1/g' initialize_slaves );
+for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
+    system "perl -i -pe 's/^#password/password/' ./node$slave/my.sandbox.cnf"
+}
+# system q( perl -i -pe 's/(-u root) (--password=)/$1/g' initialize_slaves );
 
 chdir $current_dir;
 print "replication directory installed in ", use_env($replication_directory), "\n";
