@@ -298,7 +298,7 @@ if ( -d "$binary_base/$bare_basedir" ) {
                 "--no_ver_after_name",
                 @ARGV
             );
-    if ($major >=5) {
+    if ($major >=4) {
         push(@install_options, qq(--my_clause=log-error=msandbox.err));
     }
     unless (grep {$_ eq '--no_show'} @install_options) {
