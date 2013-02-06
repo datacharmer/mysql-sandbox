@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.29";
+our $VERSION="3.0.30";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1315,7 +1315,7 @@ export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
 MYSQL="$BASEDIR/bin/mysql --no-defaults --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock --port=_SERVERPORT_"
 $MYSQL -u root < $SBDIR/grants.mysql
 # echo "source $SBDIR/grants.mysql" | $SBDIR/use -u root --password= 
-$SBDIR/my sqldump mysql > $SBDIR/rescue_mysql_dump.sql
+$SBDIR/my sqldump _EVENTS_OPTIONS_ mysql > $SBDIR/rescue_mysql_dump.sql
 LOAD_GRANTS_SCRIPT
 
     'my.sh'    => <<'MY_SCRIPT',

@@ -246,6 +246,7 @@ my %replace_options = (
     _MORE_OPTIONS_      => 'more_options',
     _MYSQL_PROMPT_      => 'mysql_prompt',
     _MYSQLDSAFE_        => 'mysqld_safe',
+    _EVENTS_OPTIONS_    => 'events_options',
 );
 
 if ($msb->{options}{db_user} =~ /\@/) {
@@ -357,6 +358,19 @@ die "server version required.\n" unless $msb->{options}{'install_version'};
 unless (grep {$_ eq $msb->{options}{'install_version'} } @supported_versions ) {
     get_help( "specified version ($msb->{options}{'install_version'}) not allowed. Currently accepted are [@supported_versions] ");
 }
+
+#
+# 
+#
+print "<<$msb->{options}{ 'install_version' }>>\n";
+if ($msb->{options}{ 'install_version' } ge '5.5' ) {
+    $msb->{options}{events_options} = ' --events ';
+}
+else
+{
+    $msb->{options}{events_options} = '';
+}
+
 
 if ($msb->{options}{ 'install_version' } eq '3.23' ) {
     $msb->{options}{'mysql_prompt'} = q{};
@@ -708,7 +722,7 @@ sub copy_and_replace {
             and ($destination_filename =~ /my\.sandbox.cnf/)) {
             $new_value =~ s/\@.*//g; 
         }
-        unless ($new_value)
+        unless (defined $new_value)
         {
             die "can't find a value for '$key'\n";
         }
