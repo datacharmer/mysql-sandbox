@@ -24,7 +24,7 @@ our @EXPORT_OK= qw( is_port_open
                     sbinstr
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.29";
+our $VERSION="3.0.30";
 our $DEBUG;
 
 BEGIN {
@@ -53,6 +53,10 @@ BEGIN {
     unless ( $ENV{SANDBOX_BINARY} ) {
         if ( -d "$ENV{HOME}/opt/mysql") {
             $ENV{SANDBOX_BINARY} = "$ENV{HOME}/opt/mysql";
+        }
+        else
+        {
+            $ENV{SANDBOX_BINARY} = '';
         }
     }
 }

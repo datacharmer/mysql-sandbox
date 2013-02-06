@@ -15,6 +15,7 @@ pod2text lib/MySQL/Sandbox.pm > README
 pod2html lib/MySQL/Sandbox.pm > ./drafts/sandbox.html
 pod2html lib/MySQL/Sandbox/Recipes.pm > ./drafts/cookbook.html
 
+# perl Makefile.PL PREFIX=$HOME/usr/local
 perl Makefile.PL PREFIX=$HOME/usr/local
 make
 
