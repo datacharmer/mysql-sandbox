@@ -139,9 +139,37 @@ sub get_source_version {
     # This method should be more robust than parsing 
     # configure.in
     #
+
+    my $version;
+    if ( -f 'VERSION' )
+    {
+        open my $VFH, q{<}, 'VERSION'
+            or die "can't open VERSION\n";
+        while (my $line = <$VFH>)
+        {
+            if ($line =~ /MYSQL_VERSION_(?:MAJOR|MINOR|PATCH)=(\d+)/)
+            {
+                if (defined $version)
+                {
+                    $version .= '.';
+                }
+                else
+                {
+                    $version = '';
+                }
+                $version .= $1;
+            }
+        }
+        unless ($version =~ /\d+\.\d+\.\d+/)
+        {
+            die "could not find a version number in VERSION ($version)\n";
+        }
+        return $version;
+    }
+
+
     open my $MAKEFILE, q{<}, 'Makefile'
         or die "can't find Makefile\n";
-    my $version;
     while (my $line = <$MAKEFILE>) {
         if ($line =~ /
                ^                      # start of line

@@ -24,7 +24,7 @@ our @EXPORT_OK= qw( is_port_open
                     sbinstr
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.30";
+our $VERSION="3.0.31";
 our $DEBUG;
 
 BEGIN {
@@ -123,16 +123,16 @@ sub find_safe_port_and_directory {
     my ($wanted_port, $wanted_dir, $upper_directory) = @_;
     my $chosen_port = $wanted_port;
     my ($ports, undef) = get_sb_info( $ENV{SANDBOX_HOME}, undef); 
-    print Dumper($ports);
+    # print Dumper($ports);
     while ( is_port_open($chosen_port) or exists $ports->{$chosen_port}) {
         $chosen_port++;
         $chosen_port = first_unused_port($chosen_port);
-        print "checking -> $chosen_port\n";
+        # print "checking -> $chosen_port\n";
     }
     my $suffix = 'a';
     my $chosen_dir = $wanted_dir;
     while ( -d "$upper_directory/$chosen_dir" ) {
-        print "checking -> $chosen_dir\n";
+        # print "checking -> $chosen_dir\n";
         $chosen_dir = $wanted_dir . '_' . $suffix;
         $suffix++;
     }
