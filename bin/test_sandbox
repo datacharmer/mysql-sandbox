@@ -293,6 +293,7 @@ sub get_exec_result_qx {
     if ($?) {
         die ("error executing $cmd ($!)\n");
     }
+    $output =~ s/Warning: Using a password.*//;
     print "qx(shell) $output\n" if $verbose;
     return $output;
 }
@@ -305,6 +306,9 @@ sub get_exec_result_open3 {
     my $output ='';
     my $err_output ='';
     while (my $line = <$out>) {
+        if ($line =~ /Warning: Using a password/) {
+            next;
+        }
         $output .= $line;
     }
     while (my $line = <$err>) {

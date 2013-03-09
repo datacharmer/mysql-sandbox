@@ -9,6 +9,7 @@ bin/sb
 bin/msandbox
 bin/sbtool
 bin/test_sandbox
+bin/deploy_to_remote_sandboxes.sh
 Changelog
 COPYING
 lib/MySQL/Sandbox.pm

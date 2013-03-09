@@ -1,3 +1,11 @@
+3.0.31	08-Mar-2013
+	- Fixed Bug#1133186 make_sandbox_from_source does not recognize version
+	- removed diagnostic lines that printed MySQL version and temporary
+	directory
+	- removed diagnostic lines that printed ports and directories being
+	searched when the option --check_port was used
+	- added bin/deploy_to_remote_sandboxes.sh, which installs sandboxes to
+	remote hosts
 3.0.30	06-Feb-2013
 	- Fixed Bug#1116760 Uninitalized $ENV{"SANDBOX_BINARY"} 
 	- Removed obnoxious warning introduced in MySQL 5.5.30 when using

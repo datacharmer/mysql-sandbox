@@ -362,7 +362,7 @@ unless (grep {$_ eq $msb->{options}{'install_version'} } @supported_versions ) {
 #
 # 
 #
-print "<<$msb->{options}{ 'install_version' }>>\n";
+# print "<<$msb->{options}{ 'install_version' }>>\n";
 if ($msb->{options}{ 'install_version' } ge '5.5' ) {
     $msb->{options}{events_options} = ' --events ';
 }
@@ -858,7 +858,7 @@ sub check_sandbox_dir {
 
 sub check_tmp_dir {
     my $tmpdir = $ENV{'TMPDIR'} || $ENV{'TEMPDIR'};
-    print ">>$tmpdir\n";
+    # print ">>$tmpdir\n";
     if (! -d $tmpdir) {
         die ("can't find tmp directory $tmpdir\n");    
     }
