@@ -22,6 +22,7 @@ WriteMakefile(
                             'bin/make_replication_sandbox',
                             'bin/make_multiple_sandbox',
                             'bin/make_multiple_custom_sandbox',
+                            'bin/deploy_to_remote_sandboxes.sh',
                          ],
     ($] >= 5.005 ?     
       (
