@@ -1,3 +1,6 @@
+3.0.32	12-Mar-2013
+	- Fixed minor bug in deploy_to_remote_sandboxes.sh
+	- Added deploy_to_remote_sandboxes.sh to the list of scripts to install
 3.0.31	08-Mar-2013
 	- Fixed Bug#1133186 make_sandbox_from_source does not recognize version
 	- removed diagnostic lines that printed MySQL version and temporary

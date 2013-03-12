@@ -42,7 +42,7 @@ do
             show_help
             ;;
         -d)
-            SANDBOX_DIR=$2
+            export SANDBOX_DIR=$2
             shift
             shift
             ;;
@@ -64,7 +64,7 @@ do
             shift
             ;;
         -P)
-            MYSQL_PORT=$2
+            export MYSQL_PORT=$2
             shift
             shift
             ;;
@@ -123,4 +123,10 @@ do
    scp -p $BUILD_SB $HOST:$BUILD_SB
    ssh $HOST $BUILD_SB $SERVER_ID_COUNTER
 done
+
+echo "Connection parameters:"
+echo "datadir=~/sandboxes/$SANDBOX_DIR/data"
+echo "options file=~/sandboxes/$SANDBOX_DIR/my.sandbox.cnf"
+echo "port=$MYSQL_PORT"
+echo ""
 
