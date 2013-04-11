@@ -1236,7 +1236,7 @@ sub get_pid {
     die "can't open $pfile\n" unless $PFILE;
     my $pid = <$PFILE>;
     close $PFILE;
-    chomp $pid;
+    chomp $pid if $pid;
     if ($pid &&  ($pid =~ /^\d+$/) ) {
         return $pid;
     }
