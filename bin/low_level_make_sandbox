@@ -247,6 +247,8 @@ my %replace_options = (
     _MYSQL_PROMPT_      => 'mysql_prompt',
     _MYSQLDSAFE_        => 'mysqld_safe',
     _EVENTS_OPTIONS_    => 'events_options',
+    _SLOW_QUERY_LOG_    => 'slow_query_log',
+    _GENERAL_LOG_       => 'general_log',
 );
 
 if ($msb->{options}{db_user} =~ /\@/) {
@@ -371,6 +373,19 @@ else
     $msb->{options}{events_options} = '';
 }
 
+my $sb_datadir = qq($msb->{options}{upper_directory}/$msb->{options}{sandbox_directory}/data);
+if ($msb->{options}{ 'install_version' } ge '5.1' ) {
+    $msb->{options}{'slow_query_log'} = 
+          qq(slow-query-log = on\n)
+        . qq(# slow-query-log-file=$sb_datadir/msandbox-slow.log);
+    $msb->{options}{'general_log'} = 
+          qq(general-log = on\n)
+        . qq(# general-log-file=$sb_datadir/msandbox-general.log);
+} 
+else {
+    $msb->{options}{'slow_query_log'} = qq(log-slow-queries = $sb_datadir/msandbox-slow.log);
+    $msb->{options}{'general_log'} = qq(log = $sb_datadir/msandbox-general.log) ;
+}
 
 if ($msb->{options}{ 'install_version' } eq '3.23' ) {
     $msb->{options}{'mysql_prompt'} = q{};
