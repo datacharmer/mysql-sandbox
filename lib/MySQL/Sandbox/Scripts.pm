@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.32";
+our $VERSION="3.0.33";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1259,21 +1259,21 @@ _MYSQL_PROMPT_
 #
 
 [client]
-user            = _DBUSER_
-password        = _DBPASSWORD_
-port            = _SERVERPORT_
-socket          = _GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock
+user               = _DBUSER_
+password           = _DBPASSWORD_
+port               = _SERVERPORT_
+socket             = _GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock
 
 [mysqld]
-user                            = _OSUSER_
-port                            = _SERVERPORT_
-socket                          = _GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock
-basedir                         = _BASEDIR_
-datadir                         = _HOME_DIR_/_SANDBOXDIR_/data
-tmpdir                          = _TMPDIR_
-pid-file                        = _HOME_DIR_/_SANDBOXDIR_/data/mysql_sandbox_SERVERPORT_.pid
-#log-slow-queries               = _HOME_DIR_/_SANDBOXDIR_/data/msandbox-slow.log
-#log                            = _HOME_DIR_/_SANDBOXDIR_/data/msandbox.log
+user               = _OSUSER_
+port               = _SERVERPORT_
+socket             = _GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock
+basedir            = _BASEDIR_
+datadir            = _HOME_DIR_/_SANDBOXDIR_/data
+tmpdir             = _TMPDIR_
+pid-file           = _HOME_DIR_/_SANDBOXDIR_/data/mysql_sandbox_SERVERPORT_.pid
+# _SLOW_QUERY_LOG_
+# _GENERAL_LOG_
 _MORE_OPTIONS_
 
 MY_SANDBOX_SCRIPT

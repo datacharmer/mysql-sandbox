@@ -17,7 +17,7 @@ function show_help {
     echo "-P port          => MySQL port  ($MYSQL_PORT)"
     echo "-d sandbox dir   => sandbox directory name ($SANDBOX_DIR)"
     echo "-m version       => MySQL version ($MYSQL_VERSION)"
-    echo "-l list of nodes =>list of nodes to use instead of the ones in the NODES file"
+    echo "-l list of nodes =>list of nodes where to deploy"
     echo '-t tarball       => MySQL tarball to install remotely (none)'
     echo ""
     echo "This command takes the list of nodes and installs a MySQL sandbox in each one."

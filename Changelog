@@ -1,3 +1,6 @@
+3.0.33	11-Apr-2013
+	- Fixed Bug #1167794 '--log option deprecated'
+	- fixed minot working issue in deploy_to_remote_sandboxes.sh
 3.0.32	12-Mar-2013
 	- Fixed minor bug in deploy_to_remote_sandboxes.sh
 	- Added deploy_to_remote_sandboxes.sh to the list of scripts to install
