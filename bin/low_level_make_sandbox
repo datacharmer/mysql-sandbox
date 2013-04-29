@@ -249,12 +249,55 @@ my %replace_options = (
     _EVENTS_OPTIONS_    => 'events_options',
     _SLOW_QUERY_LOG_    => 'slow_query_log',
     _GENERAL_LOG_       => 'general_log',
+    _BIND_ADDRESS_      => 'bind_address',
 );
 
 if ($msb->{options}{db_user} =~ /\@/) {
     my ($user, $host) = split /\@/, $msb->{options}{db_user};
     $msb->{options}{db_user} = $user;
     $msb->{options}{remote_access} = $host; 
+}
+
+
+if (
+       ($msb->{options}{remote_access} eq $MySQL::Sandbox::default_users{remote_access}) 
+    && ($msb->{options}{bind_address} eq '127.0.0.1')
+    ) 
+{
+    # Do nothing.
+    # Make sure that we honor the defaults
+    #
+}
+elsif (
+       ($msb->{options}{remote_access} ne $MySQL::Sandbox::default_users{remote_access}) 
+    && ($msb->{options}{bind_address} ne '127.0.0.1')
+    ) 
+{
+    # Do nothing.
+    # Both defaults were changed.
+    # Make sure that we let user change both values
+    #
+}
+elsif (
+       ($msb->{options}{remote_access} ne $MySQL::Sandbox::default_users{remote_access}) 
+    && ($msb->{options}{remote_access} ne '127.0.0.1') 
+    && ($msb->{options}{bind_address} eq '127.0.0.1')
+    ) 
+{
+    # remote_access changed. Make sure that we can access the server
+    $msb->{options}{bind_address} = '0.0.0.0';
+}
+elsif (
+       ($msb->{options}{bind_address} ne '0.0.0.0') 
+    && ($msb->{options}{remote_access} ne '%')
+    ) 
+{
+    # Customized bind address
+    # We adjust the remote access to match it
+    $msb->{options}{remote_access} = $msb->{options}{bind_address};
+}
+elsif ($msb->{options}{bind_address} ne '127.0.0.1') {
+    $msb->{options}{remote_access} = $msb->{options}{bind_address};
 }
 
 for my $opt (qw(db_user remote_access ro_user rw_user repl_user db_password repl_password)) {

@@ -10,7 +10,7 @@ our @ISA = qw/Exporter/;
 our @EXPORT_OK = qw( scripts_in_code);
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.33";
+our $VERSION="3.0.34";
 
 our @MANIFEST = (
 'clear.sh',
@@ -199,10 +199,20 @@ my %parse_options_low_level_make_sandbox = (
                                             .  $MySQL::Sandbox::default_users{'remote_access'} . ')'
                                          ]
                             },
+     bind_address        => {
+                                value => '127.0.0.1',
+                                parse => 'bind_address=s'  ,              
+                                so    => 102,
+                                export => 1,
+                                help  => [
+                                            'Bind address for mysql server (Default: 127.0.0.1'
+                                         ]
+                            },
+
     ro_user              => {
                                 value => $MySQL::Sandbox::default_users{'ro_user'},
                                 parse => 'ro_user=s'  ,              
-                                so    => 102,
+                                so    => 103,
                                 export => 1,
                                 help  => [
                                             'user for read-only access to mysql (Default: ' 
@@ -213,7 +223,7 @@ my %parse_options_low_level_make_sandbox = (
      rw_user              => {
                                 value => $MySQL::Sandbox::default_users{'rw_user'},
                                 parse => 'rw_user=s'  ,              
-                                so    => 104,
+                                so    => 105,
                                 export => 1,
                                 help  => [
                                             'user for read-write access to mysql (Default: ' 
@@ -1272,6 +1282,7 @@ basedir            = _BASEDIR_
 datadir            = _HOME_DIR_/_SANDBOXDIR_/data
 tmpdir             = _TMPDIR_
 pid-file           = _HOME_DIR_/_SANDBOXDIR_/data/mysql_sandbox_SERVERPORT_.pid
+bind-address       = _BIND_ADDRESS_
 # _SLOW_QUERY_LOG_
 # _GENERAL_LOG_
 _MORE_OPTIONS_

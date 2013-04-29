@@ -24,7 +24,7 @@ our @EXPORT_OK= qw( is_port_open
                     sbinstr
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.33";
+our $VERSION="3.0.34";
 our $DEBUG;
 
 BEGIN {
@@ -62,7 +62,7 @@ BEGIN {
 }
 
 my @supported_versions = qw( 3.23 4.0 4.1 5.0 5.1 5.2 5.3 5.4 
-    5.5 5.6 5.7 5.8 6.0);
+    5.5 5.6 5.7 5.8 6.0 10.0);
 
 our $sandbox_options_file    = "my.sandbox.cnf";
 # our $sandbox_current_options = "current_options.conf";

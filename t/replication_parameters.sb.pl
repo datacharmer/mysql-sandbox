@@ -11,6 +11,11 @@
 # "-c option=value" 
 #
 my $TEST_VERSION = $ENV{TEST_VERSION};
+my $expected_gtid = 'does not exist';
+if ($TEST_VERSION ge '5.6') 
+{
+    $expected_gtid = 'exists';
+}
 my ($version, $name_version) = get_bare_version($TEST_VERSION);
 my $replication_dir = "rsandbox_$name_version";
 $ENV{MASTER_OPTIONS} = '-c key-buffer=20M';
@@ -60,9 +65,18 @@ ok_sql({
     expected => '26214400',
     msg      => 'slave 2 key buffer (25M)',    
 });
+
+my $gtid_exists = 'does not exist';
+if (-f "$sandbox_home/$replication_dir/enable_gtid" )
+{
+    $gtid_exists = 'exists';
+}
+ok $gtid_exists eq  $expected_gtid, "file enable_gtid $expected_gtid ";
+
 ok_exec( {
     command => "sbtool -o delete -s $sandbox_home/$replication_dir ", 
     expected => 'has been removed',
     msg      => "$replication_dir removed"
 });
+
 

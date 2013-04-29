@@ -139,7 +139,10 @@ if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     $dashed_version = "${prefix}${major}_${minor}_${rev}";
     $base_version =~ s/^0+//;
     $base_version += $major + ($minor * 10) + ($rev * 100);
-    if (($major > 5) or (($major == 5) && ($minor >= 6) && ($rev >= 9 )))
+    if (    ($major > 5)    # MySQL 6
+        or (($major == 5) && ($minor == 6) && ($rev >= 9 ))  #MySQL 5.6.9 and newer
+        or (( $major == 5) && ($minor > 6))  # MySQL 5.7 and newer
+       )
     {
         $create_gtid_script=1;
     } 
@@ -346,11 +349,45 @@ if ( ( -x $mysql_proxy ) &&  ( -f $rw_splitting) ) {
     chmod 0755, 'run_proxy';
 }
 
+my $gtid_script_template=<<'END_TEMPLATE';
+#!/bin/bash
+cd _REPLICATION_DIR_
+OPTIONS="master-info-repository=table "
+OPTIONS="$OPTIONS relay-log-info-repository=table"
+OPTIONS="$OPTIONS gtid_mode=ON"
+OPTIONS="$OPTIONS log-slave-updates enforce-gtid-consistency"
+CHANGED=""
+for NODE in _NODE_LIST_
+do
+    for OPTION in $OPTIONS
+    do
+        option_exists=$(grep $OPTION $NODE/my.sandbox.cnf)
+        if [ -z "$option_exists" ]
+        then
+            echo "$OPTION" >> $NODE/my.sandbox.cnf
+            echo "# option '$OPTION' added to $NODE configuration file"
+            CHANGED=1
+        else
+            echo "# option '$OPTION' already exists in $NODE configuration file"
+        fi
+    done
+done
+if [ -n "$CHANGED" ]
+then
+    ./restart_all
+fi
+END_TEMPLATE
+
 if ($create_gtid_script)
 {
-    $msb->write_to('enable_gtid', '>', '#!/bin/bash');
-    $msb->write_to('enable_gtid', '>>', "cd $replication_directory");
-    $msb->write_to('enable_gtid', '>>', './restart_all --master-info-repository=table --relay-log-info-repository=table  --gtid_mode=ON  --log-slave-updates --enforce-gtid-consistency');
+    my $node_list = 'master';
+    for my $n (1 .. $msb->{options}{how_many_slaves})
+    {
+        $node_list .= " node$n";
+    }
+    $gtid_script_template =~ s/_REPLICATION_DIR_/$replication_directory/;
+    $gtid_script_template =~ s/_NODE_LIST_/$node_list/;
+    $msb->write_to('enable_gtid', '>', $gtid_script_template);
     chmod 0755, 'enable_gtid';
 }
 $msb->write_to('clear_all', '>>', "date > $replication_directory/needs_initialization");
