@@ -105,7 +105,7 @@ if  ( $where_to_install =~ m{^$prefix_regex\D+\d+\.\d+\.\d+.*\.tar\.gz$ }x ) {
 }
 
 # bare version directory under $HOME/opt/bin
-if  ( $where_to_install =~ /^(?:[-_\w]+)?(\d+)\.(\d+)\.(\d+)/x ) { 
+if  ( $where_to_install =~ /^(?:[-_a-zAZ]+)?(\d+)\.(\d+)\.(\d+)/x ) { 
     ($major, $minor, $release) =  ($1, $2, $3);
     $version = $where_to_install;
 }
@@ -119,13 +119,13 @@ elsif  ( $where_to_install =~ m{^(/.+)/(\d+)\.(\d+)\.(\d+)$}x ) {
 }
 
 # absolute version directory with prefix
-elsif  (( -d "$ENV{SANDBOX_BINARY}/$where_to_install") && ($where_to_install =~ m{(\d)\.(\d+)\.(\d+)$}x )) { 
+elsif  (( -d "$ENV{SANDBOX_BINARY}/$where_to_install") && ($where_to_install =~ m{(\d+)\.(\d+)\.(\d+)$}x )) { 
     ($binary_base, $major, $minor, $release) =  ($ENV{SANDBOX_BINARY}, $1, $2, $3, $4);
     $version = "$major.$minor.$release";
 }
 
 # absolute version directory
-elsif  ( $where_to_install =~ m{^(/.+)/.*(\d)\.(\d+)\.(\d+)$}x ) { 
+elsif  ( $where_to_install =~ m{^(/.+)/.*(\d+)\.(\d+)\.(\d+)$}x ) { 
     ($binary_base, $major, $minor, $release) =  ($1, $2, $3, $4);
     # print ">>$binary_base, $major, $minor, $release\n"; exit;
     $version = "$major.$minor.$release";

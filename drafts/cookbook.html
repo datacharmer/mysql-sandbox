@@ -84,6 +84,13 @@
 		<li><a href="#creating_and_running_your_own_tests">Creating and running your own tests</a></li>
 	</ul>
 
+	<li><a href="#remote_sandboxes">Remote Sandboxes</a></li>
+	<ul>
+
+		<li><a href="#access_sandboxes_from_other_hosts">Access sandboxes from other hosts</a></li>
+		<li><a href="#deploy_mysql_sandboxes_to_many_hosts">Deploy MySQL sandboxes to many hosts</a></li>
+	</ul>
+
 	<li><a href="#copyright">COPYRIGHT</a></li>
 	<li><a href="#legal_notice">LEGAL NOTICE</a></li>
 </ul>
@@ -671,6 +678,42 @@ Once you create your file, you can run it with</p>
 <p>To use a Perl test, name the test with a .sb.pl extension.</p>
 <pre>
   test_sandbox --user_test=your_test.sb.pl</pre>
+<p>
+</p>
+<hr />
+<h1><a name="remote_sandboxes">Remote Sandboxes</a></h1>
+<p>
+</p>
+<h2><a name="access_sandboxes_from_other_hosts">Access sandboxes from other hosts</a></h2>
+<p>By default, a MySQL sandbox instance can be accessed by localhost only. This access is regulated by an option, <code>--remote_access</code>, which is set to '127.%', and it is used to create the default users. You can see the resulting instructions in the file 'grants.mysql' inside each sandbox.</p>
+<pre>
+ grant all on *.* to msandbox@'127.%' identified by 'msandbox';
+ grant all on *.* to msandbox@'localhost' identified by 'msandbox';
+ grant SELECT,EXECUTE on *.* to msandbox_ro@'127.%' identified by 'msandbox';
+ grant SELECT,EXECUTE on *.* to msandbox_ro@'localhost' identified by 'msandbox';
+ grant REPLICATION SLAVE on *.* to rsandbox@'127.%' identified by 'rsandbox';</pre>
+<p>If you want to access the sandbox remotely, you can change <code>--remote_access</code> to include your specific subnet, or to open it completely</p>
+<pre>
+  --remote_access='192.168.1.%'
+  --remote_access='%'</pre>
+<p>Starting with MySQL::Sandbox 3.0.34, you can also define the bind address for your MySQL server. By default it is '127.0.0.1'. It will be changed to '0.0.0.0' if you choose a customized --remote_access. If you change both --remote_access and --bind_address, No adjustment will be made.</p>
+<p>
+</p>
+<h2><a name="deploy_mysql_sandboxes_to_many_hosts">Deploy MySQL sandboxes to many hosts</a></h2>
+<p>MySQL Sandbox 3.0.32 and later include a script that lets you deploy a sandbox quickly to several hosts.</p>
+<pre>
+ $ deploy_to_remote_sandboxes.sh -h
+ Deploy to remote sandboxes.
+ Usage: deploy_to_remote_sandboxes.sh [options]
+ -h               =&gt; help
+ -P port          =&gt; MySQL port  (15530)
+ -d sandbox dir   =&gt; sandbox directory name (remote_sb)
+ -m version       =&gt; MySQL version (5.5.30)
+ -l list of nodes =&gt;list of nodes where to deploy
+ -t tarball       =&gt; MySQL tarball to install remotely (none)
+ 
+ This command takes the list of nodes and installs a MySQL sandbox in each one.
+ You must have ssh access to the remote nodes, or this script won't work.</pre>
 <p>
 </p>
 <hr />

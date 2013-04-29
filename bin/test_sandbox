@@ -289,11 +289,28 @@ sub get_exec_result {
 sub get_exec_result_qx {
     my ($cmd) = @_; 
     print "qx(shell) $cmd\n" if $verbose;
-    my $output = qx($cmd );
+    my $output = qx($cmd 2>/tmp/err$$);
     if ($?) {
         die ("error executing $cmd ($!)\n");
     }
-    $output =~ s/Warning: Using a password.*//;
+    if ( -f "/tmp/err$$")
+    {
+        open my $efh, '<', "/tmp/err$$"
+            or die "can't open /tmp/err$$ ($!)\n";
+        my $err_output='';
+        while (my $line = <$efh>)
+        {
+            next if $line =~ /Warning: Using a password/;
+            $err_output .= $line;
+        }
+        close $efh;
+        unlink "/tmp/err$$";
+        #if ($err_output)
+        #{
+        #    warn "# error executing $cmd\n";
+        #    warn "#$err_output";
+        #}
+    }
     print "qx(shell) $output\n" if $verbose;
     return $output;
 }
@@ -306,9 +323,6 @@ sub get_exec_result_open3 {
     my $output ='';
     my $err_output ='';
     while (my $line = <$out>) {
-        if ($line =~ /Warning: Using a password/) {
-            next;
-        }
         $output .= $line;
     }
     while (my $line = <$err>) {
@@ -748,7 +762,7 @@ sub run_tuning_test {
     }
     my ($bare_version, $version) = get_bare_version($ver);
 
-    if ($bare_version =~ /^5\.([56])/ ) {
+    if ($bare_version =~ /^5\.([567])/ ) {
          for my $i ( 1 .. 6) { 
             print "ok - skipped (this test is not available in MySQL 5.$1)\n";
          }

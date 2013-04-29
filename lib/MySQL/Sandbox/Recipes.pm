@@ -1,6 +1,6 @@
 package MySQL::Sandbox::Recipes;
 
-our $VERSION="3.0.33";
+our $VERSION="3.0.34";
 
 1;
 __END__
@@ -630,6 +630,43 @@ Once you create your file, you can run it with
 To use a Perl test, name the test with a .sb.pl extension.
 
   test_sandbox --user_test=your_test.sb.pl
+
+=head1 Remote Sandboxes
+
+=head2 Access sandboxes from other hosts
+
+By default, a MySQL sandbox instance can be accessed by localhost only. This access is regulated by an option, C<--remote_access>, which is set to '127.%', and it is used to create the default users. You can see the resulting instructions in the file 'grants.mysql' inside each sandbox.
+
+ grant all on *.* to msandbox@'127.%' identified by 'msandbox';
+ grant all on *.* to msandbox@'localhost' identified by 'msandbox';
+ grant SELECT,EXECUTE on *.* to msandbox_ro@'127.%' identified by 'msandbox';
+ grant SELECT,EXECUTE on *.* to msandbox_ro@'localhost' identified by 'msandbox';
+ grant REPLICATION SLAVE on *.* to rsandbox@'127.%' identified by 'rsandbox';
+
+If you want to access the sandbox remotely, you can change C<--remote_access> to include your specific subnet, or to open it completely
+
+  --remote_access='192.168.1.%'
+  --remote_access='%'
+
+Starting with MySQL::Sandbox 3.0.34, you can also define the bind address for your MySQL server. By default it is '127.0.0.1'. It will be changed to '0.0.0.0' if you choose a customized --remote_access. If you change both --remote_access and --bind_address, No adjustment will be made.
+
+=head2 Deploy MySQL sandboxes to many hosts
+
+MySQL Sandbox 3.0.32 and later include a script that lets you deploy a sandbox quickly to several hosts.
+
+ $ deploy_to_remote_sandboxes.sh -h
+ Deploy to remote sandboxes.
+ Usage: deploy_to_remote_sandboxes.sh [options]
+ -h               => help
+ -P port          => MySQL port  (15530)
+ -d sandbox dir   => sandbox directory name (remote_sb)
+ -m version       => MySQL version (5.5.30)
+ -l list of nodes =>list of nodes where to deploy
+ -t tarball       => MySQL tarball to install remotely (none)
+ 
+ This command takes the list of nodes and installs a MySQL sandbox in each one.
+ You must have ssh access to the remote nodes, or this script won't work.
+
 
 =head1 COPYRIGHT
 
