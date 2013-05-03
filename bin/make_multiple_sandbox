@@ -316,7 +316,7 @@ $msb->write_to('check_slaves', '>', '#!/bin/sh' );
 $msb->write_to('check_slaves', '>>', 'for NNUM in ' . $node_list );
 $msb->write_to('check_slaves', '>>', 'do' );
 $msb->write_to('check_slaves', '>>', '  echo "node # $NNUM"');
-$msb->write_to('check_slaves', '>>', "  $group_directory/node\$NNUM/use -N -e "
+$msb->write_to('check_slaves', '>>', "  $group_directory/node\$NNUM/use -e "
             . " 'show slave status\\G' | grep Running:" );
 $msb->write_to('check_slaves', '>>', 'done ' );
 chmod 0755, 'check_slaves';
@@ -335,7 +335,7 @@ if ($msb->{options}{'circular'}) {
     $msb->write_to(
         "$group_directory/clear_all", '>>', 
                 "date > $group_directory/needs_initialization");
-    $msb->write_to(qq($group_directory/start_all "\$@"), '>>', 
+    $msb->write_to(qq($group_directory/start_all), '>>', 
                   "if [ -f $group_directory/needs_initialization ] \n"
                 . "then\n"
                 . "  $circular_replication_script\n"
