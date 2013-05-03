@@ -1,10 +1,14 @@
+3.0.35	03-May-2013
+	- Fixed bug in the 'check_slaves' script created with circular replication
+	- Fixed bug in 'clear_all' script created in circular replication
+	- added 50 new integrity tests to test_sandbox
 3.0.34	29-Apr-2013
 	- Added option --bind_address, to define how MySQL::Sandbox servers
 	connect to TCP/IP
 	- Fixed bug with handling 5.7 builds. Replicated systems did not create
 	the script enable_gtid 	(BUG#1171977)
 	- The changes made by enable_gtid are now durable (Bug#1171986)
-	- Fixed various patterns that prevented MariaDB 10.0i builds from being
+	- Fixed various patterns that prevented MariaDB 10.0 builds from being
 	recognized.
 	- Fixed bug in test_sandbox, where warning messages were mixed with the
 	test output in MYSQL 5.5.30+

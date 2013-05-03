@@ -66,6 +66,29 @@ my %tests = (
     user        => 0,
 );
 
+my %expected_scripts = (
+    single =>  {
+        executables => [qw(start stop clear msb send_kill status change_ports change_paths my restart use)],
+        texts       => [qw( grants.mysql my.sandbox.cnf rescue_mysql_dump.sql )],
+    },
+    replication => {
+        executables => 
+            [qw(start_all stop_all clear_all send_kill_all status_all check_slaves restart_all use_all initialize_slaves m s1 s2 )],
+        texts       => [],
+    },
+    multiple => {
+        executables => 
+            [qw(start_all stop_all clear_all send_kill_all status_all restart_all use_all n1 n2 n3 )],
+        texts       => [],
+    },
+    circular => {
+        executables =>
+            [qw(start_all stop_all clear_all send_kill_all status_all check_slaves restart_all use_all set_circular_replication.sh n1 n2 n3 )],
+        texts       => [],
+    },
+);
+
+
 # my %custom_tests = ();
 
 my ($user_tests, $user_versions, $user_defined_test, $get_help, $preserve_tests, );
@@ -448,6 +471,21 @@ sub ok ($;$) {
     return $condition;
 }
 
+sub check_sandbox_files
+{
+    my ($sandbox_type, $sandbox_path) = @_;
+    for my $executable_script (@{ $expected_scripts{$sandbox_type}{executables}  })
+    {
+        ok( -x "$sandbox_path/$executable_script", "executable script $executable_script file found");
+    }
+
+    for my $text_script (@{$expected_scripts{$sandbox_type}{texts} })
+    {
+        ok( -f "$sandbox_path/$text_script", "text script $text_script file found");
+    }
+
+}
+
 sub run_single_test {
     my ($ver, $version, $bare_version) = @_;
     ok_exec( {
@@ -455,6 +493,7 @@ sub run_single_test {
             expected => 'sandbox server started',
             msg      => "single SB ($bare_version) started"
             });
+    check_sandbox_files( 'single', "$sandbox_home/msb_$version");
     ok( -f "$sandbox_home/plugin.conf", "plugin template file found");
     ok_exec( {
             command  => "perl -c $sandbox_home/plugin.conf > /dev/null 2>&1", 
@@ -583,6 +622,8 @@ sub run_replication_test {
               msg      => "replication sandbox ($bare_version) started"
             });
 
+    check_sandbox_files( 'replication', "$sandbox_home/rsandbox_$version");
+
     ok_sql ({ path => "$sandbox_home/rsandbox_$version/master",
              query => 'select version(), @@server_id',
              expected => [ $bare_version, '\b1\s*$'],
@@ -622,6 +663,7 @@ sub run_circular_test {
               msg      => "circular replication sandbox ($bare_version) started",
         });
 
+    check_sandbox_files(  'circular', "$sandbox_home/rcsandbox_$version");
     for my $node ( 1 .. 3) {
         ok_sql ({ path     => "$sandbox_home/rcsandbox_$version/node$node",
                   query    => 'show slave status\G',
@@ -641,6 +683,7 @@ sub run_multiple_test {
               msg      => "multiple sandbox ($bare_version) started"
             });
 
+    check_sandbox_files(  'multiple', "$sandbox_home/multi_msb_$version");
     for my $node (1 .. 3 ) {
 
         ok_sql({ path  => "$sandbox_home/multi_msb_$version/node$node",
