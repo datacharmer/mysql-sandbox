@@ -250,7 +250,10 @@ my %replace_options = (
     _SLOW_QUERY_LOG_    => 'slow_query_log',
     _GENERAL_LOG_       => 'general_log',
     _BIND_ADDRESS_      => 'bind_address',
+    _MSB_VERSION_       =>  'msb_version',
 );
+
+$msb->{options}{msb_version} = $MySQL::Sandbox::VERSION;
 
 if ($msb->{options}{db_user} =~ /\@/) {
     my ($user, $host) = split /\@/, $msb->{options}{db_user};

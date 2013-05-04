@@ -246,6 +246,21 @@ for my $node (1 .. @versions ) {
     chmod 0755, "n$node";
 }
 
+my @nodes ;
+for my $N (1 .. $msb->{options}{how_many_nodes})
+{
+    push @nodes, "node$N";
+}
+
+for my $json (qw(connection.json default_connection.json))
+{
+    my $json_text = MySQL::Sandbox::get_json_from_dirs(\@nodes, $json);
+    $msb->write_to($json, '>', $json_text);
+}
+
+$msb->write_to('README', '>', MySQL::Sandbox::Scripts::get_readme_multiple());
+$msb->write_to('README', '>', MySQL::Sandbox::Scripts::get_readme_common());
+
 chdir $current_dir;
 print "group directory installed in ", use_env($group_directory),"\n";
 sbinstr( "group_directory installed in  <" .

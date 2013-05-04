@@ -317,6 +317,9 @@ $msb->write_to('check_slaves', '>>', 'for NNUM in ' . $node_list );
 $msb->write_to('check_slaves', '>>', 'do' );
 $msb->write_to('check_slaves', '>>', '  echo "node # $NNUM"');
 $msb->write_to('check_slaves', '>>', "  $group_directory/node\$NNUM/use -e "
+            . qq( 'show master status\\G' | grep "File\\|Position" ));
+$msb->write_to('check_slaves', '>>', ' echo "" ' );
+$msb->write_to('check_slaves', '>>', "  $group_directory/node\$NNUM/use -e "
             . " 'show slave status\\G' | grep Running:" );
 $msb->write_to('check_slaves', '>>', 'done ' );
 chmod 0755, 'check_slaves';
@@ -360,6 +363,30 @@ if ($msb->{options}{'circular'}) {
         print "Circular replication activated\n";
     }
 }
+
+my @nodes ;
+for my $N (1 .. $msb->{options}{how_many_nodes})
+{
+    push @nodes, "node$N";
+}
+
+for my $json (qw(connection.json default_connection.json))
+{
+    my $json_text = MySQL::Sandbox::get_json_from_dirs(\@nodes, $json);
+    $msb->write_to($json, '>', $json_text);
+}
+
+if ($msb->{options}{circular})
+{
+    $msb->write_to('README', '>', MySQL::Sandbox::Scripts::get_readme_circular());
+    $msb->write_to('README', '>>', MySQL::Sandbox::Scripts::get_readme_common_replication());
+}
+else
+{
+    $msb->write_to('README', '>', MySQL::Sandbox::Scripts::get_readme_multiple());
+}
+$msb->write_to('README', '>>', MySQL::Sandbox::Scripts::get_readme_common());
+
 
 chdir $current_dir;
 print "group directory installed in ", use_env($group_directory),"\n";

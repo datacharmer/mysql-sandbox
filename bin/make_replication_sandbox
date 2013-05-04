@@ -156,6 +156,9 @@ my @supported_topologies = qw(standard circular);
 # deals with circular replication
 #
 
+my $node_list_text = 'master';
+my @node_list = ('master');
+
 if ($msb->{options}{master_master}) {
     $msb->{options}{topology} = 'circular';
     $msb->{options}{how_many_slaves} = 2;
@@ -164,6 +167,18 @@ if ($msb->{options}{master_master}) {
 if ($msb->{options}{circular} && ($msb->{options}{circular} =~ /^\d+$/)) {
     $msb->{options}{topology} = 'circular';
     $msb->{options}{how_many_slaves} = $msb->{options}{circular};
+}
+
+if ($msb->{options}{topology} eq 'circular')
+{
+    $node_list_text = '';
+    @node_list = ();
+}
+
+for my $n (1 .. $msb->{options}{how_many_slaves})
+{
+    $node_list_text .= " node$n";
+    push @node_list, "node$n";
 }
 
 if ($msb->{options}{'topology'} ) {
@@ -348,48 +363,6 @@ if ( ( -x $mysql_proxy ) &&  ( -f $rw_splitting) ) {
     $msb->write_to('run_proxy',  '>>', "  --proxy-lua-script=$rw_splitting" ); 
     chmod 0755, 'run_proxy';
 }
-
-my $gtid_script_template=<<'END_TEMPLATE';
-#!/bin/bash
-cd _REPLICATION_DIR_
-OPTIONS="master-info-repository=table "
-OPTIONS="$OPTIONS relay-log-info-repository=table"
-OPTIONS="$OPTIONS gtid_mode=ON"
-OPTIONS="$OPTIONS log-slave-updates enforce-gtid-consistency"
-CHANGED=""
-for NODE in _NODE_LIST_
-do
-    for OPTION in $OPTIONS
-    do
-        option_exists=$(grep $OPTION $NODE/my.sandbox.cnf)
-        if [ -z "$option_exists" ]
-        then
-            echo "$OPTION" >> $NODE/my.sandbox.cnf
-            echo "# option '$OPTION' added to $NODE configuration file"
-            CHANGED=1
-        else
-            echo "# option '$OPTION' already exists in $NODE configuration file"
-        fi
-    done
-done
-if [ -n "$CHANGED" ]
-then
-    ./restart_all
-fi
-END_TEMPLATE
-
-if ($create_gtid_script)
-{
-    my $node_list = 'master';
-    for my $n (1 .. $msb->{options}{how_many_slaves})
-    {
-        $node_list .= " node$n";
-    }
-    $gtid_script_template =~ s/_REPLICATION_DIR_/$replication_directory/;
-    $gtid_script_template =~ s/_NODE_LIST_/$node_list/;
-    $msb->write_to('enable_gtid', '>', $gtid_script_template);
-    chmod 0755, 'enable_gtid';
-}
 $msb->write_to('clear_all', '>>', "date > $replication_directory/needs_initialization");
 
 $msb->write_to('start_all', '>>', "if [ -f $replication_directory/needs_initialization ] ");
@@ -441,6 +414,9 @@ chmod 0755, 'status_all';
 
 
 $msb->write_to('check_slaves', '>', '#!/bin/sh' );
+$msb->write_to('check_slaves', '>>', '  echo "master"');
+$msb->write_to('check_slaves', '>>', "  $replication_directory/master/use -e "
+            . qq( 'show master status\\G' | grep "File\\|Position" ));
 $msb->write_to('check_slaves', '>>', 'for NNUM in ' . $slave_list );
 $msb->write_to('check_slaves', '>>', 'do' );
 $msb->write_to('check_slaves', '>>', '  echo "slave # $NNUM"');
@@ -468,7 +444,7 @@ for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
     $msb->write_to('initialize_slaves', '>>', qq(echo "initializing slave $slave"));
 
     $msb->write_to('initialize_slaves', '>>',  
-      qq( echo 'CHANGE MASTER TO )
+             qq(echo 'CHANGE MASTER TO )
            . qq( master_host="127.0.0.1", )
            . qq( master_port=$replication_port, )
            . qq( master_user="$MySQL::Sandbox::default_users{'repl_user'}", )
@@ -503,6 +479,16 @@ for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
 }
 # system q( perl -i -pe 's/(-u root) (--password=)/$1/g' initialize_slaves );
 
+post_installation($replication_directory);
+$msb->write_to('README', '>', MySQL::Sandbox::Scripts::get_readme_master_slave());
+$msb->write_to('README', '>>', MySQL::Sandbox::Scripts::get_readme_common_replication());
+$msb->write_to('README', '>>', MySQL::Sandbox::Scripts::get_readme_common());
+
+for my $json (qw(connection.json default_connection.json))
+{
+    my $json_text = MySQL::Sandbox::get_json_from_dirs(\@node_list, $json);
+    $msb->write_to($json, '>', $json_text);
+}
 chdir $current_dir;
 print "replication directory installed in ", use_env($replication_directory), "\n";
 
@@ -514,22 +500,74 @@ sbinstr( "replication_directory installed in  <"
 
 sub make_circular_replication {
     my $cmd =  "make_multiple_sandbox --circular";
+    my $group_dir = 'rcsandbox_' . $dashed_version;
+    if ($msb->{options}{replication_directory} ) {
+        $group_dir = $msb->{options}{replication_directory};
+    }        
+
     if ($msb->{options}{how_many_slaves}) {
         $cmd .= ' --how_many_nodes=' . $msb->{options}{how_many_slaves};
     }
-    if ($msb->{options}{replication_directory} ) {
-        $cmd .= ' --group_directory=' . $msb->{options}{replication_directory};
-    }        
-    else {
-        $cmd .= ' --group_directory=rcsandbox_' . $dashed_version 
-    }
+    $cmd .= ' --group_directory=' . $group_dir; 
     if ($msb->{options}{sandbox_base_port} ) {
         $cmd .= ' --sandbox_base_port=' . $msb->{options}{sandbox_base_port}
     }
     else {
         $cmd .= ' --sandbox_base_port=' . ($defaults{circular_base_port} + ($release_no * 100));
     }
-    exec "$cmd $msb->{options}{server_version}" ;
+    my $result = system "$cmd $msb->{options}{server_version}" ;
+
+    post_installation("$msb->{options}{upper_directory}/$group_dir") unless $result;
+    exit $result;
+}
+
+sub post_installation
+{
+    my ($replication_directory) = @_;
+    # print "++ post_installation: <$replication_directory> <$node_list_text> <$create_gtid_script>\n";
+    unless (-d $replication_directory)
+    {
+        die "Error in post_installation procedure. $replication_directory not found\n";
+    }
+    chdir $replication_directory;
+
+my $gtid_script_template=<<'END_TEMPLATE';
+#!/bin/bash
+cd _REPLICATION_DIR_
+OPTIONS="master-info-repository=table "
+OPTIONS="$OPTIONS relay-log-info-repository=table"
+OPTIONS="$OPTIONS gtid_mode=ON"
+OPTIONS="$OPTIONS log-slave-updates enforce-gtid-consistency"
+CHANGED=""
+for NODE in _NODE_LIST_
+do
+    for OPTION in $OPTIONS
+    do
+        option_exists=$(grep $OPTION $NODE/my.sandbox.cnf)
+        if [ -z "$option_exists" ]
+        then
+            echo "$OPTION" >> $NODE/my.sandbox.cnf
+            echo "# option '$OPTION' added to $NODE configuration file"
+            CHANGED=1
+        else
+            echo "# option '$OPTION' already exists in $NODE configuration file"
+        fi
+    done
+done
+if [ -n "$CHANGED" ]
+then
+    ./restart_all
+fi
+END_TEMPLATE
+
+    if ($create_gtid_script)
+    {
+        $gtid_script_template =~ s/_REPLICATION_DIR_/$replication_directory/;
+        $gtid_script_template =~ s/_NODE_LIST_/$node_list_text/;
+        $msb->write_to('enable_gtid', '>', $gtid_script_template);
+        chmod 0755, 'enable_gtid';
+    }
+    
 }
 
 __END__

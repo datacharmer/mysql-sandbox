@@ -68,23 +68,28 @@ my %tests = (
 
 my %expected_scripts = (
     single =>  {
-        executables => [qw(start stop clear msb send_kill status change_ports change_paths my restart use)],
-        texts       => [qw( grants.mysql my.sandbox.cnf rescue_mysql_dump.sql )],
+        executables => [qw(start stop clear msb send_kill status change_ports change_paths my restart use json_in_db)],
+        texts       => [qw( grants.mysql my.sandbox.cnf rescue_mysql_dump.sql connection.json default_connection.json README)],
     },
     replication => {
         executables => 
             [qw(start_all stop_all clear_all send_kill_all status_all check_slaves restart_all use_all initialize_slaves m s1 s2 )],
-        texts       => [],
+        texts       => [qw(connection.json default_connection.json README)],
+    },
+    multiple_custom => {
+        executables => 
+            [qw(start_all stop_all clear_all send_kill_all status_all restart_all use_all n1 )],
+        texts       => [qw(connection.json default_connection.json README)],
     },
     multiple => {
         executables => 
             [qw(start_all stop_all clear_all send_kill_all status_all restart_all use_all n1 n2 n3 )],
-        texts       => [],
+        texts       => [qw(connection.json default_connection.json README)],
     },
     circular => {
         executables =>
             [qw(start_all stop_all clear_all send_kill_all status_all check_slaves restart_all use_all set_circular_replication.sh n1 n2 n3 )],
-        texts       => [],
+        texts       => [qw(connection.json default_connection.json README)],
     },
 );
 
@@ -711,6 +716,7 @@ sub run_mcustom_test {
             });
     ok(-d $custom_dir, 'custom group directory exists')
             or die "custom group directory not created\n";
+    check_sandbox_files('multiple_custom', $custom_dir);
     my $counter = 0;
     for my $ver (@versions) {
         my $bare_version = get_bare_version($ver);

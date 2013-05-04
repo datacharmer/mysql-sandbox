@@ -1,5 +1,5 @@
 my $dir_name = 'msb_XXXX';
-my $ver = '5.0.86';
+my $ver = '5.5.31';
 my $TEST_VERSION = $ENV{TEST_VERSION} || $ver;
 
 my @users = (
