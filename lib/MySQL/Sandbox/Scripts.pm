@@ -7,10 +7,17 @@ require Exporter;
 
 our @ISA = qw/Exporter/;
 
-our @EXPORT_OK = qw( scripts_in_code);
+our @EXPORT_OK = qw( 
+    scripts_in_code
+    get_readme_master_slave 
+    get_readme_circular 
+    get_readme_multiple 
+    get_readme_common 
+    get_readme_common_replication
+    );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.35";
+our $VERSION="3.0.36";
 
 our @MANIFEST = (
 'clear.sh',
@@ -28,7 +35,11 @@ our @MANIFEST = (
 'change_paths.sh',
 'change_ports.sh',
 'USING',
+'README',
+'connection.json',
+'default_connection.json',
 'grants.mysql',
+'json_in_db.sh',
 '# INSTALL FILES',
 'sandbox_action.pl',
 );
@@ -1182,6 +1193,24 @@ fi
 
 KILL_SCRIPT
 
+'json_in_db.sh' => <<'JSON_IN_DB_SCRIPT',
+
+#!_BINBASH_
+__LICENSE__
+SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+cd $SBDIR
+./use -e 'drop table if exists test.connection_json'
+./use -e 'create table test.connection_json(t longtext)'
+./use -e "insert into test.connection_json values (load_file('$SBDIR/connection.json'))"
+if [ "$?" != "0" ]
+then
+    echo "error loading connection.json to the database"
+    exit 1
+fi
+echo "connection.json saved to test.connection_json"
+
+JSON_IN_DB_SCRIPT
+
     'use.sh' => <<'USE_SCRIPT',
 #!_BINBASH_
 __LICENSE__
@@ -1290,10 +1319,39 @@ _MORE_OPTIONS_
 MY_SANDBOX_SCRIPT
 
     'USING' => <<USING_SCRIPT,
-Created with MySQL Sandbox $VERSION
+Created with MySQL Sandbox _MSB_VERSION_
 Currently using _INSTALL_VERSION_ with basedir _BASEDIR_
 
 USING_SCRIPT
+
+    'README' => <<README_SCRIPT,
+This is a sandbox for MySQL _INSTALL_VERSION_ (from _BASEDIR_)
+Created using MySQL Sandbox _MSB_VERSION_
+
+Default user: "_DBUSER_" (password: "_DBPASSWORD_)
+For more connection options, see connection.json.
+
+You can connect to the database with ./use
+
+Simple administrative tasks can be performed using:
+./start     : starts the server
+./restart   : restarts the server
+./stop      : stops the server
+./status    : tells if the server is running
+./clear     : stops the server and removes all contents (WARNING!: dangerous)
+./send_kill    : stops an unresponsive server
+./my sqldump   : calls mysqldump (notice the space after './my'
+./my sqladmin  : calls mysqladmin (notice the space after './my'
+./my sqlbinlog : calls mysqlbinlog (notice the space after './my'
+./msb {start stop status} : all-purpose start/stop/restart command
+
+The full manual is available using:
+
+perldoc MySQL::Sandbox
+perldoc MySQL::Sandbox::Recipes
+
+README_SCRIPT
+
 
     'grants.mysql'  => <<'GRANTS_MYSQL',
 
@@ -1328,6 +1386,60 @@ $MYSQL -u root < $SBDIR/grants.mysql
 # echo "source $SBDIR/grants.mysql" | $SBDIR/use -u root --password= 
 $SBDIR/my sqldump _EVENTS_OPTIONS_ mysql > $SBDIR/rescue_mysql_dump.sql
 LOAD_GRANTS_SCRIPT
+
+    'default_connection.json' => <<'END_DEFAULT_CONNECTION_JSON',
+{
+    "host":     "127.0.0.1",
+    "port":     "_SERVERPORT_",
+    "socket":   "_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock",
+    "username": "_DBUSER_@_REMOTE_ACCESS_",
+    "password": "_DBPASSWORD_"
+}
+
+END_DEFAULT_CONNECTION_JSON
+
+    'connection.json' => <<'END_CONNECTION_JSON',
+{
+    "origin": {
+        "mysql_sandbox_version" : "_MSB_VERSION_",
+        "mysql_version":    "_INSTALL_VERSION_",
+        "binaries":         "_BASEDIR_"
+    },
+    "connection": {
+        "host":             "127.0.0.1",
+        "port":             "_SERVERPORT_",
+        "socket":           "_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock",
+        "bind_address":     "_BIND_ADDRESS_"
+    },
+    "users": {
+       "admin": {
+            "username":     "root@localhost",
+            "password":     "_DBPASSWORD_",
+            "privileges":   "all, with grant option"
+        },
+       "all_privileges": {
+            "username":     "_DBUSER_@_REMOTE_ACCESS_",
+            "password":     "_DBPASSWORD_",
+            "privileges":   "all, no grant option"
+        },
+        "read_write": {
+            "username":     "_DBUSERRW_@_REMOTE_ACCESS_",
+            "password":     "_DBPASSWORD_",
+            "privileges":   "SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,SHOW DATABASES,CREATE TEMPORARY TABLES,LOCK TABLES, EXECUTE"
+        },
+        "read_only": {
+            "username":     "_DBUSERRO_@_REMOTE_ACCESS_",
+            "password":     "_DBPASSWORD_",
+            "privileges":   "SELECT,EXECUTE"
+        },
+        "replication": {
+            "username":     "_DBUSERREPL_@_REMOTE_ACCESS_",
+            "password":     "_DB_REPL_PASSWORD_",
+            "privileges":   "REPLICATION SLAVE"
+        }
+    }
+}
+END_CONNECTION_JSON
 
     'my.sh'    => <<'MY_SCRIPT',
 #!_BINBASH_
@@ -1693,6 +1805,91 @@ sub parse_options_custom_many {
 
 sub scripts_in_code {
     return \%scripts_in_code;
+}
+
+my $readme_multiple = <<'END_README_MULTIPLE';
+This is a composite sandbox. Each node is independent, without any replication relationship to the others
+
+To operate each node, use
+./n1 [options]   # (= ./node1/use [options])
+./n2 [options]   # (= ./node2/use [options])
+...
+./nN [options]   # (= ./nodeN/use [options])
+
+END_README_MULTIPLE
+
+my $readme_circular = <<'END_README_CIRCULAR';
+This is a composite sandbox, where each node is both a master and a slave (in circular replication)
+
+To operate each node, use
+./n1 [options]   # (= ./node1/use [options])
+./n2 [options]   # (= ./node2/use [options])
+...
+./nN [options]   # (= ./nodeN/use [options])
+
+END_README_CIRCULAR
+
+
+my $readme_master_slave = <<'END_README_MASTER_SLAVE';
+This is a composite replication sandbox, having one master and many slaves.
+
+To operate the master, use
+./m [options]    # (= ./master/use)
+
+To operate the slaves, use 
+./s1 [options]   # (= ./node1/use [options])
+./s2 [options]   # (= ./node2/use [options])
+...
+./sN [options]   # (= ./nodeN/use [options])
+
+END_README_MASTER_SLAVE
+
+my $readme_common_replication = <<'END_README_COMMON_REPLICATION';
+
+./to check the status of all slaves, use:
+./check_slaves
+
+END_README_COMMON_REPLICATION
+
+my $readme_common = <<'END_README_COMMON';
+To run a SQL command in all servers, use:
+./use_all {query}
+
+To connect to this sandbox, use the information stored inside 'connection.json'.
+
+Simple administrative tasks can be performed using:
+./start_all  [options]  : starts all servers
+./stop_all              : stops all servers
+./status_all            : tells the status of all servers
+./clear_all             : stops andremoves the contents from all servers (WARNING: dangerous)
+./restart_all [options] : restarts all servers
+
+More information is available inside the README file within each directory below.
+
+The full manual is available using:
+
+perldoc MySQL::Sandbox
+perldoc MySQL::Sandbox::Recipes
+
+END_README_COMMON
+
+sub get_readme_common_replication {
+    return $readme_common_replication;
+}
+
+sub get_readme_common {
+    return $readme_common;
+}
+
+sub get_readme_multiple {
+    return $readme_multiple;
+}
+sub get_readme_circular {
+    return $readme_circular;
+}
+
+sub get_readme_master_slave {
+    return $readme_master_slave;
 }
 
 1;

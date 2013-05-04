@@ -22,9 +22,10 @@ our @EXPORT_OK= qw( is_port_open
                     get_ranges
                     use_env
                     sbinstr
+                    get_json_from_dirs
                     get_option_file_contents ) ;
 
-our $VERSION="3.0.35";
+our $VERSION="3.0.36";
 our $DEBUG;
 
 BEGIN {
@@ -232,6 +233,77 @@ sub credits {
           qq(    The MySQL Sandbox,  version $VERSION\n) 
         . qq(    (C) 2006-2013 Giuseppe Maxia\n);
     return $CREDITS;
+}
+
+sub slurp {
+    my ($filename, $skip_blanks, $skip_comments ) = @_;
+    open my $FH , q{<}, $filename
+        or die "file '$filename' not found\n";
+    my @text_array = ();
+    my $text='';
+    while (my $line = <$FH>)
+    {
+        if ($skip_blanks)
+        {
+            next if $line =~ /^\s*$/;
+        }
+        if ($skip_comments)
+        {
+            next if $line =~ /^\s*#/;
+        }
+        if (wantarray)
+        {
+            push @text_array, $line;
+        }
+        else
+        {
+            $text .= $line;
+        }
+    }
+    close $FH;
+    if (wantarray)
+    { 
+        return @text_array;
+    }
+    else
+    {
+        return $text;
+    }
+}
+
+sub get_json_from_dirs {
+    my ($directories, $json_file) = @_;
+    my $collective_json = '';
+    my $indent = '    ';
+    for my $dir (@$directories)
+    {
+        my $filename = "$dir/$json_file";
+        if ($collective_json)
+        {
+            $collective_json .= ",\n"
+        }
+        else
+        {
+            $collective_json = "{\n";
+        }
+        $collective_json .= qq("$dir":  \n);
+        if ( -f $filename)
+        {
+            # get the contents
+            my @json_lines = slurp($filename, 'skip_blanks');
+            for my $jl (@json_lines)
+            {
+                $collective_json .= $indent . $jl;
+            }
+        }
+        else
+        {
+            warn "No connection.json found in $dir\n";
+            $collective_json .= "{}";
+        }
+    }
+    $collective_json .= "}";
+    return $collective_json;
 }
 
 #sub get_version {

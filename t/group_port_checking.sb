@@ -5,25 +5,25 @@
 # DEPRECATED : see group_port_checking.sb.pl
 
 shell:
-command     = make_multiple_sandbox --sandbox_base_port=8000 5.0.86
+command     = make_multiple_sandbox --sandbox_base_port=8000 5.5.31
 expected    = group directory installed
 msg         = group 1 started
 
 sql:
-path        = $SANDBOX_HOME/multi_msb_5_0_86/node1
+path        = $SANDBOX_HOME/multi_msb_5_5_31/node1
 query       = show variables like 'port'
 expected    = 8001
 msg         = right port on node1
 
 sql:
-path        = $SANDBOX_HOME/multi_msb_5_0_86/node2
+path        = $SANDBOX_HOME/multi_msb_5_5_31/node2
 query       = show variables like 'port'
 expected    = 8002
 msg         = right port on node2
 
 shell:
-#command     = make_multiple_sandbox --verbose --sandbox_base_port=8000 --group_directory=gsb --check_base_port 5.0.86
-command     = make_multiple_sandbox --sandbox_base_port=8000 --group_directory=gsb --check_base_port 5.0.86
+#command     = make_multiple_sandbox --verbose --sandbox_base_port=8000 --group_directory=gsb --check_base_port 5.5.31
+command     = make_multiple_sandbox --sandbox_base_port=8000 --group_directory=gsb --check_base_port 5.5.31
 expected    = group directory installed
 msg         = group 2 started
 
@@ -40,24 +40,24 @@ expected    = 8006
 msg         = right port on node2 (after check)
 
 shell:
-command     = make_replication_sandbox --sandbox_base_port=6000 5.0.86
+command     = make_replication_sandbox --sandbox_base_port=6000 5.5.31
 expected    = replication directory installed
 msg         = replication started
 
 sql:
-path        = $SANDBOX_HOME/rsandbox_5_0_86/master
+path        = $SANDBOX_HOME/rsandbox_5_5_31/master
 query       = show variables like 'port'
 expected    = 6000
 msg         = right port on master
 
 sql:
-path        = $SANDBOX_HOME/rsandbox_5_0_86/node1
+path        = $SANDBOX_HOME/rsandbox_5_5_31/node1
 query       = show variables like 'port'
 expected    = 6001
 msg         = right port on node1
 
 shell:
-command     = make_replication_sandbox --sandbox_base_port=6000 --replication_directory=rsb --check_base_port 5.0.86
+command     = make_replication_sandbox --sandbox_base_port=6000 --replication_directory=rsb --check_base_port 5.5.31
 expected    = replication directory installed
 msg         = replication started
 
@@ -74,7 +74,7 @@ expected    = 6004
 msg         = right port on node1 (after check)
 
 shell:
-command     = sbtool -o delete -s $SANDBOX_HOME/rsandbox_5_0_86/
+command     = sbtool -o delete -s $SANDBOX_HOME/rsandbox_5_5_31/
 expected    = has been removed
 msg         = replication 1 stopped and removed
 
@@ -84,7 +84,7 @@ expected    = has been removed
 msg         = replication 2 stopped and removed
 
 shell:
-command     = sbtool -o delete -s $SANDBOX_HOME/multi_msb_5_0_86
+command     = sbtool -o delete -s $SANDBOX_HOME/multi_msb_5_5_31
 expected    = has been removed
 msg         = group 1 stopped and removed
 

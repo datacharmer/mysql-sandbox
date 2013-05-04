@@ -1,3 +1,14 @@
+3.0.36	04-May-2013
+	- IMPORTANT CHANGES:
+	  - Added connection.json to each sandbox (simple or multiple) The file
+	  contains information to use the sandbox with third party applications.
+	  - Added default_connection.json to each sandbox (it has only the default
+	  items from connection.json)
+	  - Added README file to each sanbox (simple or multiple)
+	- enhanced check_slaves. It now includes "show master status";
+	- Fixed bug in circular replication: enable_gtid was not created;
+	- Added 25 more integrity tests;
+	- Changed default version for testing. It now looks for MySQL 5.5.31
 3.0.35	03-May-2013
 	- Fixed bug in the 'check_slaves' script created with circular replication
 	- Fixed bug in 'clear_all' script created in circular replication
