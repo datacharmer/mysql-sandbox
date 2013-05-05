@@ -800,7 +800,7 @@ sub copy_and_replace {
     }
     elsif ($newname =~ /\.json$/ )
     {
-        print "#validating $newname for JSON contents\n";
+        print "#validating $newname for JSON contents\n" if $DEBUG;
         my $is_json = MySQL::Sandbox::validate_json_object($newname);
         if ($is_json && ($is_json == -1))
         {

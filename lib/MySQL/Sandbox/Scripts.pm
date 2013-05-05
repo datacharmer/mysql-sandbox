@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.37";
+our $VERSION="3.0.38";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1324,30 +1324,34 @@ Currently using _INSTALL_VERSION_ with basedir _BASEDIR_
 
 USING_SCRIPT
 
-    'README' => <<README_SCRIPT,
+    'README' => 
+        MySQL::Sandbox::credits() 
+        . "\n" .  <<README_SCRIPT,
 This is a sandbox for MySQL _INSTALL_VERSION_ (from _BASEDIR_)
 Created using MySQL Sandbox _MSB_VERSION_
 
-Default user: "_DBUSER_" (password: "_DBPASSWORD_)
-For more connection options, see connection.json.
+Default user: "_DBUSER_" (password: "_DBPASSWORD_")
+For more connection options, see connection.json
+    and default_connection.json.
 
 You can connect to the database with ./use
 
 Simple administrative tasks can be performed using:
-./start     : starts the server
-./restart   : restarts the server
-./stop      : stops the server
-./status    : tells if the server is running
-./clear     : stops the server and removes all contents (WARNING!: dangerous)
-./send_kill    : stops an unresponsive server
-./my sqldump   : calls mysqldump (notice the space after './my'
-./my sqladmin  : calls mysqladmin (notice the space after './my'
-./my sqlbinlog : calls mysqlbinlog (notice the space after './my'
-./msb {start stop status} : all-purpose start/stop/restart command
+./start   [options] : starts the server
+./restart [options] : restarts the server
+./stop              : stops the server
+./status            : tells if the server is running
+./clear             : stops the server and removes all contents (WARNING!: dangerous)
+./send_kill         : stops an unresponsive server
+./my sqldump        : calls mysqldump (notice the space after './my')
+./my sqladmin       : calls mysqladmin (notice the space after './my')
+./my sqlbinlog      : calls mysqlbinlog (notice the space after './my')
+./msb {start restart stop status} : all-purpose start/stop/status/restart command
 
 The full manual is available using:
-
 perldoc MySQL::Sandbox
+
+A task-oriented user manual is also available:
 perldoc MySQL::Sandbox::Recipes
 
 README_SCRIPT
@@ -1873,7 +1877,8 @@ my $readme_common = <<'END_README_COMMON';
 To run a SQL command in all servers, use:
 ./use_all {query}
 
-To connect to this sandbox, use the information stored inside 'connection.json'.
+To connect to this sandbox, use the information stored inside 
+    'connection.json' or 'default_connection.json'.
 
 Simple administrative tasks can be performed using:
 ./start_all  [options]  : starts all servers
@@ -1885,14 +1890,15 @@ Simple administrative tasks can be performed using:
 More information is available inside the README file within each directory below.
 
 The full manual is available using:
-
 perldoc MySQL::Sandbox
+
+A task-oriented user guide is also available:
 perldoc MySQL::Sandbox::Recipes
 
 END_README_COMMON
 
 sub get_readme_common_replication {
-    return $readme_common_replication;
+    return MySQL::Sandbox::credits() . "\n" .$readme_common_replication;
 }
 
 sub get_readme_common {
@@ -1900,14 +1906,14 @@ sub get_readme_common {
 }
 
 sub get_readme_multiple {
-    return $readme_multiple;
+    return MySQL::Sandbox::credits() . "\n" . $readme_multiple;
 }
 sub get_readme_circular {
-    return $readme_circular;
+    return MySQL::Sandbox::credits() . "\n" . $readme_circular;
 }
 
 sub get_readme_master_slave {
-    return $readme_master_slave;
+    return MySQL::Sandbox::credits() . "\n" . $readme_master_slave;
 }
 
 1;
