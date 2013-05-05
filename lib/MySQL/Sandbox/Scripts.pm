@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.36";
+our $VERSION="3.0.37";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1436,6 +1436,24 @@ END_DEFAULT_CONNECTION_JSON
             "username":     "_DBUSERREPL_@_REMOTE_ACCESS_",
             "password":     "_DB_REPL_PASSWORD_",
             "privileges":   "REPLICATION SLAVE"
+        }
+    },
+    "samples": {
+        "php": {
+            "mysqli" : "$mysqli = new mysqli('127.0.0.1', '_DBUSER_', '_DBPASSWORD_', 'test', '_SERVERPORT_');",
+            "pdo"    : "$dbh = new PDO('mysql:host=127.0.0.1;port=5531', '_DBUSER_', '_DBPASSWORD_');"
+        },
+        "perl" : {
+            "dbi" : "$dbh=DBI->connect( 'DBI:mysql:host=127.0.0.1;port=_SERVERPORT_', '_DBUSER_', '_DBPASSWORD_')"
+        },
+        "python" : {
+            "mysql.connector" : "cnx = mysql.connector.connect(user='_DBUSER_', password='_DBPASSWORD_', host='127.0.0.1', port=_SERVERPORT_, database='test')"
+        },
+        "java" : {
+            "DriverManager" : "con=DriverManager.getConnection(\\\"jdbc:mysql://127.0.0.1:_SERVERPORT_/test\\\", \\\"_DBUSER_\\\", \\\"_DBPASSWORD_\\\")"            
+        },
+        "shell" : {
+            "generic": "_BASEDIR_/bin/mysql -h 127.0.0.1 -P _SERVERPORT_ -u _DBUSER_ -p_DBPASSWORD_"
         }
     }
 }
