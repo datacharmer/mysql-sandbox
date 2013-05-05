@@ -486,9 +486,23 @@ sub check_sandbox_files
 
     for my $text_script (@{$expected_scripts{$sandbox_type}{texts} })
     {
-        ok( -f "$sandbox_path/$text_script", "text script $text_script file found");
+        my $filename = "$sandbox_path/$text_script";
+        
+        ok( -f $filename, "text script $text_script file found");
+        if ($filename =~ /\.json$/)
+        {
+            my $is_json = MySQL::Sandbox::validate_json_object($filename);
+            if ($is_json && ($is_json == -1))
+            {
+                ok( 1, " - skipped $filename validation");
+            }
+            else 
+            {
+                ok($is_json, "JSON validation $filename");
+            }
+        }
     }
-
+   
 }
 
 sub run_single_test {

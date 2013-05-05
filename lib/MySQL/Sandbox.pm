@@ -23,9 +23,11 @@ our @EXPORT_OK= qw( is_port_open
                     use_env
                     sbinstr
                     get_json_from_dirs
-                    get_option_file_contents ) ;
+                    get_option_file_contents 
+                    validate_json_object
+                    ) ;
 
-our $VERSION="3.0.36";
+our $VERSION="3.0.37";
 our $DEBUG;
 
 BEGIN {
@@ -235,6 +237,34 @@ sub credits {
     return $CREDITS;
 }
 
+sub validate_json_object {
+    my ($json_filename, $json_text) = @_;
+
+    eval "use JSON;";
+    if ($@)
+    {
+        # print "# JSON module not installed - skipped evaluation\n";
+        return -1;
+    }
+
+    unless ($json_text)
+    {
+        $json_text = slurp($json_filename);
+    }
+    my $json = JSON->new->allow_nonref;
+
+    my $perl_value;
+    eval {
+        $perl_value = $json->decode( $json_text );
+    };
+    if ($@)
+    {
+        # print "error decoding json object\n";
+        return ;
+    }
+    return 1;
+}
+
 sub slurp {
     my ($filename, $skip_blanks, $skip_comments ) = @_;
     open my $FH , q{<}, $filename
@@ -298,11 +328,31 @@ sub get_json_from_dirs {
         }
         else
         {
-            warn "No connection.json found in $dir\n";
+            if ($DEBUG)
+            {
+                warn "# No connection.json found in $dir\n";
+                my ($package, $filename, $line) = caller;
+                warn "# called from $package - $filename - $line \n";
+            }
             $collective_json .= "{}";
         }
     }
     $collective_json .= "}";
+    my $is_valid_json = validate_json_object(undef, $collective_json);
+    if ($is_valid_json && ($is_valid_json == -1))
+    {
+        if ($DEBUG)
+        {
+            warn "# Could not validate JSON object\n";
+        }
+    }
+    elsif ( ! $is_valid_json)
+    {
+        warn "Invalid JSON object in $ENV{PWD} from [@$directories] \n";
+        $collective_json = qq({ "comment": "WARNING: invalid JSON object", "original" : )
+            . $collective_json 
+            . "\n}";
+    }
     return $collective_json;
 }
 

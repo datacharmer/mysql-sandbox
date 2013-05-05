@@ -1,3 +1,6 @@
+3.0.37	05-May-2013
+	- Added connection samples (for PHP, Perl, Python, Java, shell) to 'connection.json'
+	- Added validation tests for JSON contents
 3.0.36	04-May-2013
 	- IMPORTANT CHANGES:
 	  - Added connection.json to each sandbox (simple or multiple) The file
