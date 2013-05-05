@@ -1,3 +1,5 @@
+3.0.38	05-May-2013
+	- Fixed typos and formatting in embedded docs.
 3.0.37	05-May-2013
 	- Added connection samples (for PHP, Perl, Python, Java, shell) to 'connection.json'
 	- Added validation tests for JSON contents
@@ -7,7 +9,7 @@
 	  contains information to use the sandbox with third party applications.
 	  - Added default_connection.json to each sandbox (it has only the default
 	  items from connection.json)
-	  - Added README file to each sanbox (simple or multiple)
+	  - Added README file to each sandbox (simple or multiple)
 	- enhanced check_slaves. It now includes "show master status";
 	- Fixed bug in circular replication: enable_gtid was not created;
 	- Added 25 more integrity tests;

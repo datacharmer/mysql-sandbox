@@ -24,6 +24,7 @@ WriteMakefile(
                             'bin/make_multiple_custom_sandbox',
                             'bin/deploy_to_remote_sandboxes.sh',
                          ],
+    LICENSE         => 'gpl',
     ($] >= 5.005 ?     
       (
        ABSTRACT_FROM  => 'lib/MySQL/Sandbox.pm',
