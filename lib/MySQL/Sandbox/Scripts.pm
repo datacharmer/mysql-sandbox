@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.38";
+our $VERSION="3.0.39";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1456,6 +1456,9 @@ END_DEFAULT_CONNECTION_JSON
         "java" : {
             "DriverManager" : "con=DriverManager.getConnection(\\\"jdbc:mysql://127.0.0.1:_SERVERPORT_/test\\\", \\\"_DBUSER_\\\", \\\"_DBPASSWORD_\\\")"            
         },
+        "ruby" : {
+            "mysql" : "connection = Mysql.new '127.0.0.1', '_DBUSER_', '_DBPASSWORD_', 'test', _SERVER_PORT_"
+        },
         "shell" : {
             "generic": "_BASEDIR_/bin/mysql -h 127.0.0.1 -P _SERVERPORT_ -u _DBUSER_ -p_DBPASSWORD_"
         }
@@ -1898,7 +1901,7 @@ perldoc MySQL::Sandbox::Recipes
 END_README_COMMON
 
 sub get_readme_common_replication {
-    return MySQL::Sandbox::credits() . "\n" .$readme_common_replication;
+    return $readme_common_replication;
 }
 
 sub get_readme_common {

@@ -1,3 +1,9 @@
+3.0.39	29-May-2013
+	- added server_id option to deploy_to_remote_sandboxes
+	- added info about group directory to multiple sandbox 'start/stop/clear'
+	scripts
+	- added ruby connection info to connection.json
+	- Fixed display bug in credits (were reported twice in replication README)
 3.0.38	05-May-2013
 	- Fixed typos and formatting in embedded docs.
 3.0.37	05-May-2013

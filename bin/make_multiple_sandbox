@@ -257,6 +257,7 @@ chdir $group_directory;
 for my $cmd ( qw(start stop clear send_kill ) ) {
     my $cmd_fname = $cmd . '_all';
     $msb->write_to($cmd_fname, '>', '#!/bin/sh');
+    $msb->write_to($cmd_fname, '>>', qq(echo '# executing "$cmd"' on $group_directory));
     if ($cmd =~ /stop|clear|send_kill/ && $msb->{options}{'circular'}) {
         $msb->write_to ($cmd_fname, 
                 '>>', 

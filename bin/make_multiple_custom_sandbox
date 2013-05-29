@@ -202,6 +202,7 @@ chdir $group_directory;
 for my $cmd ( qw(start stop clear send_kill ) ) {
     my $cmd_fname = $cmd . '_all';
     $msb->write_to($cmd_fname, '>', '#!/bin/sh');
+    $msb->write_to($cmd_fname, '>>', qq(echo '# executing "$cmd"' on $group_directory));
     for my $node (1 .. @versions ) {
         $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on node $node'));
         $msb->write_to ($cmd_fname, '>>', qq($group_directory/node$node/$cmd "\$@"));
