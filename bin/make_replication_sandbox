@@ -334,6 +334,7 @@ chdir $replication_directory;
 for my $cmd ( qw(start stop clear send_kill ) ) {
     my $cmd_fname = $cmd . '_all';
     $msb->write_to($cmd_fname, '>', '#!/bin/sh');
+    $msb->write_to($cmd_fname, '>>', qq(echo '# executing "$cmd"' on $replication_directory));
     if ($cmd eq 'start') {
         $msb->write_to ($cmd_fname, '>>', qq(echo 'executing "$cmd" on master') );
         $msb->write_to ($cmd_fname, '>>', qq($replication_directory/master/$cmd "\$@") );

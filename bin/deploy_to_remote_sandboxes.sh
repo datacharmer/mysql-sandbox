@@ -17,7 +17,8 @@ function show_help {
     echo "-P port          => MySQL port  ($MYSQL_PORT)"
     echo "-d sandbox dir   => sandbox directory name ($SANDBOX_DIR)"
     echo "-m version       => MySQL version ($MYSQL_VERSION)"
-    echo "-l list of nodes =>list of nodes where to deploy"
+    echo "-l list of nodes => list of nodes where to deploy"
+    echo "-s server-ids    => list of server IDs to use (default: (10 20 30 40 ...))"
     echo '-t tarball       => MySQL tarball to install remotely (none)'
     echo ""
     echo "This command takes the list of nodes and installs a MySQL sandbox in each one."
@@ -25,7 +26,9 @@ function show_help {
     exit 1
 }
 
-args=$(getopt hP:m:d:l:t: $*)
+SERVER_IDS=(`seq 10 10 200`)
+
+args=$(getopt hs:P:m:d:l:t: $*)
 
 if [ $? != 0 ]
 then
@@ -65,6 +68,16 @@ do
             ;;
         -P)
             export MYSQL_PORT=$2
+            shift
+            shift
+            ;;
+        -s)
+            I=0
+            for n in $(echo $2 | tr ',' ' ' ) 
+            do 
+                SERVER_IDS[$I]=$n; 
+                I=$(($I+1))
+            done
             shift
             shift
             ;;
@@ -114,14 +127,14 @@ chmod +x $BUILD_SB
 SERVER_ID_COUNTER=0
 for HOST in  ${NODES[*]}
 do
-   SERVER_ID_COUNTER=$(($SERVER_ID_COUNTER+10))
    if [ -n "$TARBALL" ]
    then
         ssh $HOST 'if [ ! -d $HOME/opt/mysql ] ; then mkdir -p $HOME/opt/mysql ; fi' 
         scp -p $TARBALL $HOST:~/opt/mysql
    fi
    scp -p $BUILD_SB $HOST:$BUILD_SB
-   ssh $HOST $BUILD_SB $SERVER_ID_COUNTER
+   ssh $HOST $BUILD_SB ${SERVER_IDS[$SERVER_ID_COUNTER]}
+   SERVER_ID_COUNTER=$(($SERVER_ID_COUNTER+1))
 done
 
 echo "Connection parameters:"

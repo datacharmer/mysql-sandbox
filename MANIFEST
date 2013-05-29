@@ -18,7 +18,6 @@ lib/MySQL/Sandbox/Recipes.pm
 Makefile.PL
 MANIFEST
 README
-META.yml                                 Module meta-data (added by MakeMaker)
 t/01_modules.t
 t/02_test_binaries.t
 t/03_test_sandbox.t
