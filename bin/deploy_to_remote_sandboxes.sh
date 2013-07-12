@@ -20,6 +20,7 @@ function show_help {
     echo "-l list of nodes => list of nodes where to deploy"
     echo "-s server-ids    => list of server IDs to use (default: (10 20 30 40 ...))"
     echo '-t tarball       => MySQL tarball to install remotely (none)'
+    echo '-y my.cnf        => MySQL configuration file to use as template (none)'
     echo ""
     echo "This command takes the list of nodes and installs a MySQL sandbox in each one."
     echo "You must have ssh access to the remote nodes, or this script won't work."
@@ -28,7 +29,7 @@ function show_help {
 
 SERVER_IDS=(`seq 10 10 200`)
 
-args=$(getopt hs:P:m:d:l:t: $*)
+args=$(getopt hs:P:m:d:l:t:y: $*)
 
 if [ $? != 0 ]
 then
@@ -86,6 +87,11 @@ do
             shift
             shift
             ;;
+        -y)
+            export MY_CNF=$2
+            shift
+            shift
+            ;;
         --)
             shift
             break
@@ -111,8 +117,21 @@ BUILD_SB=$HOME/build_sb.sh
 echo "#!/bin/bash" > $BUILD_SB
 echo 'SANDBOX_EXISTS=$(for P in `echo $PATH | tr ":" " "` ; do if [ -f $P/make_sandbox ] ; then echo $P/make_sandbox ; fi; done)' >> $BUILD_SB
 echo 'if [ -z "$SANDBOX_EXISTS" ] ; then hostname; echo "make_sandbox not found in PATH" ; exit 1; fi' >> $BUILD_SB
+MY_TEMPLATE=$my_template$$.cnf
+if [ -n "$MY_CNF" ]
+then
+    if [  ! -f  $MY_CNF ]
+    then
+        echo "File '$MY_CNF' not found"
+        exit 1
+    fi
+    cp $MY_CNF $HOME/$MY_TEMPLATE
+    echo "MY_CNF=\$HOME/$MY_TEMPLATE" >> $BUILD_SB
+fi
 
-echo 'SANDBOX_OPTIONS="--no_confirm  --no_show -c server-id=$1 -c log-bin=mysql-bin -c log-slave-updates -c innodb_flush_log_at_trx_commit=1"' >> $BUILD_SB
+echo 'SANDBOX_OPTIONS="--no_confirm  --no_show"' >> $BUILD_SB
+echo 'if [ -n "$MY_CNF" ] ; then SANDBOX_OPTIONS="$SANDBOX_OPTIONS --my_file=$MY_CNF" ; fi ' >> $BUILD_SB
+echo 'SANDBOX_OPTIONS="$SANDBOX_OPTIONS -c server-id=$1 -c default_storage_engine=innodb -c log-bin=mysql-bin -c log-slave-updates -c innodb_flush_log_at_trx_commit=1"' >> $BUILD_SB
 echo 'export SANDBOX_OPTIONS="$SANDBOX_OPTIONS -c max_allowed_packet=48M --remote_access=%"' >> $BUILD_SB
 if [ -n "$TARBALL" ]
 then
@@ -122,6 +141,7 @@ else
     echo "make_sandbox $MYSQL_VERSION -- --sandbox_port=$MYSQL_PORT \\" >> $BUILD_SB
 fi
 echo "   --sandbox_directory=$SANDBOX_DIR  \$SANDBOX_OPTIONS" >> $BUILD_SB
+# echo "if [ -f \$HOME/$MY_TEMPLATE ] ; then rm -f \$HOME/$MY_TEMPLATE ; fi "
 chmod +x $BUILD_SB
 
 SERVER_ID_COUNTER=0
@@ -133,6 +153,7 @@ do
         scp -p $TARBALL $HOST:~/opt/mysql
    fi
    scp -p $BUILD_SB $HOST:$BUILD_SB
+   scp -p $HOME/$MY_TEMPLATE $HOST:$MY_TEMPLATE
    ssh $HOST $BUILD_SB ${SERVER_IDS[$SERVER_ID_COUNTER]}
    SERVER_ID_COUNTER=$(($SERVER_ID_COUNTER+1))
 done
