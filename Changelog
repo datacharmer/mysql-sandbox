@@ -1,3 +1,6 @@
+3.0.40	12-Jul-2013
+	- enhanced deploy_to_remote_sandboxes.sh with the ability of using a
+	template my.cnf for remote deployment (-y file-name)
 3.0.39	29-May-2013
 	- added server_id option to deploy_to_remote_sandboxes
 	- added info about group directory to multiple sandbox 'start/stop/clear'
