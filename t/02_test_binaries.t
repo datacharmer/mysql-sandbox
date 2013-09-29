@@ -28,13 +28,13 @@ ok_shell_result( "msandbox",
             "msandbox");
 
 # 5 tests
-ok_shell_result( "sb",
+ok_shell_result( "msb",
         ['shortcut',
         'single',
         'replication',
         'multiple'
         ],
-        "sb"
+        "msb"
 );
 
 # 3 tests

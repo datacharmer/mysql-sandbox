@@ -1,3 +1,6 @@
+3.0.41	30-Sep-2013
+	- INCOMPATIBLE CHANGE: Renamed 'sb' to 'msb' to avoid name clashes in
+	Linux distributions
 3.0.40	12-Jul-2013
 	- enhanced deploy_to_remote_sandboxes.sh with the ability of using a
 	template my.cnf for remote deployment (-y file-name)

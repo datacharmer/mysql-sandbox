@@ -11,7 +11,7 @@ WriteMakefile(
                             'Socket'     => 1.7,
                          }, 
     EXE_FILES         => [
-                            'bin/sb',
+                            'bin/msb',
                             'bin/msandbox',
                             'bin/sbtool',
                             'bin/test_sandbox',

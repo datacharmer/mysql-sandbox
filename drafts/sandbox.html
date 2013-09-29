@@ -47,7 +47,7 @@
 		</ul>
 
 		<li><a href="#environment_variables">Environment variables</a></li>
-		<li><a href="#sb___the_sandbox_shortcut">sb - the Sandbox shortcut</a></li>
+		<li><a href="#msb___the_sandbox_shortcut">msb - the Sandbox shortcut</a></li>
 	</ul>
 
 	<li><a href="#sbtool_the_sandbox_helper">SBTool the Sandbox helper</a></li>
@@ -463,73 +463,73 @@ make_multiple_custom_sandbox and make_multiple_sandbox</p>
    if a test fails.</pre>
 <p>
 </p>
-<h2><a name="sb___the_sandbox_shortcut">sb - the Sandbox shortcut</a></h2>
+<h2><a name="msb___the_sandbox_shortcut">msb - the Sandbox shortcut</a></h2>
 <p>When you have many sandboxes, even the simple exercise of typing the path to the appropriate 'use' script can be tedious and seemingly slow.</p>
-<p>If saving a few keystrokes is important, you may consider using <code>sb</code>, the sandbox shortcut.
-You invoke 'sb' with a version number, without dots or underscores. The shortcut script will try its best at finding the right directory.</p>
+<p>If saving a few keystrokes is important, you may consider using <code>msb</code>, the sandbox shortcut.
+You invoke 'msb' with a version number, without dots or underscores. The shortcut script will try its best at finding the right directory.</p>
 <pre>
-  $ sb 5135
+  $ msb 5135
   # same as calling 
   # $SANDBOX_HOME/msb_5_1_35/use</pre>
 <p>Every option that you use after the version is passed to the 'use' script.</p>
 <pre>
-  $ sb 5135 -e &quot;SELECT VERSION()&quot;
+  $ msb 5135 -e &quot;SELECT VERSION()&quot;
   # same as calling 
   # $SANDBOX_HOME/msb_5_1_35/use -e &quot;SELECT VERSION()&quot;</pre>
 <p>Prepending a &quot;r&quot; to the version number indicates a replication sandbox. If the directory is found, the script will call the master.</p>
 <pre>
-  $ sb r5135
+  $ msb r5135
   # same as calling 
   # $SANDBOX_HOME/rsandbox_5_1_35/m</pre>
 <p>To use a slave, use the corresponding number immediately after the version.</p>
 <pre>
-  $ sb r5135 2
+  $ msb r5135 2
   # same as calling 
   # $SANDBOX_HOME/rsandbox_5_1_35/s2</pre>
 <p>Options for the destination script are added after the node indication.</p>
 <pre>
-  $ sb r5135 2 -e &quot;SELECT 1&quot;
+  $ msb r5135 2 -e &quot;SELECT 1&quot;
   # same as calling 
   # $SANDBOX_HOME/rsandbox_5_1_35/s2 -e &quot;SELECT 1&quot;</pre>
 <p>Similar to replication, you can call multiple sandboxes, using an 'm' before the version number.</p>
 <pre>
-  $ sb m5135
+  $ msb m5135
   # same as calling 
   # $SANDBOX_HOME/multi_msb_5_1_35/n1</pre>
 <pre>
-  $ sb m5135 2
+  $ msb m5135 2
   # same as calling 
   # $SANDBOX_HOME/multi_msb_5_1_35/n2</pre>
 <p>If your sandbox has a non-standard name and you pass such name instead of a version, the script will attempt to open a single sandbox with that name.</p>
 <pre>
-  $ sb testSB
+  $ msb testSB
   # same as calling 
   # $SANDBOX_HOME/testSB/use</pre>
 <p>If the identified sandbox is not active, the script will attempt to start it.</p>
 <p>This shortcut script doesn't deal with any sandbox script other than the ones listed in the above examples.</p>
-<p>But the sb can do even more. If you invoke it with a dotted version number, the script will run the appropriate make*sandbox script and then use the sandbox itself.</p>
+<p>But the msb can do even more. If you invoke it with a dotted version number, the script will run the appropriate make*sandbox script and then use the sandbox itself.</p>
 <pre>
-  $ sb 5.1.35
+  $ msb 5.1.35
   # same as calling 
   # make_sandbox 5.1.35 --no_confirm
   # and then
   # $SANDBOX_HOME/msb_5_1_35/use</pre>
 <p>It works for group sandboxes as well.</p>
 <pre>
-  $ sb r5.1.35
+  $ msb r5.1.35
   # same as calling 
   # make_replication_sandbox 5.1.35 
   # and then
   # $SANDBOX_HOME/rsandbox_5_1_35/m</pre>
 <p>And finally, it also does What You Expect when using a tarball instead of a version.</p>
 <pre>
-  $ sb mysql-5.1.35-YOUR_OS.tar.gz
+  $ msb mysql-5.1.35-YOUR_OS.tar.gz
   # creates and uses a single sandbox from this tarball</pre>
 <pre>
-  $ sb r mysql-5.1.35-YOUR_OS.tar.gz
+  $ msb r mysql-5.1.35-YOUR_OS.tar.gz
   # creates and uses a replication sandbox from this tarball</pre>
 <pre>
-  $ sb m mysql-5.1.35-YOUR_OS.tar.gz
+  $ msb m mysql-5.1.35-YOUR_OS.tar.gz
   # creates and uses a multiple sandbox from this tarball</pre>
 <p>Using a MySQL server has never been easier.</p>
 <p>
