@@ -27,7 +27,7 @@ our @EXPORT_OK= qw( is_port_open
                     validate_json_object
                     ) ;
 
-our $VERSION="3.0.40";
+our $VERSION="3.0.41";
 our $DEBUG;
 
 BEGIN {
@@ -1055,54 +1055,54 @@ The test suite, C<test_sandbox>, recognizes two environment variables
    sandboxes created by test_sandbox. It is useful to inspect sandboxes
    if a test fails.
 
-=head2 sb - the Sandbox shortcut
+=head2 msb - the Sandbox shortcut
 
 When you have many sandboxes, even the simple exercise of typing the path to the appropriate 'use' script can be tedious and seemingly slow.
 
-If saving a few keystrokes is important, you may consider using C<sb>, the sandbox shortcut.
-You invoke 'sb' with a version number, without dots or underscores. The shortcut script will try its best at finding the right directory.
+If saving a few keystrokes is important, you may consider using C<msb>, the sandbox shortcut.
+You invoke 'msb' with a version number, without dots or underscores. The shortcut script will try its best at finding the right directory.
 
-  $ sb 5135
+  $ msb 5135
   # same as calling 
   # $SANDBOX_HOME/msb_5_1_35/use
 
 Every option that you use after the version is passed to the 'use' script.
 
-  $ sb 5135 -e "SELECT VERSION()"
+  $ msb 5135 -e "SELECT VERSION()"
   # same as calling 
   # $SANDBOX_HOME/msb_5_1_35/use -e "SELECT VERSION()"
 
 Prepending a "r" to the version number indicates a replication sandbox. If the directory is found, the script will call the master.
 
-  $ sb r5135
+  $ msb r5135
   # same as calling 
   # $SANDBOX_HOME/rsandbox_5_1_35/m
 
 To use a slave, use the corresponding number immediately after the version.
 
-  $ sb r5135 2
+  $ msb r5135 2
   # same as calling 
   # $SANDBOX_HOME/rsandbox_5_1_35/s2
 
 Options for the destination script are added after the node indication.
 
-  $ sb r5135 2 -e "SELECT 1"
+  $ msb r5135 2 -e "SELECT 1"
   # same as calling 
   # $SANDBOX_HOME/rsandbox_5_1_35/s2 -e "SELECT 1"
 
 Similar to replication, you can call multiple sandboxes, using an 'm' before the version number.
 
-  $ sb m5135
+  $ msb m5135
   # same as calling 
   # $SANDBOX_HOME/multi_msb_5_1_35/n1
 
-  $ sb m5135 2
+  $ msb m5135 2
   # same as calling 
   # $SANDBOX_HOME/multi_msb_5_1_35/n2
 
 If your sandbox has a non-standard name and you pass such name instead of a version, the script will attempt to open a single sandbox with that name.
 
-  $ sb testSB
+  $ msb testSB
   # same as calling 
   # $SANDBOX_HOME/testSB/use
 
@@ -1110,9 +1110,9 @@ If the identified sandbox is not active, the script will attempt to start it.
 
 This shortcut script doesn't deal with any sandbox script other than the ones listed in the above examples.
 
-But the sb can do even more. If you invoke it with a dotted version number, the script will run the appropriate make*sandbox script and then use the sandbox itself.
+But the msb can do even more. If you invoke it with a dotted version number, the script will run the appropriate make*sandbox script and then use the sandbox itself.
 
-  $ sb 5.1.35
+  $ msb 5.1.35
   # same as calling 
   # make_sandbox 5.1.35 --no_confirm
   # and then
@@ -1120,7 +1120,7 @@ But the sb can do even more. If you invoke it with a dotted version number, the 
 
 It works for group sandboxes as well.
 
-  $ sb r5.1.35
+  $ msb r5.1.35
   # same as calling 
   # make_replication_sandbox 5.1.35 
   # and then
@@ -1128,13 +1128,13 @@ It works for group sandboxes as well.
 
 And finally, it also does What You Expect when using a tarball instead of a version.
 
-  $ sb mysql-5.1.35-YOUR_OS.tar.gz
+  $ msb mysql-5.1.35-YOUR_OS.tar.gz
   # creates and uses a single sandbox from this tarball
 
-  $ sb r mysql-5.1.35-YOUR_OS.tar.gz
+  $ msb r mysql-5.1.35-YOUR_OS.tar.gz
   # creates and uses a replication sandbox from this tarball
 
-  $ sb m mysql-5.1.35-YOUR_OS.tar.gz
+  $ msb m mysql-5.1.35-YOUR_OS.tar.gz
   # creates and uses a multiple sandbox from this tarball
 
 Using a MySQL server has never been easier.

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# sb
+# msb
 #    The MySQL Sandbox
 #    Copyright (C) 2009-2010 Giuseppe Maxia
 #    Contacts: http://datacharmer.org
@@ -169,7 +169,7 @@ sub get_help {
           "Invokes a single or group sandbox easily.\n",
           "(It will start the sandbox if it is not active).\n",
           "\n",
-          "Usage: sb [r|m]version [node] [options]\n",
+          "Usage: msb [r|m]version [node] [options]\n",
           #"\n",
           "\tr -> replication\tm -> multiple\n",
           "version could be a plain number to open a sandbox\n",
@@ -178,16 +178,16 @@ sub get_help {
           "\t[node] is used for r|m\n",
           "\t[options] are what you would pass to the sandbox app\n";
     print "Examples:\n",
-          "sb 5135\n",
+          "msb 5135\n",
           "# runs \$SANDBOX_HOME/msb_5_1_35/use\n",
           "\n",
-          "sb 5.1.35\n",
+          "msb 5.1.35\n",
           "# runs make_sandbox 5.1.35 and \$SANDBOX_HOME/msb_5_1_35/use\n",
           "\n",
-          "sb r5135\n",
+          "msb r5135\n",
           "# runs \$SANDBOX_HOME/rsandbox_5_1_35/m\n",
           "\n",
-          "sb r5.1.35\n",
+          "msb r5.1.35\n",
           "# runs make_replication_sandbox 5.1.35 and \$SANDBOX_HOME/msb_5_1_35/use\n",
           "\n";
     exit 1;
