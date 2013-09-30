@@ -1,4 +1,7 @@
+3.0.42	30-Sep-2013
+	- Fixed bug in sb renaming. The new name was not updated in the MANIFEST
 3.0.41	30-Sep-2013
+	- INCOMPATIBLE CHANGE: Renamed 'sb' to 'msb' to avoid name clashes in
 	- INCOMPATIBLE CHANGE: Renamed 'sb' to 'msb' to avoid name clashes in
 	Linux distributions
 3.0.40	12-Jul-2013

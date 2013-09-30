@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.41";
+our $VERSION="3.0.42";
 
 our @MANIFEST = (
 'clear.sh',
