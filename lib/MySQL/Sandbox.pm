@@ -27,7 +27,7 @@ our @EXPORT_OK= qw( is_port_open
                     validate_json_object
                     ) ;
 
-our $VERSION="3.0.41";
+our $VERSION="3.0.42";
 our $DEBUG;
 
 BEGIN {

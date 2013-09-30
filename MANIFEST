@@ -5,7 +5,7 @@ bin/make_replication_sandbox
 bin/make_sandbox
 bin/make_sandbox_from_source
 bin/make_sandbox_from_installed
-bin/sb
+bin/msb
 bin/msandbox
 bin/sbtool
 bin/test_sandbox
