@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.42";
+our $VERSION="3.0.43";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1498,7 +1498,7 @@ mysql_fix_privilege_tables
 mysql_secure_installation
 mysql_setpermission
 mysql_tzinfo_to_sql
-mysql_upgrade
+mysql_config_editor
 mysql_waitpid
 mysql_zap
 mysqlaccess

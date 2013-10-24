@@ -1,3 +1,8 @@
+3.0.43	24-Oct-2013
+	- Fixed bug#1155517 The "my" scripts excludes mysql_upgrade from
+	--default-options incorrectly 
+	- Also added mysql_config_editor to the scripts that should not get
+	defaults-options
 3.0.42	30-Sep-2013
 	- Fixed bug in sb renaming. The new name was not updated in the MANIFEST
 3.0.41	30-Sep-2013
