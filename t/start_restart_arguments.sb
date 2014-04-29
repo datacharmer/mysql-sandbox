@@ -14,7 +14,7 @@ expected    = OK
 msg         = all servers stopped
 
 shell:
-command     = $SANDBOX_HOME/start_all --key-buffer=20M
+command     = $SANDBOX_HOME/start_all --key-buffer-size=20M
 expected    = OK
 msg         = all servers started
 
@@ -24,7 +24,7 @@ expected    = 20971520
 msg         = got right buffer size (20M)
 
 shell:
-command     = $SANDBOX_HOME/restart_all --key-buffer=25M
+command     = $SANDBOX_HOME/restart_all --key-buffer-size=25M
 expected    = OK
 msg         = all servers restarted
 
@@ -52,7 +52,7 @@ expected    = OK
 msg         = all servers stopped
 
 shell:
-command     = $SANDBOX_HOME/start_all --key-buffer=20M
+command     = $SANDBOX_HOME/start_all --key-buffer-size=20M
 expected    = OK
 msg         = all servers started
 
@@ -62,7 +62,7 @@ expected    = 20971520
 msg         = got right buffer size (20M)
 
 shell:
-command     = $SANDBOX_HOME/restart_all --key-buffer=25M
+command     = $SANDBOX_HOME/restart_all --key-buffer-size=25M
 expected    = OK
 msg         = all servers restarted
 
@@ -91,7 +91,7 @@ expected    = OK
 msg         = all servers stopped
 
 shell:
-command     = $SANDBOX_HOME/start_all --key-buffer=20M
+command     = $SANDBOX_HOME/start_all --key-buffer-size=20M
 expected    = OK
 msg         = all servers started
 
@@ -101,7 +101,7 @@ expected    = 20971520
 msg         = got right buffer size (20M)
 
 shell:
-command     = $SANDBOX_HOME/restart_all --key-buffer=25M
+command     = $SANDBOX_HOME/restart_all --key-buffer-size=25M
 expected    = OK
 msg         = all servers restarted
 
@@ -131,7 +131,7 @@ expected    = OK
 msg         = all servers stopped
 
 shell:
-command     = $SANDBOX_HOME/start_all --key-buffer=20M
+command     = $SANDBOX_HOME/start_all --key-buffer-size=20M
 expected    = OK
 msg         = all servers started
 
@@ -141,7 +141,7 @@ expected    = 20971520
 msg         = got right buffer size (20M)
 
 shell:
-command     = $SANDBOX_HOME/restart_all --key-buffer=25M
+command     = $SANDBOX_HOME/restart_all --key-buffer-size=25M
 expected    = OK
 msg         = all servers restarted
 

@@ -13,8 +13,8 @@ my $replication_dir = "rsandbox_$name_version";
 $ENV{MASTER_OPTIONS} = '';
 $ENV{SLAVE_OPTIONS}  = '';
 $ENV{NODE_OPTIONS}   = '';
-my $master_options   = '-c key-buffer=20M';
-my $slave_options    = '-c key-buffer=25M';
+my $master_options   = '-c key-buffer-size=20M';
+my $slave_options    = '-c key-buffer-size=25M';
 my $node_options     = '-c max_allowed_packet=3M';
 
 my $command_line_options =   "--master_options='$master_options' "
@@ -135,7 +135,7 @@ sleep 2;
 ok_sql({
     path    => "$sandbox_home/msb_hp/",
     query   => "show variables like 'innodb%'",
-    expected => ['innodb_buffer_pool_size\s*536870912', 'innodb_additional_mem_pool_size\s*52428800', 'innodb_flush_method\s*O_DIRECT'],
+    expected => ['innodb_buffer_pool_size\s*536870912', 'innodb_flush_method\s*O_DIRECT'],
     msg      => 'high performance options',    
 });
 
