@@ -107,8 +107,8 @@ if ( $msb->{options}{'high_performance'})
     my @perf_clauses = ( 
         'innodb-thread-concurrency=0',
         'sync_binlog=0',
-        'innodb-log-buffer-size=50M',
-        'innodb-additional-mem-pool-size=50M',
+        'innodb-log-buffer-size=100M',
+        # 'innodb-additional-mem-pool-size=50M',  # deprecated (removed in MySQL 5.7.4)
         'max-connections=350',
         'max_allowed_packet=48M',
         'innodb_buffer_pool_size=512M',
@@ -607,14 +607,36 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         if ($OSNAME =~ /darwin/) {
             $osx_options = '--lower_case_table_names=2';
         }
-        
         my $additional_options ="$osx_options";
-        my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data --tmpdir=%s/tmp', 
+        my $mysql_version = qx($msb->{options}{basedir}/bin/mysql_config --version);
+        if ($mysql_version)
+        {
+            my $major ;
+            if ($mysql_version =~ /^(\d+)/ )
+            {
+                $major = $1;
+            }
+            else
+            {
+                die "Can't get major version number from <$mysql_version>\n";
+            }
+            if (($mysql_version ge '5.7.4' ) && ($major < 10))  # exclude MariaDB from this feature
+            {
+                $additional_options .= ' --skip-random-password' ;
+            }
+        }
+        else
+        {
+            die "Can't determine MySQL version\n";
+        }
+        
+        my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data --tmpdir=%s/tmp %s', 
             $script,
             $msb->{options}{operating_system_user},
             $msb->{options}{basedir},
             $sandbox_directory,
-            $sandbox_directory;
+            $sandbox_directory,
+            $ENV{MYSQL_INSTALL_DB} || '';
         if ($DEBUG) {
             print "$cmd $additional_options\n";
         }

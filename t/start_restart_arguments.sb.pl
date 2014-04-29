@@ -48,7 +48,7 @@ for my $test (@test_sb) {
          msg        => 'all servers stopped',
      });
     ok_exec({
-         command    => "$sandbox_home/start_all --key-buffer=20M",
+         command    => "$sandbox_home/start_all --key-buffer-size=20M",
          expected   => 'ok',
          msg        => 'all servers started',
      });
@@ -59,7 +59,7 @@ for my $test (@test_sb) {
      });
 
     ok_exec({
-         command    => "$sandbox_home/restart_all --key-buffer=25M",
+         command    => "$sandbox_home/restart_all --key-buffer-size=25M",
          expected   => 'ok',
          msg        => 'all servers restarted',
      });

@@ -18,8 +18,8 @@ if ($TEST_VERSION ge '5.6')
 }
 my ($version, $name_version) = get_bare_version($TEST_VERSION);
 my $replication_dir = "rsandbox_$name_version";
-$ENV{MASTER_OPTIONS} = '-c key-buffer=20M';
-$ENV{SLAVE_OPTIONS}  = '-c key-buffer=25M';
+$ENV{MASTER_OPTIONS} = '-c key-buffer-size=20M';
+$ENV{SLAVE_OPTIONS}  = '-c key-buffer-size=25M';
 $ENV{NODE_OPTIONS}   = '-c max_allowed_packet=3M';
 
 ok_exec({

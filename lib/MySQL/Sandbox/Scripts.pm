@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.43";
+our $VERSION="3.0.44";
 
 our @MANIFEST = (
 'clear.sh',
@@ -388,6 +388,19 @@ my %parse_options_low_level_make_sandbox = (
                                          ] 
                             },
 
+#  
+#  This option requires rewriting several installation steps
+#  For now ( April 29, 2014) we are only supporting MySQL 5.7.4 without random password.
+#  More support will come later
+#
+#    random_password       => {
+#                                value => 0,                  
+#                                parse => 'random_password',                  
+#                                so    => 195,
+#                                help  => [
+#                                            'Enables random password generation with MySQL 5.7.4+'
+#                                         ] 
+#                            },
     interactive           => {
                                 value => 0,                  
                                 parse => 't|interactive',                  
