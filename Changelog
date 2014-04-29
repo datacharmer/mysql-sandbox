@@ -1,3 +1,7 @@
+3.0.44	29-Apr-2014
+    - Fixing bug#1313672 : MySQL Sandbox can't install with MySQL 5.7.4
+    - Removed some deprecated options that were removed in latest version of
+	MySQL
 3.0.43	24-Oct-2013
 	- Fixed bug#1155517 The "my" scripts excludes mysql_upgrade from
 	--default-options incorrectly 
