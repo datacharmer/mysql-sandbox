@@ -1,3 +1,8 @@
+3.0.45	30-Aug-2014
+	- Fixing bug#1361851 "start/stop/status scripts don't actually check if
+	  running"
+	- Fixing freshly submitted but long overdue Bug#1362014 
+	  "Sandbox scripts can't deal with stale PID files"
 3.0.44	29-Apr-2014
     - Fixing bug#1313672 : MySQL Sandbox can't install with MySQL 5.7.4
     - Removed some deprecated options that were removed in latest version of

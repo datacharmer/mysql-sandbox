@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.44";
+our $VERSION="3.0.45";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1072,11 +1072,26 @@ else
     echo "((( $MYSQLD_SAFE_OK )))"
     exit 1
 fi
+
+function is_running
+{
+    if [ -f $PIDFILE ]
+    then
+        MYPID=$(cat $PIDFILE)
+        ps -p $MYPID | grep $MYPID
+    fi
+}
+
 TIMEOUT=60
-if [ -f $PIDFILE ]
+if [ -n "$(is_running)" ]
 then
     echo "sandbox server already started (found pid file $PIDFILE)"
 else
+    if [ -f $PIDFILE ]
+    then
+        # Server is not running. Removing stale pid-file
+        rm -f $PIDFILE
+    fi
     CURDIR=`pwd`
     cd $BASEDIR
     if [ "$SBDEBUG" = "" ]
@@ -1124,14 +1139,20 @@ SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 __SBINSTR_SH__
 
+node_status=off
+exit_code=1
 if [ -f $PIDFILE ]
 then
-    echo "_SANDBOXDIR_ on"
-    exit 0
-else
-    echo "_SANDBOXDIR_ off"
-    exit 1
+    MYPID=$(cat $PIDFILE)
+    running=$(ps -p $MYPID | grep $MYPID)
+    if [ -n "$running" ]
+    then
+        node_status=on
+        exit_code=0
+    fi
 fi
+echo "_SANDBOXDIR_ $node_status"
+exit $exit_code
 
 STATUS_SCRIPT
 
@@ -1156,7 +1177,16 @@ MYSQL_ADMIN="$BASEDIR/bin/mysqladmin"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 __SBINSTR_SH__
 
-if [ -f $PIDFILE ]
+function is_running
+{
+    if [ -f $PIDFILE ]
+    then
+        MYPID=$(cat $PIDFILE)
+        ps -p $MYPID | grep $MYPID
+    fi
+}
+
+if [ -n "$(is_running)" ]
 then
     if [ -f $SBDIR/data/master.info ]
     then
@@ -1165,8 +1195,14 @@ then
     # echo "$MYSQL_ADMIN --defaults-file=$SBDIR/my.sandbox.cnf $MYCLIENT_OPTIONS shutdown"
     $MYSQL_ADMIN --defaults-file=$SBDIR/my.sandbox.cnf $MYCLIENT_OPTIONS shutdown
     sleep 1
+else
+    if [ -f $PIDFILE ]
+    then
+        rm -f $PIDFILE
+    fi
 fi
-if [ -f $PIDFILE ]
+
+if [ -n "$(is_running)" ]
 then
     # use the send_kill script if the server is not responsive
     $SBDIR/send_kill
@@ -1180,7 +1216,18 @@ SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 TIMEOUT=30
 __SBINSTR_SH__
-if [ -f $PIDFILE ]
+
+function is_running
+{
+    if [ -f $PIDFILE ]
+    then
+        MYPID=$(cat $PIDFILE)
+        ps -p $MYPID | grep $MYPID
+    fi
+}
+
+
+if [ -n "$(is_running)" ]
 then
     MYPID=`cat $PIDFILE`
     echo "Attempting normal termination --- kill -15 $MYPID"
@@ -1200,6 +1247,12 @@ then
     then
         echo "SERVER UNRESPONSIVE --- kill -9 $MYPID"
         kill -9 $MYPID
+        rm -f $PIDFILE
+    fi
+else
+    # server not running - removing stale pid-file
+    if [ -f $PIDFILE ]
+    then
         rm -f $PIDFILE
     fi
 fi
@@ -1253,7 +1306,17 @@ __SBINSTR_SH__
 #
 # attempt to drop databases gracefully
 #
-if [ -f $PIDFILE ]
+
+function is_running
+{
+    if [ -f $PIDFILE ]
+    then
+        MYPID=$(cat $PIDFILE)
+        ps -p $MYPID | grep $MYPID
+    fi
+}
+
+if [ -n "$(is_running)" ]
 then
     for D in `echo "show databases " | ./use -B -N | grep -v "^mysql$" | grep -iv "^information_schema$" | grep -iv "^performance_schema"` 
     do
