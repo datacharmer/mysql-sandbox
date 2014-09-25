@@ -251,6 +251,7 @@ my %replace_options = (
     _GENERAL_LOG_       => 'general_log',
     _BIND_ADDRESS_      => 'bind_address',
     _MSB_VERSION_       =>  'msb_version',
+    _LOWER_CASE_TABLE_NAMES_ => 'lower_case_table_names',
 );
 
 $msb->{options}{msb_version} = $MySQL::Sandbox::VERSION;
@@ -259,6 +260,15 @@ if ($msb->{options}{db_user} =~ /\@/) {
     my ($user, $host) = split /\@/, $msb->{options}{db_user};
     $msb->{options}{db_user} = $user;
     $msb->{options}{remote_access} = $host; 
+}
+
+if ($OSNAME =~ /darwin/) 
+{
+    $msb->{options}{lower_case_table_names} = 2;
+}
+else
+{
+    $msb->{options}{lower_case_table_names} = 0;
 }
 
 
@@ -603,11 +613,7 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
     }
     if ( -x $script ) {
 
-        my $osx_options = '';
-        if ($OSNAME =~ /darwin/) {
-            $osx_options = '--lower_case_table_names=2';
-        }
-        my $additional_options ="$osx_options";
+        my $additional_options = "";
         my $mysql_version = qx($msb->{options}{basedir}/bin/mysql_config --version);
         if ($mysql_version)
         {
@@ -620,7 +626,11 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
             {
                 die "Can't get major version number from <$mysql_version>\n";
             }
-            if (($mysql_version ge '5.7.4' ) && ($major < 10))  # exclude MariaDB from this feature
+            if (($mysql_version ge '5.7.5' ) && ($major < 10))  # exclude MariaDB from this feature
+            {
+                $additional_options .= ' --insecure' ;
+            }
+            elsif (($mysql_version ge '5.7.4' ) && ($major < 10))  # exclude MariaDB from this feature
             {
                 $additional_options .= ' --skip-random-password' ;
             }
@@ -630,12 +640,13 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
             die "Can't determine MySQL version\n";
         }
         
-        my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data --tmpdir=%s/tmp %s', 
+        #my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data --tmpdir=%s/tmp %s', 
+        my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data %s', 
             $script,
             $msb->{options}{operating_system_user},
             $msb->{options}{basedir},
             $sandbox_directory,
-            $sandbox_directory,
+            # $sandbox_directory,
             $ENV{MYSQL_INSTALL_DB} || '';
         if ($DEBUG) {
             print "$cmd $additional_options\n";

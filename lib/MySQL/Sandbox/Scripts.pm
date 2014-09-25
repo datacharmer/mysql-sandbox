@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.45";
+our $VERSION="3.0.46";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1386,6 +1386,7 @@ socket             = _GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock
 basedir            = _BASEDIR_
 datadir            = _HOME_DIR_/_SANDBOXDIR_/data
 tmpdir             = _TMPDIR_
+lower_case_table_names = _LOWER_CASE_TABLE_NAMES_
 pid-file           = _HOME_DIR_/_SANDBOXDIR_/data/mysql_sandbox_SERVERPORT_.pid
 bind-address       = _BIND_ADDRESS_
 # _SLOW_QUERY_LOG_
@@ -1451,6 +1452,7 @@ grant REPLICATION SLAVE on *.* to _DBUSERREPL_@'_REMOTE_ACCESS_' identified by '
 delete from user where password='';
 delete from db where user='';
 flush privileges;
+create schema if not exists test;
 
 GRANTS_MYSQL
 
