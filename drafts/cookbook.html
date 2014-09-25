@@ -2,454 +2,433 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>MySQL::Sandbox::Recipes - A cookbook for MySQL Sandbox</title>
+<title></title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<link rev="made" href="mailto:_locationd@tennine-slave.macports.org" />
+<link rev="made" href="mailto:_mdnsresponder@jackson.apple.com" />
 </head>
 
 <body style="background-color: white">
 
 
-<!-- INDEX BEGIN -->
-<div name="index">
-<p><a name="__index__"></a></p>
 
-<ul>
-
-	<li><a href="#name">NAME</a></li>
-	<li><a href="#purpose">PURPOSE</a></li>
-	<li><a href="#installing_mysql__sandbox">Installing MySQL::Sandbox</a></li>
-	<ul>
-
-		<li><a href="#the_easy_way___as_root">the easy way - as root</a></li>
-		<li><a href="#the_ambitious_way___as_unprivileged_user">the ambitious way - as unprivileged user</a></li>
-	</ul>
-
-	<li><a href="#single_server_recipes">SINGLE SERVER RECIPES</a></li>
-	<ul>
-
-		<li><a href="#creating_a_single_sandbox">Creating a single sandbox</a></li>
-		<li><a href="#easily_creating_more_sandboxes_after_the_first_one">Easily creating more sandboxes after the first one</a></li>
-		<li><a href="#using_a_single_sandbox">Using a single sandbox</a></li>
-		<li><a href="#creating_a_single_sandbox_with_user_defined_port_and_directory">Creating a single sandbox with user-defined port and directory</a></li>
-		<li><a href="#creating_a_single_sandbox_with_automatic_port_checking">Creating a single sandbox with automatic port checking</a></li>
-		<li><a href="#creating_a_single_sandbox_with_a_specific_option_file">Creating a single sandbox with a specific option file</a></li>
-		<li><a href="#creating_a_single_sandbox_from_a_source_directory">Creating a single sandbox from a source directory</a></li>
-		<li><a href="#starting_or_restarting_a_single_sandbox_with_temporary_options">Starting or restarting a single sandbox with temporary options</a></li>
-		<li><a href="#stopping_a_sandbox">Stopping a sandbox</a></li>
-		<li><a href="#cleaning_up_a_sandbox">Cleaning up a sandbox</a></li>
-		<li><a href="#copying_sandbox_contents_to_another">Copying sandbox contents to another</a></li>
-		<li><a href="#moving_a_sandbox">Moving a sandbox</a></li>
-		<li><a href="#changing_port_to_an_existing_sandbox">Changing port to an existing sandbox</a></li>
-		<li><a href="#removing_a_sandbox_completely">Removing a sandbox completely</a></li>
-		<li><a href="#making_a_sandbox_permanent">Making a sandbox permanent</a></li>
-		<li><a href="#starting_and_stopping_a_sandbox_when_the_host_server_starts">Starting and stopping a sandbox when the host server starts</a></li>
-		<li><a href="#installing_a_sandbox_from_already_installed_binaries">Installing a sandbox from already installed binaries</a></li>
-	</ul>
-
-	<li><a href="#multiple_server_recipes">MULTIPLE SERVER RECIPES</a></li>
-	<ul>
-
-		<li><a href="#creating_a_standard_replication_sandbox">Creating a standard replication sandbox</a></li>
-		<li><a href="#using_a_replication_sandbox">Using a replication sandbox</a></li>
-		<li><a href="#creating_a_circular_replication_sandbox">Creating a circular replication sandbox</a></li>
-		<li><a href="#using_a_circular_sandbox">Using a circular sandbox</a></li>
-		<li><a href="#creating_a_group_of_unrelated_sandboxes__same_version_">Creating a group of unrelated sandboxes (same version)</a></li>
-		<li><a href="#creating_a_group_of_unrelated_sandboxes__different_versions_">Creating a group of unrelated sandboxes (different versions)</a></li>
-		<li><a href="#using_a_group_of_sandboxes">Using a group of sandboxes</a></li>
-		<li><a href="#creating_a_group_sandbox_with_port_checking">Creating a group sandbox with port checking</a></li>
-		<li><a href="#creating_a_group_sandbox_with_a_specific_option_file">Creating a group sandbox with a specific option file</a></li>
-		<li><a href="#creating_a_group_sandbox_from_a_source_directory">Creating a group sandbox from a source directory</a></li>
-		<li><a href="#starting_or_restarting_a_group_sandbox_with_temporary_options">Starting or restarting a group sandbox with temporary options</a></li>
-		<li><a href="#stopping_a_group_sandbox">Stopping a group sandbox</a></li>
-		<li><a href="#cleaning_up_a_group_sandbox">Cleaning up a group sandbox</a></li>
-		<li><a href="#moving_a_group_sandbox">Moving a group sandbox</a></li>
-		<li><a href="#removing_a_group_sandbox_completely">Removing a group sandbox completely</a></li>
-		<li><a href="#making_a_group_sandbox_permanent">Making a group sandbox permanent</a></li>
-	</ul>
-
-	<li><a href="#managing_sandboxes_in_groups">Managing sandboxes in groups</a></li>
-	<ul>
-
-		<li><a href="#using_more_than_one_sandbox_home">Using more than one SANDBOX_HOME</a></li>
-		<li><a href="#stopping_all_sandboxes_at_once">Stopping all sandboxes at once</a></li>
-		<li><a href="#starting_all_sandboxes_at_once">Starting all sandboxes at once</a></li>
-		<li><a href="#running_the_same_query_on_all_active_sandboxes">Running the same query on all active sandboxes</a></li>
-	</ul>
-
-	<li><a href="#testing_with_sandboxes">Testing with sandboxes</a></li>
-	<ul>
-
-		<li><a href="#running_the_built_in_test_suite">Running the built-in test suite</a></li>
-		<li><a href="#creating_and_running_your_own_tests">Creating and running your own tests</a></li>
-	</ul>
-
-	<li><a href="#remote_sandboxes">Remote Sandboxes</a></li>
-	<ul>
-
-		<li><a href="#access_sandboxes_from_other_hosts">Access sandboxes from other hosts</a></li>
-		<li><a href="#deploy_mysql_sandboxes_to_many_hosts">Deploy MySQL sandboxes to many hosts</a></li>
-	</ul>
-
-	<li><a href="#copyright">COPYRIGHT</a></li>
-	<li><a href="#legal_notice">LEGAL NOTICE</a></li>
+<ul id="index">
+  <li><a href="#NAME">NAME</a></li>
+  <li><a href="#PURPOSE">PURPOSE</a></li>
+  <li><a href="#Installing-MySQL::Sandbox">Installing MySQL::Sandbox</a>
+    <ul>
+      <li><a href="#the-easy-way---as-root">the easy way - as root</a></li>
+      <li><a href="#the-ambitious-way---as-unprivileged-user">the ambitious way - as unprivileged user</a></li>
+    </ul>
+  </li>
+  <li><a href="#SINGLE-SERVER-RECIPES">SINGLE SERVER RECIPES</a>
+    <ul>
+      <li><a href="#Creating-a-single-sandbox">Creating a single sandbox</a></li>
+      <li><a href="#Easily-creating-more-sandboxes-after-the-first-one">Easily creating more sandboxes after the first one</a></li>
+      <li><a href="#Using-a-single-sandbox">Using a single sandbox</a></li>
+      <li><a href="#Creating-a-single-sandbox-with-user-defined-port-and-directory">Creating a single sandbox with user-defined port and directory</a></li>
+      <li><a href="#Creating-a-single-sandbox-with-automatic-port-checking">Creating a single sandbox with automatic port checking</a></li>
+      <li><a href="#Creating-a-single-sandbox-with-a-specific-option-file">Creating a single sandbox with a specific option file</a></li>
+      <li><a href="#Creating-a-single-sandbox-from-a-source-directory">Creating a single sandbox from a source directory</a></li>
+      <li><a href="#Starting-or-restarting-a-single-sandbox-with-temporary-options">Starting or restarting a single sandbox with temporary options</a></li>
+      <li><a href="#Stopping-a-sandbox">Stopping a sandbox</a></li>
+      <li><a href="#Cleaning-up-a-sandbox">Cleaning up a sandbox</a></li>
+      <li><a href="#Copying-sandbox-contents-to-another">Copying sandbox contents to another</a></li>
+      <li><a href="#Moving-a-sandbox">Moving a sandbox</a></li>
+      <li><a href="#Changing-port-to-an-existing-sandbox">Changing port to an existing sandbox</a></li>
+      <li><a href="#Removing-a-sandbox-completely">Removing a sandbox completely</a></li>
+      <li><a href="#Making-a-sandbox-permanent">Making a sandbox permanent</a></li>
+      <li><a href="#Starting-and-stopping-a-sandbox-when-the-host-server-starts">Starting and stopping a sandbox when the host server starts</a></li>
+      <li><a href="#Installing-a-sandbox-from-already-installed-binaries">Installing a sandbox from already installed binaries</a></li>
+    </ul>
+  </li>
+  <li><a href="#MULTIPLE-SERVER-RECIPES">MULTIPLE SERVER RECIPES</a>
+    <ul>
+      <li><a href="#Creating-a-standard-replication-sandbox">Creating a standard replication sandbox</a></li>
+      <li><a href="#Using-a-replication-sandbox">Using a replication sandbox</a></li>
+      <li><a href="#Creating-a-circular-replication-sandbox">Creating a circular replication sandbox</a></li>
+      <li><a href="#Using-a-circular-sandbox">Using a circular sandbox</a></li>
+      <li><a href="#Creating-a-group-of-unrelated-sandboxes-same-version-">Creating a group of unrelated sandboxes (same version)</a></li>
+      <li><a href="#Creating-a-group-of-unrelated-sandboxes-different-versions-">Creating a group of unrelated sandboxes (different versions)</a></li>
+      <li><a href="#Using-a-group-of-sandboxes">Using a group of sandboxes</a></li>
+      <li><a href="#Creating-a-group-sandbox-with-port-checking">Creating a group sandbox with port checking</a></li>
+      <li><a href="#Creating-a-group-sandbox-with-a-specific-option-file">Creating a group sandbox with a specific option file</a></li>
+      <li><a href="#Creating-a-group-sandbox-from-a-source-directory">Creating a group sandbox from a source directory</a></li>
+      <li><a href="#Starting-or-restarting-a-group-sandbox-with-temporary-options">Starting or restarting a group sandbox with temporary options</a></li>
+      <li><a href="#Stopping-a-group-sandbox">Stopping a group sandbox</a></li>
+      <li><a href="#Cleaning-up-a-group-sandbox">Cleaning up a group sandbox</a></li>
+      <li><a href="#Moving-a-group-sandbox">Moving a group sandbox</a></li>
+      <li><a href="#Removing-a-group-sandbox-completely">Removing a group sandbox completely</a></li>
+      <li><a href="#Making-a-group-sandbox-permanent">Making a group sandbox permanent</a></li>
+    </ul>
+  </li>
+  <li><a href="#Managing-sandboxes-in-groups">Managing sandboxes in groups</a>
+    <ul>
+      <li><a href="#Using-more-than-one-SANDBOX_HOME">Using more than one SANDBOX_HOME</a></li>
+      <li><a href="#Stopping-all-sandboxes-at-once">Stopping all sandboxes at once</a></li>
+      <li><a href="#Starting-all-sandboxes-at-once">Starting all sandboxes at once</a></li>
+      <li><a href="#Running-the-same-query-on-all-active-sandboxes">Running the same query on all active sandboxes</a></li>
+    </ul>
+  </li>
+  <li><a href="#Testing-with-sandboxes">Testing with sandboxes</a>
+    <ul>
+      <li><a href="#Running-the-built-in-test-suite">Running the built-in test suite</a></li>
+      <li><a href="#Creating-and-running-your-own-tests">Creating and running your own tests</a></li>
+    </ul>
+  </li>
+  <li><a href="#Remote-Sandboxes">Remote Sandboxes</a>
+    <ul>
+      <li><a href="#Access-sandboxes-from-other-hosts">Access sandboxes from other hosts</a></li>
+      <li><a href="#Deploy-MySQL-sandboxes-to-many-hosts">Deploy MySQL sandboxes to many hosts</a></li>
+    </ul>
+  </li>
+  <li><a href="#COPYRIGHT">COPYRIGHT</a></li>
+  <li><a href="#LEGAL-NOTICE">LEGAL NOTICE</a></li>
 </ul>
 
-<hr name="index" />
-</div>
-<!-- INDEX END -->
+<h1 id="NAME">NAME</h1>
 
-<p>
-</p>
-<h1><a name="name">NAME</a></h1>
 <p>MySQL::Sandbox::Recipes - A cookbook for MySQL Sandbox</p>
-<p>
-</p>
-<hr />
-<h1><a name="purpose">PURPOSE</a></h1>
+
+<h1 id="PURPOSE">PURPOSE</h1>
+
 <p>This package is a collection of HOW-TO brief tutorials and recipes for MySQL Sandbox</p>
-<p>
-</p>
-<hr />
-<h1><a name="installing_mysql__sandbox">Installing MySQL::Sandbox</a></h1>
-<p>All the recipes here need the MySQL Sandbox 
-<a href="http://launchpad.net/mysql-sandbox">http://launchpad.net/mysql-sandbox</a>.
-Therefore you need to install it, to be able to follow these recipes.
-For a general description of the application, see <a href="/MySQL/Sandbox.html">the MySQL::Sandbox manpage</a>.
-A presentation on this matter is available at Slideshare 
-<a href="http://www.slideshare.net/datacharmer/mysql-sandbox-3">http://www.slideshare.net/datacharmer/mysql-sandbox-3</a></p>
-<p>
-</p>
-<h2><a name="the_easy_way___as_root">the easy way - as root</a></h2>
-<p>This is so easy, that I am almost ashamed to show it.
-Anyway, here goes.</p>
-<pre>
-  $ sudo su -
-  # cpan MySQL::Sandbox</pre>
-<p>
-</p>
-<h2><a name="the_ambitious_way___as_unprivileged_user">the ambitious way - as unprivileged user</a></h2>
-<p>It is not difficult, but it requires some steps that depend on your environment.
-To simplify the example, let's assume that you are using perl 5.8.8 and you want 
-to install in $HOME/usr/local.</p>
+
+<h1 id="Installing-MySQL::Sandbox">Installing MySQL::Sandbox</h1>
+
+<p>All the recipes here need the MySQL Sandbox <a href="http://launchpad.net/mysql-sandbox">http://launchpad.net/mysql-sandbox</a>. Therefore you need to install it, to be able to follow these recipes. For a general description of the application, see <a>MySQL::Sandbox</a>. A presentation on this matter is available at Slideshare <a href="http://www.slideshare.net/datacharmer/mysql-sandbox-3">http://www.slideshare.net/datacharmer/mysql-sandbox-3</a></p>
+
+<h2 id="the-easy-way---as-root">the easy way - as root</h2>
+
+<p>This is so easy, that I am almost ashamed to show it. Anyway, here goes.</p>
+
+<pre><code>  $ sudo su -
+  # cpan MySQL::Sandbox</code></pre>
+
+<h2 id="the-ambitious-way---as-unprivileged-user">the ambitious way - as unprivileged user</h2>
+
+<p>It is not difficult, but it requires some steps that depend on your environment. To simplify the example, let&#39;s assume that you are using perl 5.8.8 and you want to install in $HOME/usr/local.</p>
+
 <ol>
-<li>
-<p>Download MySQL Sandbox tarball from cpan</p>
+
+<li><p>Download MySQL Sandbox tarball from cpan</p>
+
 </li>
-<li>
-<p>Set the variables that you will need</p>
-<pre>
-    mkdir -p $HOME/usr/local
+<li><p>Set the variables that you will need</p>
+
+<pre><code>    mkdir -p $HOME/usr/local
     export PATH=$HOME/usr/local/bin:$PATH
-    export PERL5LIB=$HOME/usr/local/lib/perl5/site_perl/5.8.8</pre>
+    export PERL5LIB=$HOME/usr/local/lib/perl5/site_perl/5.8.8</code></pre>
+
 </li>
-<li>
-<p>Build and install</p>
-<pre>
-    perl Makefile.PL PREFIX=$HOME/usr/local
+<li><p>Build and install</p>
+
+<pre><code>    perl Makefile.PL PREFIX=$HOME/usr/local
     make
     make test
-    make install</pre>
+    make install</code></pre>
+
 </li>
 </ol>
+
 <p>It is a bit complex, but you need to do the setup only once. After that, you can use MySQL Sandbox in your user space.</p>
+
 <p>Another solution, which can be habdy if you use a box without Perl and without root access, is to install Perl in your user space, and then you can use CPAN to install any package in your user space.</p>
-<p>
-</p>
-<hr />
-<h1><a name="single_server_recipes">SINGLE SERVER RECIPES</a></h1>
-<p>
-</p>
-<h2><a name="creating_a_single_sandbox">Creating a single sandbox</a></h2>
+
+<h1 id="SINGLE-SERVER-RECIPES">SINGLE SERVER RECIPES</h1>
+
+<h2 id="Creating-a-single-sandbox">Creating a single sandbox</h2>
+
 <ol>
-<li>
-<p>Download or build a MySQL server tarball. Its name is something like
-   mysql-X.X.X-Your_Operating_System.tar.gz</p>
+
+<li><p>Download or build a MySQL server tarball. Its name is something like mysql-X.X.X-Your_Operating_System.tar.gz</p>
+
 </li>
-<li>
-<p>Make the sandbox</p>
-<pre>
-    make_sandbox /path/to/mysql-X.X.X-Your_Operating_System.tar.gz</pre>
+<li><p>Make the sandbox</p>
+
+<pre><code>    make_sandbox /path/to/mysql-X.X.X-Your_Operating_System.tar.gz</code></pre>
+
 <p>Notice that this command will expand the tarball into a directory <code>X.X.X</code>, located in the same path where tghe tarball is. If you want to expand in a centralized directory, see the next recipe.</p>
+
 <p>If you have already a centralized repository for your binaries (see next recipe), then you can create a sandbox even more easily:</p>
-<pre>
-  make_sandbox 5.1.34
-  make_replication_sandbox 5.1.34</pre>
+
+<pre><code>  make_sandbox 5.1.34
+  make_replication_sandbox 5.1.34</code></pre>
+
 </li>
 </ol>
-<p>
-</p>
-<h2><a name="easily_creating_more_sandboxes_after_the_first_one">Easily creating more sandboxes after the first one</a></h2>
-<p>If you want to reuse the same binaries more than once, you can set up
-a repository for such binaries, under $SANDBOX_BINARY, which by default
-is $HOME/opt/mysql
-If you have such a directory, you have two choices.</p>
+
+<h2 id="Easily-creating-more-sandboxes-after-the-first-one">Easily creating more sandboxes after the first one</h2>
+
+<p>If you want to reuse the same binaries more than once, you can set up a repository for such binaries, under $SANDBOX_BINARY, which by default is $HOME/opt/mysql If you have such a directory, you have two choices.</p>
+
 <dl>
-<dt><strong><a name="manually" class="item">manually</a></strong></dt>
 
+<dt id="manually">manually</dt>
 <dd>
+
 <p>Expand the tarball, and move it under $HOME/opt/mysql (or set $SANDBOX_BINARY to a path that suits you better). Name the directory with the version number. For example:</p>
-<pre>
-   cd $HOME/opt/mysql
-   gunzip -c /path/to/mysql-5.1.34-osx10.5-x86.tar.gz | tar -xf -
-   mv mysql-5.1.34-osx10.5-x86 5.1.34</pre>
-<p>Now, next time you want to install a sandbox using 5.1.34, all you need to do is say</p>
-<pre>
-  make_sandbox 5.1.34</pre>
-</dd>
-<dt><strong><a name="automatically" class="item">automatically</a></strong></dt>
 
+<pre><code>   cd $HOME/opt/mysql
+   gunzip -c /path/to/mysql-5.1.34-osx10.5-x86.tar.gz | tar -xf -
+   mv mysql-5.1.34-osx10.5-x86 5.1.34</code></pre>
+
+<p>Now, next time you want to install a sandbox using 5.1.34, all you need to do is say</p>
+
+<pre><code>  make_sandbox 5.1.34</code></pre>
+
+</dd>
+<dt id="automatically">automatically</dt>
 <dd>
+
 <p>If you want to combine installation and centralization of the binaries in one go, you can:</p>
-<pre>
-    make_sandbox --export_binaries /path/to/mysql-5.1.34-osx10.5-x86.tar.gz</pre>
+
+<pre><code>    make_sandbox --export_binaries /path/to/mysql-5.1.34-osx10.5-x86.tar.gz </code></pre>
+
 <p>The expanded tarball is copied to the $SANDBOX_BINARY path, and you can refer to the version number only for future installations.</p>
+
 </dd>
 </dl>
-<p>
-</p>
-<h2><a name="using_a_single_sandbox">Using a single sandbox</a></h2>
-<p>When you create a sandbox, the last line of the application output tells you where it was created.
-If you don't remember where it is, the default location is $HOME/sandboxes/msb_X_X_XX, where X_X_XX is the version number. For example if you have installed</p>
-<pre>
-    make_sandbox 5.1.34</pre>
+
+<h2 id="Using-a-single-sandbox">Using a single sandbox</h2>
+
+<p>When you create a sandbox, the last line of the application output tells you where it was created. If you don&#39;t remember where it is, the default location is $HOME/sandboxes/msb_X_X_XX, where X_X_XX is the version number. For example if you have installed</p>
+
+<pre><code>    make_sandbox 5.1.34</code></pre>
+
 <p>your sandbox is under $HOME/sandboxes/msb_5_1_34.</p>
+
 <p>To use it, move to that directory and invoke the <code>./use</code> script. This script is a shortcut to invoke the mysql command line client, with all the appropriate parameters.</p>
-<pre>
-  ./msb_5_1_34/use
+
+<pre><code>  ./msb_5_1_34/use
   Welcome to the MySQL monitor.  Commands end with ; or \g.
   Your MySQL connection id is 1
   Server version: 5.1.34 MySQL Community Server (GPL)
   .
-  Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+  Type &#39;help;&#39; or &#39;\h&#39; for help. Type &#39;\c&#39; to clear the current input statement.
   .
-  mysql [localhost] {msandbox} ((none)) &gt;</pre>
-<p>The default user is 'msandbox' and the password is 'msandbox'. The same password is also used by the 'root' account.</p>
-<p>The 'use' script accepts all the additional options and commands that you would use with the mysql client. For example:</p>
-<pre>
-  ./use -e 'show schemas'
+  mysql [localhost] {msandbox} ((none)) &gt; </code></pre>
+
+<p>The default user is &#39;msandbox&#39; and the password is &#39;msandbox&#39;. The same password is also used by the &#39;root&#39; account.</p>
+
+<p>The &#39;use&#39; script accepts all the additional options and commands that you would use with the mysql client. For example:</p>
+
+<pre><code>  ./use -e &#39;show schemas&#39;
    +--------------------+
    | Database           |
    +--------------------+
    | information_schema | 
    | mysql              | 
    | test               | 
-   +--------------------+</pre>
-<pre>
-  ./use -N -B -e 'select version()'
-  5.1.34</pre>
-<p>You don't need to be inside the sandbox to use this script. You can invoke it with a relative or absolute path.</p>
-<pre>
-    $HOME/sandboxes/msb_5_1_34/use -e 'select version()'
+   +--------------------+
+
+  ./use -N -B -e &#39;select version()&#39;
+  5.1.34</code></pre>
+
+<p>You don&#39;t need to be inside the sandbox to use this script. You can invoke it with a relative or absolute path.</p>
+
+<pre><code>    $HOME/sandboxes/msb_5_1_34/use -e &#39;select version()&#39;
     +-----------+
     | version() |
     +-----------+
     | 5.1.34    | 
-    +-----------+</pre>
-<p>Notice that this script is created when the sandbox is installed. It is heavily customized for that sandbox only, and it is not replaceable by the same script from another sandbox. Even if you move it to another directory, it will still refer to the sandbox in which it was created. See 'moving a sandbox' for a safe way of moving a sandbox with all its scripts to a different directory.</p>
-<p>
-</p>
-<h2><a name="creating_a_single_sandbox_with_user_defined_port_and_directory">Creating a single sandbox with user-defined port and directory</a></h2>
+    +-----------+</code></pre>
+
+<p>Notice that this script is created when the sandbox is installed. It is heavily customized for that sandbox only, and it is not replaceable by the same script from another sandbox. Even if you move it to another directory, it will still refer to the sandbox in which it was created. See &#39;moving a sandbox&#39; for a safe way of moving a sandbox with all its scripts to a different directory.</p>
+
+<h2 id="Creating-a-single-sandbox-with-user-defined-port-and-directory">Creating a single sandbox with user-defined port and directory</h2>
+
 <p>When you create a sandbox, you can fine tune the final product by adding options. You can list of all the available options easily:</p>
-<pre>
-    low_level_make_sandbox --help</pre>
-<p>You can pass any of the options listed to <code>make_sandbox</code>. In particular, since we need to change the port and directory, here's the deed:</p>
-<pre>
-  make_sandbox 5.1.34
-  # installs on $SANDBOX_HOME/msb_5_1_34 with port 5134</pre>
-<pre>
+
+<pre><code>    low_level_make_sandbox --help</code></pre>
+
+<p>You can pass any of the options listed to <code>make_sandbox</code>. In particular, since we need to change the port and directory, here&#39;s the deed:</p>
+
+<pre><code>  make_sandbox 5.1.34
+  # installs on $SANDBOX_HOME/msb_5_1_34 with port 5134
+
   make_sandbox 5.1.34 -- --sandbox_port=7800 --sandbox_directory=mickeymouse
-  # installs on $SANDBOX_HOME/mickeymouse with port 7800</pre>
+  # installs on $SANDBOX_HOME/mickeymouse with port 7800</code></pre>
+
 <p>See the next recipe for an automatic way of getting a different port and directory.</p>
-<p>
-</p>
-<h2><a name="creating_a_single_sandbox_with_automatic_port_checking">Creating a single sandbox with automatic port checking</a></h2>
-<pre>
-  make_sandbox 5.1.34 -- --check_port</pre>
-<p>This option will check if port 5134 is used. If it is, it will check the next available port, until it finds a free one. 
-In the previous statement context, 'free' means not only 'in use', but also allocated by another sandbox that is currently not running.
-If the directory msb_5_1_34 is used, the sandbox is created in msb_5_1_34_a. The application keeps checking for free ports and unused directories until it finds a suitable combination.
-Notice that this option is disabled when you use a group sandbox (replication or multiple). Even if you set NODE_OPTIONS=--check_port, it won't be used, because every group sandbox invokes make_sandbox with the --no_check_port option.</p>
-<p>
-</p>
-<h2><a name="creating_a_single_sandbox_with_a_specific_option_file">Creating a single sandbox with a specific option file</a></h2>
-<pre>
-  make_sandbox 5.1.34 -- --my_file=large</pre>
-<p>This option installs the option file template my-large.cnf, which ships with every MySQL release.
-Similarly, you can choose 'small' or 'huge' to load the appropriate template.
-If you have your favorite option file, you can specify the full path to it</p>
-<pre>
-  make_sandbox 5.1.34 -- --my_file=/path/to/my_smart.cnf</pre>
+
+<h2 id="Creating-a-single-sandbox-with-automatic-port-checking">Creating a single sandbox with automatic port checking</h2>
+
+<pre><code>  make_sandbox 5.1.34 -- --check_port</code></pre>
+
+<p>This option will check if port 5134 is used. If it is, it will check the next available port, until it finds a free one. In the previous statement context, &#39;free&#39; means not only &#39;in use&#39;, but also allocated by another sandbox that is currently not running. If the directory msb_5_1_34 is used, the sandbox is created in msb_5_1_34_a. The application keeps checking for free ports and unused directories until it finds a suitable combination. Notice that this option is disabled when you use a group sandbox (replication or multiple). Even if you set NODE_OPTIONS=--check_port, it won&#39;t be used, because every group sandbox invokes make_sandbox with the --no_check_port option.</p>
+
+<h2 id="Creating-a-single-sandbox-with-a-specific-option-file">Creating a single sandbox with a specific option file</h2>
+
+<pre><code>  make_sandbox 5.1.34 -- --my_file=large</code></pre>
+
+<p>This option installs the option file template my-large.cnf, which ships with every MySQL release. Similarly, you can choose &#39;small&#39; or &#39;huge&#39; to load the appropriate template. If you have your favorite option file, you can specify the full path to it</p>
+
+<pre><code>  make_sandbox 5.1.34 -- --my_file=/path/to/my_smart.cnf</code></pre>
+
 <p>In all cases, the sandbox installer skips all the options that are necessary to keep the sandbox isolated and efficient (user, port,socket,datadir,basedir).</p>
-<p>
-</p>
-<h2><a name="creating_a_single_sandbox_from_a_source_directory">Creating a single sandbox from a source directory</a></h2>
+
+<h2 id="Creating-a-single-sandbox-from-a-source-directory">Creating a single sandbox from a source directory</h2>
+
 <p>After you have compiled MySQL from source, you can create a sandbox with the new binaries:</p>
-<pre>
-  make_sandbox_from_source $PWD single [options]</pre>
-<p>The options are the same that you can pass to make_sandbox.
-This script creates a tarball, and then invokes make_sandbox to finish the job.</p>
-<p>
-</p>
-<h2><a name="starting_or_restarting_a_single_sandbox_with_temporary_options">Starting or restarting a single sandbox with temporary options</a></h2>
-<p>Every single server sandbox has a 'start' script, which does what the name suggests. Not only that, but you can start a sandbox with additional parameters for the mysqld daemon.</p>
-<pre>
-  ./start --key-buffer=3G</pre>
-<p>The 'restart' script accepts parameters in the same way. While 'start' only works when the sandboxed server is not running, 'restart' makes sure that the server is stopped, and then invokes 'start' with the optional parameters.</p>
-<p>
-</p>
-<h2><a name="stopping_a_sandbox">Stopping a sandbox</a></h2>
+
+<pre><code>  make_sandbox_from_source $PWD single [options]</code></pre>
+
+<p>The options are the same that you can pass to make_sandbox. This script creates a tarball, and then invokes make_sandbox to finish the job.</p>
+
+<h2 id="Starting-or-restarting-a-single-sandbox-with-temporary-options">Starting or restarting a single sandbox with temporary options</h2>
+
+<p>Every single server sandbox has a &#39;start&#39; script, which does what the name suggests. Not only that, but you can start a sandbox with additional parameters for the mysqld daemon.</p>
+
+<pre><code>  ./start --key-buffer=3G</code></pre>
+
+<p>The &#39;restart&#39; script accepts parameters in the same way. While &#39;start&#39; only works when the sandboxed server is not running, &#39;restart&#39; makes sure that the server is stopped, and then invokes &#39;start&#39; with the optional parameters.</p>
+
+<h2 id="Stopping-a-sandbox">Stopping a sandbox</h2>
+
 <p>Inside every single sandbox there are two scripts that can stop a sandbox.</p>
-<pre>
-  ./stop</pre>
-<p>The 'stop' script attempts a clean stop, using mysqladmin. This works most of the time, especially if you are using a GA release.</p>
-<pre>
-  ./send_kill</pre>
-<p>The 'send_kill' script achieve the same result, but with a different path. First, it tries to stop the sandboxed server nicely, by sending a <code>kill -15</code> to the server PID. If this fails, after a reasonable timeout, it sends a deadly <code>kill -9</code> and removes the PID file. This brutal method is not recommended for general usage, but it is sometimes necessary when dealing with servers in early stages of their development.</p>
-<p>
-</p>
-<h2><a name="cleaning_up_a_sandbox">Cleaning up a sandbox</a></h2>
-<pre>
-  ./clear</pre>
-<p>The 'clear' script will empty the data directory, trying to clean the system as much as possible. 
-If the server is running when you invoke the script, it will issue a <code>drop database</code> query for each schema. It will also truncate the general and slow query log tables, if they exist.
-If the server is not running, 'clear' will clean up the data directory as best as it can. Notice however that invoking 'clear' when the server is not running will not remove stored routines and events.
-WARNING! No confirmation is asked! The data will be gone in 1 second.</p>
-<p>
-</p>
-<h2><a name="copying_sandbox_contents_to_another">Copying sandbox contents to another</a></h2>
-<p>Using 'sbtool', the Sandbox helper, this task is easy to perform.
-You need two sandboxes. This command cannnot copy to an arbitrary directory, but only to an existing sandbox.
-The first sandbox is where the data is stored. You need to use the <code>--source_dir</code> option (or <code>-s</code> for short). The second directory, identified with <code>--dest_dir</code>, (or <code>-d</code>) is the place where the data is copied. 
-WARNING! the destination data is overwritten!
-This command skips binary logs, relay logs, and general logs.</p>
-<pre>
-  sbtool -o copy \
+
+<pre><code>  ./stop</code></pre>
+
+<p>The &#39;stop&#39; script attempts a clean stop, using mysqladmin. This works most of the time, especially if you are using a GA release.</p>
+
+<pre><code>  ./send_kill</code></pre>
+
+<p>The &#39;send_kill&#39; script achieve the same result, but with a different path. First, it tries to stop the sandboxed server nicely, by sending a <code>kill -15</code> to the server PID. If this fails, after a reasonable timeout, it sends a deadly <code>kill -9</code> and removes the PID file. This brutal method is not recommended for general usage, but it is sometimes necessary when dealing with servers in early stages of their development.</p>
+
+<h2 id="Cleaning-up-a-sandbox">Cleaning up a sandbox</h2>
+
+<pre><code>  ./clear</code></pre>
+
+<p>The &#39;clear&#39; script will empty the data directory, trying to clean the system as much as possible. If the server is running when you invoke the script, it will issue a <code>drop database</code> query for each schema. It will also truncate the general and slow query log tables, if they exist. If the server is not running, &#39;clear&#39; will clean up the data directory as best as it can. Notice however that invoking &#39;clear&#39; when the server is not running will not remove stored routines and events. WARNING! No confirmation is asked! The data will be gone in 1 second.</p>
+
+<h2 id="Copying-sandbox-contents-to-another">Copying sandbox contents to another</h2>
+
+<p>Using &#39;sbtool&#39;, the Sandbox helper, this task is easy to perform. You need two sandboxes. This command cannnot copy to an arbitrary directory, but only to an existing sandbox. The first sandbox is where the data is stored. You need to use the <code>--source_dir</code> option (or <code>-s</code> for short). The second directory, identified with <code>--dest_dir</code>, (or <code>-d</code>) is the place where the data is copied. WARNING! the destination data is overwritten! This command skips binary logs, relay logs, and general logs.</p>
+
+<pre><code>  sbtool -o copy \
     -s /path/to/source/sandbox \
-    -d /path/to/destination/sandbox</pre>
+    -d /path/to/destination/sandbox</code></pre>
+
 <p>Some important points to remember:</p>
+
 <ul>
-<li>
-<p>This command only copies from a single sandbox to another. If you want to copy from a masterto several slaves, you need to run the command multiple times.</p>
+
+<li><p>This command only copies from a single sandbox to another. If you want to copy from a masterto several slaves, you need to run the command multiple times.</p>
+
 </li>
-<li>
-<p>Before copying, this command stops both source and destination sandbox.</p>
+<li><p>Before copying, this command stops both source and destination sandbox.</p>
+
 </li>
 </ul>
-<p>
-</p>
-<h2><a name="moving_a_sandbox">Moving a sandbox</a></h2>
-<pre>
-  sbtool -o move \
+
+<h2 id="Moving-a-sandbox">Moving a sandbox</h2>
+
+<pre><code>  sbtool -o move \
     -s /path/to/source/sandbox \
-    -d /path/to/destination/directory</pre>
+    -d /path/to/destination/directory</code></pre>
+
 <p>This command stops the sandbox, moves it to the requested directory, and then changes all the paths in the scripts, to refer to the new directory.</p>
+
 <p>If the destination directory already exists, the command fails.</p>
-<p>
-</p>
-<h2><a name="changing_port_to_an_existing_sandbox">Changing port to an existing sandbox</a></h2>
-<pre>
-  sbtool -o port \
+
+<h2 id="Changing-port-to-an-existing-sandbox">Changing port to an existing sandbox</h2>
+
+<pre><code>  sbtool -o port \
     -s /path/to/source/sandbox \
-    --new_port=XXXX</pre>
+    --new_port=XXXX</code></pre>
+
 <p>THis is similar to moving a sandbox, except that the directory is not changed. The sandbox is stopped, and the port changed in all the scripts.</p>
-<p>
-</p>
-<h2><a name="removing_a_sandbox_completely">Removing a sandbox completely</a></h2>
-<pre>
-  sbtool -o delete \
-    -s /path/to/source/sandbox</pre>
-<p>This is a combination of using the 'clear' script and removing the sandbox.
-There is a safety check, though. If the sandbox is a permanent one (see next recipe), the operation aborts.
-Otherwise, the script calls 'clear' (clear_all if it is a group sandbox) and then removes all the contents.</p>
+
+<h2 id="Removing-a-sandbox-completely">Removing a sandbox completely</h2>
+
+<pre><code>  sbtool -o delete \
+    -s /path/to/source/sandbox </code></pre>
+
+<p>This is a combination of using the &#39;clear&#39; script and removing the sandbox. There is a safety check, though. If the sandbox is a permanent one (see next recipe), the operation aborts. Otherwise, the script calls &#39;clear&#39; (clear_all if it is a group sandbox) and then removes all the contents.</p>
+
 <p>WARNING! No confirmation is asked! The data will be gone in 1 second.</p>
-<p>
-</p>
-<h2><a name="making_a_sandbox_permanent">Making a sandbox permanent</a></h2>
-<p>MySQL Sandbox has been created with testing in mind. As such, the sandboxes are expendable, and there are some commands to get rid of them easily and quickly.
-However, you don't want always to do this.
-Sometimes, you need to keep the data for some time, to record it, or to copy it somewhere, or to use it for some similar testing. Whatever the reason, in these cases you don't want your data to disappear accidentally.
-The 'preserve' command, part of the sbtool, disables the 'clear' script in your sandbox, to avoid unpleasant &quot;oh no&quot; moments.
-Notice that nothing will protect you against hastily typed 'DROP DATABASE' queries! If you really need your data around, make a copy!</p>
-<pre>
-  sbtool -o preserve \
-    -s /path/to/source/sandbox</pre>
-<p>If you change your mind, invoking sbtool with the 'unpreserve' operation, makes the sandbox erasable again.</p>
-<pre>
-  sbtool -o unpreserve \
-    -s /path/to/source/sandbox</pre>
-<p>
-</p>
-<h2><a name="starting_and_stopping_a_sandbox_when_the_host_server_starts">Starting and stopping a sandbox when the host server starts</a></h2>
-<p>There is no built-in solution for this recipe. Every operating system has its own method to launch applications at start up.
-The important point is that probably you don't need it. MySQL Sandbox is a tool for testing, aiming at creating temporary MySQL servers, and as such you should not need to launch a sandbox at start up.
-If you really need it, the MySQL manual explain how to launch at startup the main instance of the database.</p>
-<p>
-</p>
-<h2><a name="installing_a_sandbox_from_already_installed_binaries">Installing a sandbox from already installed binaries</a></h2>
-<pre>
-  make_sandbox_from_installed VERSION [options]</pre>
-<p>This script (introduced in 2.0.99e) creates a repository of symbolic links from already installed binaries, arranging them in a way that the MySQL Sandbox easily recognizes.
-You should move to a directory where you want to keep this repository, before invoking this script. For example:</p>
-<pre>
-  mkdir -p $HOME/opt/mysql
+
+<h2 id="Making-a-sandbox-permanent">Making a sandbox permanent</h2>
+
+<p>MySQL Sandbox has been created with testing in mind. As such, the sandboxes are expendable, and there are some commands to get rid of them easily and quickly. However, you don&#39;t want always to do this. Sometimes, you need to keep the data for some time, to record it, or to copy it somewhere, or to use it for some similar testing. Whatever the reason, in these cases you don&#39;t want your data to disappear accidentally. The &#39;preserve&#39; command, part of the sbtool, disables the &#39;clear&#39; script in your sandbox, to avoid unpleasant &quot;oh no&quot; moments. Notice that nothing will protect you against hastily typed &#39;DROP DATABASE&#39; queries! If you really need your data around, make a copy!</p>
+
+<pre><code>  sbtool -o preserve \
+    -s /path/to/source/sandbox </code></pre>
+
+<p>If you change your mind, invoking sbtool with the &#39;unpreserve&#39; operation, makes the sandbox erasable again.</p>
+
+<pre><code>  sbtool -o unpreserve \
+    -s /path/to/source/sandbox </code></pre>
+
+<h2 id="Starting-and-stopping-a-sandbox-when-the-host-server-starts">Starting and stopping a sandbox when the host server starts</h2>
+
+<p>There is no built-in solution for this recipe. Every operating system has its own method to launch applications at start up. The important point is that probably you don&#39;t need it. MySQL Sandbox is a tool for testing, aiming at creating temporary MySQL servers, and as such you should not need to launch a sandbox at start up. If you really need it, the MySQL manual explain how to launch at startup the main instance of the database.</p>
+
+<h2 id="Installing-a-sandbox-from-already-installed-binaries">Installing a sandbox from already installed binaries</h2>
+
+<pre><code>  make_sandbox_from_installed VERSION [options]</code></pre>
+
+<p>This script (introduced in 2.0.99e) creates a repository of symbolic links from already installed binaries, arranging them in a way that the MySQL Sandbox easily recognizes. You should move to a directory where you want to keep this repository, before invoking this script. For example:</p>
+
+<pre><code>  mkdir -p $HOME/opt/mysql
   cd $HOME/opt/mysql
-  make_sandbox_from_installed 5.1.34 --no_confirm</pre>
+  make_sandbox_from_installed 5.1.34 --no_confirm</code></pre>
+
 <p>After this call, you can then install sandboxes (single or multiple) with a simple</p>
-<pre>
-  make_{replication_|multiple_}sandbox 5.1.34</pre>
-<p>
-</p>
-<hr />
-<h1><a name="multiple_server_recipes">MULTIPLE SERVER RECIPES</a></h1>
-<p>
-</p>
-<h2><a name="creating_a_standard_replication_sandbox">Creating a standard replication sandbox</a></h2>
-<pre>
-  make_replication_sandbox /path/to/tarball5.1.34.tar.gz</pre>
-<p>As easy as making a single sandbox, this command creates a replication system with one master an two slaves.
-If you have set the repository under $SANDBOX_BINARY (see <a href="#easily_creating_more_sandboxes_after_the_first_one">Easily creating more sandboxes after the first one</a>), then you can also say</p>
-<pre>
-  make_replication_sandbox 5.1.34</pre>
+
+<pre><code>  make_{replication_|multiple_}sandbox 5.1.34</code></pre>
+
+<h1 id="MULTIPLE-SERVER-RECIPES">MULTIPLE SERVER RECIPES</h1>
+
+<h2 id="Creating-a-standard-replication-sandbox">Creating a standard replication sandbox</h2>
+
+<pre><code>  make_replication_sandbox /path/to/tarball5.1.34.tar.gz </code></pre>
+
+<p>As easy as making a single sandbox, this command creates a replication system with one master an two slaves. If you have set the repository under $SANDBOX_BINARY (see <a href="#Easily-creating-more-sandboxes-after-the-first-one">&quot;Easily creating more sandboxes after the first one&quot;</a>), then you can also say</p>
+
+<pre><code>  make_replication_sandbox 5.1.34</code></pre>
+
 <p>If you want a different number of slaves, you can add an option</p>
-<pre>
-  make_replication_sandbox --how_many_slaves=5 5.1.34</pre>
-<p>
-</p>
-<h2><a name="using_a_replication_sandbox">Using a replication sandbox</a></h2>
-<p>When you create a replication sandbox, the last line of the application output tells you where it was created.
-If you don't remember where it is, the default location is $HOME/sandboxes/rsandbox_X_X_XX, where X_X_XX is the version number. For example if you have installed</p>
-<pre>
-    make_replication_sandbox 5.1.34</pre>
+
+<pre><code>  make_replication_sandbox --how_many_slaves=5 5.1.34</code></pre>
+
+<h2 id="Using-a-replication-sandbox">Using a replication sandbox</h2>
+
+<p>When you create a replication sandbox, the last line of the application output tells you where it was created. If you don&#39;t remember where it is, the default location is $HOME/sandboxes/rsandbox_X_X_XX, where X_X_XX is the version number. For example if you have installed</p>
+
+<pre><code>    make_replication_sandbox 5.1.34</code></pre>
+
 <p>your sandbox is under $HOME/sandboxes/rsandbox_5_1_34.</p>
+
 <p>To use it, move to that directory and invoke one of these scripts:</p>
-<pre>
-  * ./m  for the master
+
+<pre><code>  * ./m  for the master
   * ./s1 for the first slave
   * ./s2 for the second slave, s3 for the third one, and so on
   * ./use_all to send a command to the master and all slaves
-  * ./check_slaves to see as a quick glance if the slaves are working</pre>
-<p>All the above scripts are shortcuts to the 'use' script in the appropriate directory.
-The 'use' script was described in the section dedicated to single server recipes.</p>
-<p>
-</p>
-<h2><a name="creating_a_circular_replication_sandbox">Creating a circular replication sandbox</a></h2>
+  * ./check_slaves to see as a quick glance if the slaves are working</code></pre>
+
+<p>All the above scripts are shortcuts to the &#39;use&#39; script in the appropriate directory. The &#39;use&#39; script was described in the section dedicated to single server recipes.</p>
+
+<h2 id="Creating-a-circular-replication-sandbox">Creating a circular replication sandbox</h2>
+
 <p>To create a circular replication system, you use the same command used for standard replication, but you add an option to indicate that you want a circular topology.</p>
-<pre>
- make_replication_sandbox --circular=4 /path/to/tarball5.1.34.tar.gz</pre>
+
+<pre><code> make_replication_sandbox --circular=4 /path/to/tarball5.1.34.tar.gz</code></pre>
+
 <p>The above command creates a system with 4 nodes, where node 1 is master of 2, node 2 is master of 3, node 3 is master of 4, and node 4, to close the circle, is master of 1.</p>
+
 <p>If you have a binary repository under $SANDBOX_BINARY, you can use the simplified call:</p>
-<pre>
- make_replication_sandbox --circular=4 5.1.34</pre>
-<p>
-</p>
-<h2><a name="using_a_circular_sandbox">Using a circular sandbox</a></h2>
-<p>Same as using a replication sandbox (see above), but there are no 'm' and 's#' scripts. Instead, there are 'n#' scripts, to access node 1 (n1), node 2, (n2) and so on.
-You may try this:</p>
-<pre>
-  $ ./n1 -e 'create table test.t1 (i int)'
-  $ ./n3 -e 'insert into test.t1 values (3)'
-  $ ./use_all 'select * from test.t1'
+
+<pre><code> make_replication_sandbox --circular=4 5.1.34</code></pre>
+
+<h2 id="Using-a-circular-sandbox">Using a circular sandbox</h2>
+
+<p>Same as using a replication sandbox (see above), but there are no &#39;m&#39; and &#39;s#&#39; scripts. Instead, there are &#39;n#&#39; scripts, to access node 1 (n1), node 2, (n2) and so on. You may try this:</p>
+
+<pre><code>  $ ./n1 -e &#39;create table test.t1 (i int)&#39;
+  $ ./n3 -e &#39;insert into test.t1 values (3)&#39;
+  $ ./use_all &#39;select * from test.t1&#39;
   # server: 1: 
   i
   3
@@ -461,248 +440,242 @@ You may try this:</p>
   3
   # server: 4: 
   i
-  3</pre>
-<p>
-</p>
-<h2><a name="creating_a_group_of_unrelated_sandboxes__same_version_">Creating a group of unrelated sandboxes (same version)</a></h2>
-<pre>
-  make_multiple_sandbox /path/to/tarball 
-  make_multiple_sandbox --how_many_nodes=4 /path/to/tarball</pre>
-<p>A group of unrelated sandboxes is a set of three or more servers installed under the same directory.
-What is the purpose of this? It is useful whenever you need to play with several servers without being tied by the master/slave relationship.
-One possible reason is to try new replication schemes with a clean setup. Or you may want to test the Federated engine.
-Another common usage is when you need to test different approaches to the same problem, and you want to compare results quickly.</p>
-<p>
-</p>
-<h2><a name="creating_a_group_of_unrelated_sandboxes__different_versions_">Creating a group of unrelated sandboxes (different versions)</a></h2>
-<pre>
-  make_multiple_custom_sandbox /path/to/tarball5.1.34 /path/to/tarball5.0.77
-  make_multiple_custom_sandbox 5.1.34 5.0.77 5.4.0</pre>
-<p>Similar to the previous one, the composite group is a collection of servers of different versions, all under the same directory.
-It can be useful when you want to compare some scheme in different versions, and automate the operations as much as possible.</p>
-<p>
-</p>
-<h2><a name="using_a_group_of_sandboxes">Using a group of sandboxes</a></h2>
-<p>Same as using a replication sandbox (see above), but there are no 'm' and 's#' scripts. Instead, there are 'n#' scripts, to access node 1 (n1), node 2, (n2) and so on.</p>
-<p>A group of sandboxes is easily manged with the 'use_all' script.
-For example, you may want to pass a SQL instruction to all the servers</p>
-<pre>
-  ./use_all 'select something from dbname.tablename where x=1'</pre>
+  3</code></pre>
+
+<h2 id="Creating-a-group-of-unrelated-sandboxes-same-version-">Creating a group of unrelated sandboxes (same version)</h2>
+
+<pre><code>  make_multiple_sandbox /path/to/tarball 
+  make_multiple_sandbox --how_many_nodes=4 /path/to/tarball </code></pre>
+
+<p>A group of unrelated sandboxes is a set of three or more servers installed under the same directory. What is the purpose of this? It is useful whenever you need to play with several servers without being tied by the master/slave relationship. One possible reason is to try new replication schemes with a clean setup. Or you may want to test the Federated engine. Another common usage is when you need to test different approaches to the same problem, and you want to compare results quickly.</p>
+
+<h2 id="Creating-a-group-of-unrelated-sandboxes-different-versions-">Creating a group of unrelated sandboxes (different versions)</h2>
+
+<pre><code>  make_multiple_custom_sandbox /path/to/tarball5.1.34 /path/to/tarball5.0.77
+  make_multiple_custom_sandbox 5.1.34 5.0.77 5.4.0</code></pre>
+
+<p>Similar to the previous one, the composite group is a collection of servers of different versions, all under the same directory. It can be useful when you want to compare some scheme in different versions, and automate the operations as much as possible.</p>
+
+<h2 id="Using-a-group-of-sandboxes">Using a group of sandboxes</h2>
+
+<p>Same as using a replication sandbox (see above), but there are no &#39;m&#39; and &#39;s#&#39; scripts. Instead, there are &#39;n#&#39; scripts, to access node 1 (n1), node 2, (n2) and so on.</p>
+
+<p>A group of sandboxes is easily manged with the &#39;use_all&#39; script. For example, you may want to pass a SQL instruction to all the servers</p>
+
+<pre><code>  ./use_all &#39;select something from dbname.tablename where x=1&#39;</code></pre>
+
 <p>Or you want to execute a SQL script for each server</p>
-<pre>
-  ./use_all 'source somescript.sql'</pre>
+
+<pre><code>  ./use_all &#39;source somescript.sql&#39;</code></pre>
+
 <p>The internal organization of the directory makes it easy to do more complex operations with all the servers within the group. For example, if you want to measure the speed of execution of the same statement for each server (assuming that you have different setups for each one), you can create a shell script:</p>
-<pre>
-  ./stop_all
+
+<pre><code>  ./stop_all
   for N in 1 2 3
   do
     echo &quot;processing node $N&quot;
     ./node$N/start --some_mysqld_option=somevalue
-    time ./node$N/use -e 'select something_heavy from somedb.sometable'
+    time ./node$N/use -e &#39;select something_heavy from somedb.sometable&#39;
     ./node$N/stop
-  done</pre>
-<p>
-</p>
-<h2><a name="creating_a_group_sandbox_with_port_checking">Creating a group sandbox with port checking</a></h2>
-<p>When you create a multiple sandbox (make_replication_sandbox, 
-make_multiple_sandbox, make_multiple_custom_sandbox) the default behavior
-is to overwrite the existing sandbox without asking for confirmation. 
-The rationale is that a multiple sandbox is definitely more likely to be a 
-created only for testing purposes, and overwriting it should not be a problem.
-If you want to avoid overwriting, you can specify a different group name
-(<code>--replication_directory</code> <code>--group_directory</code>), but this will use the
-same base port number, unless you specify <code>--check_base_port</code>.</p>
-<pre>
+  done</code></pre>
+
+<h2 id="Creating-a-group-sandbox-with-port-checking">Creating a group sandbox with port checking</h2>
+
+<p>When you create a multiple sandbox (make_replication_sandbox, make_multiple_sandbox, make_multiple_custom_sandbox) the default behavior is to overwrite the existing sandbox without asking for confirmation. The rationale is that a multiple sandbox is definitely more likely to be a created only for testing purposes, and overwriting it should not be a problem. If you want to avoid overwriting, you can specify a different group name (<code>--replication_directory</code> <code>--group_directory</code>), but this will use the same base port number, unless you specify <code>--check_base_port</code>.</p>
+
+<pre><code> make_replication_sandbox 5.0.79
+ # Creates a replication directory under $SANDBOX_HOME/rsandbox_5_0_79
+ # The default base_port is 7000
+
  make_replication_sandbox 5.0.79
  # Creates a replication directory under $SANDBOX_HOME/rsandbox_5_0_79
- # The default base_port is 7000</pre>
-<pre>
- make_replication_sandbox 5.0.79
- # Creates a replication directory under $SANDBOX_HOME/rsandbox_5_0_79
- # overwriting the previous one. The default base port is still 7000</pre>
-<pre>
+ # overwriting the previous one. The default base port is still 7000
+
  # WRONG
  make_replication_sandbox --check_base_port 5.0.79
  # Creates a replication directory under $SANDBOX_HOME/rsandbox_5_0_79
- # overwriting the previous one.</pre>
-<pre>
+ # overwriting the previous one. 
+
  # WRONG
  make_replication_sandbox --replication_directory=newdir 5.0.79
  # Created a replication directory under $SANDBOX_HOME/newdir.
  # The previous one is preserved, but the new sandbox does not start
- # because of port conflict.</pre>
-<pre>
+ # because of port conflict.
+
  # RIGHT
  make_replication_sandbox --replication_directory=newwdir \
     --check_base_port 5.0.79
  # Creates a replication directory under $SANDBOX_HOME/newdir
- # The previous one is preserved. No conflicts happen</pre>
-<p>
-</p>
-<h2><a name="creating_a_group_sandbox_with_a_specific_option_file">Creating a group sandbox with a specific option file</a></h2>
-<p>When you create a group sandbox, make_sanbox is invoked several times, with a predefined set of options. You can add options for each node by means of environmental variables.
-If you create a replication sandbox, you can set different options for the master and for the slaves:</p>
-<pre>
-  export MASTER_OPTIONS=&quot;--my_file=huge&quot;
+ # The previous one is preserved. No conflicts happen</code></pre>
+
+<h2 id="Creating-a-group-sandbox-with-a-specific-option-file">Creating a group sandbox with a specific option file</h2>
+
+<p>When you create a group sandbox, make_sanbox is invoked several times, with a predefined set of options. You can add options for each node by means of environmental variables. If you create a replication sandbox, you can set different options for the master and for the slaves:</p>
+
+<pre><code>  export MASTER_OPTIONS=&quot;--my_file=huge&quot;
   export SLAVE_OPTIONS=&quot;--my_file=large&quot;
-  make_replication_sandbox 5.1.34</pre>
-<pre>
+  make_replication_sandbox 5.1.34
+
   export MASTER_OPTIONS=&quot;--my_file=/path/to/my.cnf&quot;
   export SLAVE_OPTIONS=&quot;--my_file=/path/to/my_other.cnf&quot;
-  make_replication_sandbox 5.1.34</pre>
-<p>If you don't need the distinction, then you can define the same option for all nodes at once:</p>
-<pre>
-  export NODE_OPTIONS=&quot;--my_file=large&quot;
-  make_replication_sandbox 5.1.34</pre>
+  make_replication_sandbox 5.1.34</code></pre>
+
+<p>If you don&#39;t need the distinction, then you can define the same option for all nodes at once:</p>
+
+<pre><code>  export NODE_OPTIONS=&quot;--my_file=large&quot;
+  make_replication_sandbox 5.1.34</code></pre>
+
 <p>For non-replication group sandboxes (or for circular replication), $NODE_OPTION is the appropriate way of setting options.</p>
-<pre>
-  export NODE_OPTIONS=&quot;--my_file=large&quot;
-  make_multiple_sandbox 5.1.34</pre>
-<p>
-</p>
-<h2><a name="creating_a_group_sandbox_from_a_source_directory">Creating a group sandbox from a source directory</a></h2>
-<p>Same as for a single sandbox, but use the 'replication' or 'multiple' keyword when calling the script.</p>
-<pre>
-  make_sandbox_from_source $PWD replication [options]
-  make_sandbox_from_source $PWD multiple [options]</pre>
-<p>
-</p>
-<h2><a name="starting_or_restarting_a_group_sandbox_with_temporary_options">Starting or restarting a group sandbox with temporary options</a></h2>
+
+<pre><code>  export NODE_OPTIONS=&quot;--my_file=large&quot;
+  make_multiple_sandbox 5.1.34</code></pre>
+
+<h2 id="Creating-a-group-sandbox-from-a-source-directory">Creating a group sandbox from a source directory</h2>
+
+<p>Same as for a single sandbox, but use the &#39;replication&#39; or &#39;multiple&#39; keyword when calling the script.</p>
+
+<pre><code>  make_sandbox_from_source $PWD replication [options]
+  make_sandbox_from_source $PWD multiple [options]</code></pre>
+
+<h2 id="Starting-or-restarting-a-group-sandbox-with-temporary-options">Starting or restarting a group sandbox with temporary options</h2>
+
 <p>When you want to restart a group of sandboxes with some temporary options, all you need to do is to pass the option to the command line of ./start_all (if the group was not running) or ./restart_all.</p>
-<pre>
-  ./start_all --mysqld=mysqld-debug --gdb
-  ./restart_all --max-allowed-packet=20M</pre>
-<p>
-</p>
-<h2><a name="stopping_a_group_sandbox">Stopping a group sandbox</a></h2>
+
+<pre><code>  ./start_all --mysqld=mysqld-debug --gdb
+  ./restart_all --max-allowed-packet=20M</code></pre>
+
+<h2 id="Stopping-a-group-sandbox">Stopping a group sandbox</h2>
+
 <p>The natural way of stopping a group of sandboxes is to invoke the <code>stop_all</code> script. This will work as expected most of the time.</p>
-<pre>
-  ./stop_all</pre>
+
+<pre><code>  ./stop_all</code></pre>
+
 <p>If you are dealing with a potentially unresponsive server (for example when testing alpha code), then you may use <code>send_kill_all</code>, which will attempt a gentle stop first, and then kill the server brutally, if it does not respond after a predefined timeout of 10 seconds.</p>
-<pre>
-  ./send_kill_all</pre>
-<p>
-</p>
-<h2><a name="cleaning_up_a_group_sandbox">Cleaning up a group sandbox</a></h2>
+
+<pre><code>  ./send_kill_all</code></pre>
+
+<h2 id="Cleaning-up-a-group-sandbox">Cleaning up a group sandbox</h2>
+
 <p>To revert a group sandbox to its original state, the quickest way is to call <code>clear_all</code>, which will invoke the <code>clear</code> script in every depending single sandbox.</p>
-<pre>
-  ./clear_all</pre>
+
+<pre><code>  ./clear_all</code></pre>
+
 <p>In a replication sandbox, this command will also remove all replication settings. For this reason, <code>clear_all</code> creates a dummy file called <code>needs_initialization</code>, containing the date and time of the cleanup. This is a signal for <code>start_all</code> to initialize the slaves at the next occurrence. No need for the user to do anything special. The sandbox is self healing.</p>
-<p>
-</p>
-<h2><a name="moving_a_group_sandbox">Moving a group sandbox</a></h2>
+
+<h2 id="Moving-a-group-sandbox">Moving a group sandbox</h2>
+
 <p>This recipe is the same for single and multiple sandboxes. Using the sbtool will move a sandbox in a clean and safe way. All the elements of the sandbox will be changed to adapt to the new location.</p>
-<pre>
-  sbtool -o move \
+
+<pre><code>  sbtool -o move \
     -s /path/to/source/sandbox \
-    -d /path/to/destination/directory</pre>
-<p>
-</p>
-<h2><a name="removing_a_group_sandbox_completely">Removing a group sandbox completely</a></h2>
+    -d /path/to/destination/directory</code></pre>
+
+<h2 id="Removing-a-group-sandbox-completely">Removing a group sandbox completely</h2>
+
 <p>The sbtool can delete completely any sandbox, either single or multiple.</p>
-<pre>
-  sbtool -o delete \
-    -s /path/to/source/sandbox</pre>
+
+<pre><code>  sbtool -o delete \
+    -s /path/to/source/sandbox </code></pre>
+
 <p>This operation will fail if the sandbox has been made permanent. (See next recipe).</p>
-<p>
-</p>
-<h2><a name="making_a_group_sandbox_permanent">Making a group sandbox permanent</a></h2>
-<p>A sandbox is designed to be easy to create and to throw away, because its primary purpose is testing. However, there are cases when you want to keep the contents around for a while, and you therefore want to make sure that the sandbox is not cleaned up or deleted by mistake. <code>sbtool</code> achieves this goal by disabling the <code>clear_all</code> script and the <code>clear</code> script in all depending sandboxes. In this state, also the 'delete' operation fails (see previous recipe).</p>
-<pre>
-  sbtool -o preserve \
-    -s /path/to/source/sandbox</pre>
-<p>When you need to get rid of the sandbox contents quickly, you can 'unpreserve' it, and the clear* scripts will be enabled again.</p>
-<pre>
-  sbtool -o unpreserve \
-    -s /path/to/source/sandbox</pre>
-<p>
-</p>
-<hr />
-<h1><a name="managing_sandboxes_in_groups">Managing sandboxes in groups</a></h1>
-<p>
-</p>
-<h2><a name="using_more_than_one_sandbox_home">Using more than one SANDBOX_HOME</a></h2>
+
+<h2 id="Making-a-group-sandbox-permanent">Making a group sandbox permanent</h2>
+
+<p>A sandbox is designed to be easy to create and to throw away, because its primary purpose is testing. However, there are cases when you want to keep the contents around for a while, and you therefore want to make sure that the sandbox is not cleaned up or deleted by mistake. <code>sbtool</code> achieves this goal by disabling the <code>clear_all</code> script and the <code>clear</code> script in all depending sandboxes. In this state, also the &#39;delete&#39; operation fails (see previous recipe).</p>
+
+<pre><code>  sbtool -o preserve \
+    -s /path/to/source/sandbox </code></pre>
+
+<p>When you need to get rid of the sandbox contents quickly, you can &#39;unpreserve&#39; it, and the clear* scripts will be enabled again.</p>
+
+<pre><code>  sbtool -o unpreserve \
+    -s /path/to/source/sandbox </code></pre>
+
+<h1 id="Managing-sandboxes-in-groups">Managing sandboxes in groups</h1>
+
+<h2 id="Using-more-than-one-SANDBOX_HOME">Using more than one SANDBOX_HOME</h2>
+
 <p>The default $SANDBOX_HOME is $HOME/sandboxes, which is suitable for most purposes. If your $HOME is not fit for this task (e.g. if it is located in a NFS partition), you may set a different one on the command line or in your shell startup file.</p>
-<pre>
-   export SANDBOX_HOME=/my/alternative/directory
-   make_sandbox 5.1.34 -- --check_port</pre>
+
+<pre><code>   export SANDBOX_HOME=/my/alternative/directory
+   make_sandbox 5.1.34 -- --check_port</code></pre>
+
 <p>The above procedure is also useful when you, for any reasons, want a completely different set of sandboxes for a new batch of tests, and you want to be able to manage all of them at once. To avoid conflicts, you should always use the --check_port option.</p>
-<p>
-</p>
-<h2><a name="stopping_all_sandboxes_at_once">Stopping all sandboxes at once</a></h2>
+
+<h2 id="Stopping-all-sandboxes-at-once">Stopping all sandboxes at once</h2>
+
 <p>The $SANDBOX_HOME directory is the place containing all sandboxes, both single and multiple. This allows you to stop all of them at once with a single command.</p>
-<pre>
-    $SANDBOX_HOME/stop_all</pre>
-<p>
-</p>
-<h2><a name="starting_all_sandboxes_at_once">Starting all sandboxes at once</a></h2>
+
+<pre><code>    $SANDBOX_HOME/stop_all</code></pre>
+
+<h2 id="Starting-all-sandboxes-at-once">Starting all sandboxes at once</h2>
+
 <p>Similarly to the previous recipe, you can start all sandboxes at once with a single command.</p>
-<pre>
-    $SANDBOX_HOME/start_all</pre>
-<p>Notice that, if you created two or more sandboxes that use the same port, (create one with port X, stop it, create another with port X), there will be a conflict, and the second sandbox (and subsequent ones) won't start.</p>
-<p>
-</p>
-<h2><a name="running_the_same_query_on_all_active_sandboxes">Running the same query on all active sandboxes</a></h2>
+
+<pre><code>    $SANDBOX_HOME/start_all</code></pre>
+
+<p>Notice that, if you created two or more sandboxes that use the same port, (create one with port X, stop it, create another with port X), there will be a conflict, and the second sandbox (and subsequent ones) won&#39;t start.</p>
+
+<h2 id="Running-the-same-query-on-all-active-sandboxes">Running the same query on all active sandboxes</h2>
+
 <p>This is a quick way of getting a result from every sandbox under $SANDBOX_HOME. The query passed to <code>use_all</code> will be passed to every <code>use</code> or <code>use_all</code> scripts of the depending sandboxes.</p>
-<pre>
-    $SANDBOX_HOME/use_all 'select something_cool'</pre>
+
+<pre><code>    $SANDBOX_HOME/use_all &#39;select something_cool&#39;</code></pre>
+
 <p>If you want to run several queries from a script, use the <code>source</code> keyword:</p>
-<pre>
-    $SANDBOX_HOME/use_all 'source /full/path/to/script.sql'</pre>
-<p>
-</p>
-<hr />
-<h1><a name="testing_with_sandboxes">Testing with sandboxes</a></h1>
-<p>
-</p>
-<h2><a name="running_the_built_in_test_suite">Running the built-in test suite</a></h2>
+
+<pre><code>    $SANDBOX_HOME/use_all &#39;source /full/path/to/script.sql&#39;</code></pre>
+
+<h1 id="Testing-with-sandboxes">Testing with sandboxes</h1>
+
+<h2 id="Running-the-built-in-test-suite">Running the built-in test suite</h2>
+
 <p>Download and expand the MySQL Sandbox package</p>
-<pre>
-    perl Makefile.PL
+
+<pre><code>    perl Makefile.PL
     make
     TEST_VERSION=/path/to/mysql/tarball make test
     # or
-    TEST_VERSION=5.1.34 make test</pre>
-<p>The TEST_VERSION environment variable contains a version or the path to a tarball used by the test suite. If no test version is provided, most of the tests are skipped.
-The test suite creates a private SANDBOX_HOME under ./t/test_sb. All the sandboxes needed for the test are executed there. If something goes wrong, that is the place to inspect for clues.</p>
+    TEST_VERSION=5.1.34 make test</code></pre>
+
+<p>The TEST_VERSION environment variable contains a version or the path to a tarball used by the test suite. If no test version is provided, most of the tests are skipped. The test suite creates a private SANDBOX_HOME under ./t/test_sb. All the sandboxes needed for the test are executed there. If something goes wrong, that is the place to inspect for clues.</p>
+
 <p>IMPORTANT: When running test_sandbox, either standalone or within the test suite, it will stop all sandboxes inside $SANDBOX_HOME, to prevent conflicts with the sandboxes created during the tests.</p>
-<p>
-</p>
-<h2><a name="creating_and_running_your_own_tests">Creating and running your own tests</a></h2>
-<p>Look at the ./t directory inside the MySQL Sandbox package (previous recipe).
-There are several .sb files, which are good examples of what you can do with the simple testing language.
-If this is not enough, you can use Perl itself. There are a few .sb.pl files, which are plugins for test_sandbox.
-Once you create your file, you can run it with</p>
-<pre>
-  test_sandbox --user_test=your_test.sb</pre>
+
+<h2 id="Creating-and-running-your-own-tests">Creating and running your own tests</h2>
+
+<p>Look at the ./t directory inside the MySQL Sandbox package (previous recipe). There are several .sb files, which are good examples of what you can do with the simple testing language. If this is not enough, you can use Perl itself. There are a few .sb.pl files, which are plugins for test_sandbox. Once you create your file, you can run it with</p>
+
+<pre><code>  test_sandbox --user_test=your_test.sb</code></pre>
+
 <p>To use a Perl test, name the test with a .sb.pl extension.</p>
-<pre>
-  test_sandbox --user_test=your_test.sb.pl</pre>
-<p>
-</p>
-<hr />
-<h1><a name="remote_sandboxes">Remote Sandboxes</a></h1>
-<p>
-</p>
-<h2><a name="access_sandboxes_from_other_hosts">Access sandboxes from other hosts</a></h2>
-<p>By default, a MySQL sandbox instance can be accessed by localhost only. This access is regulated by an option, <code>--remote_access</code>, which is set to '127.%', and it is used to create the default users. You can see the resulting instructions in the file 'grants.mysql' inside each sandbox.</p>
-<pre>
- grant all on *.* to msandbox@'127.%' identified by 'msandbox';
- grant all on *.* to msandbox@'localhost' identified by 'msandbox';
- grant SELECT,EXECUTE on *.* to msandbox_ro@'127.%' identified by 'msandbox';
- grant SELECT,EXECUTE on *.* to msandbox_ro@'localhost' identified by 'msandbox';
- grant REPLICATION SLAVE on *.* to rsandbox@'127.%' identified by 'rsandbox';</pre>
+
+<pre><code>  test_sandbox --user_test=your_test.sb.pl</code></pre>
+
+<h1 id="Remote-Sandboxes">Remote Sandboxes</h1>
+
+<h2 id="Access-sandboxes-from-other-hosts">Access sandboxes from other hosts</h2>
+
+<p>By default, a MySQL sandbox instance can be accessed by localhost only. This access is regulated by an option, <code>--remote_access</code>, which is set to &#39;127.%&#39;, and it is used to create the default users. You can see the resulting instructions in the file &#39;grants.mysql&#39; inside each sandbox.</p>
+
+<pre><code> grant all on *.* to msandbox@&#39;127.%&#39; identified by &#39;msandbox&#39;;
+ grant all on *.* to msandbox@&#39;localhost&#39; identified by &#39;msandbox&#39;;
+ grant SELECT,EXECUTE on *.* to msandbox_ro@&#39;127.%&#39; identified by &#39;msandbox&#39;;
+ grant SELECT,EXECUTE on *.* to msandbox_ro@&#39;localhost&#39; identified by &#39;msandbox&#39;;
+ grant REPLICATION SLAVE on *.* to rsandbox@&#39;127.%&#39; identified by &#39;rsandbox&#39;;</code></pre>
+
 <p>If you want to access the sandbox remotely, you can change <code>--remote_access</code> to include your specific subnet, or to open it completely</p>
-<pre>
-  --remote_access='192.168.1.%'
-  --remote_access='%'</pre>
-<p>Starting with MySQL::Sandbox 3.0.34, you can also define the bind address for your MySQL server. By default it is '127.0.0.1'. It will be changed to '0.0.0.0' if you choose a customized --remote_access. If you change both --remote_access and --bind_address, No adjustment will be made.</p>
-<p>
-</p>
-<h2><a name="deploy_mysql_sandboxes_to_many_hosts">Deploy MySQL sandboxes to many hosts</a></h2>
+
+<pre><code>  --remote_access=&#39;192.168.1.%&#39;
+  --remote_access=&#39;%&#39;</code></pre>
+
+<p>Starting with MySQL::Sandbox 3.0.34, you can also define the bind address for your MySQL server. By default it is &#39;127.0.0.1&#39;. It will be changed to &#39;0.0.0.0&#39; if you choose a customized --remote_access. If you change both --remote_access and --bind_address, No adjustment will be made.</p>
+
+<h2 id="Deploy-MySQL-sandboxes-to-many-hosts">Deploy MySQL sandboxes to many hosts</h2>
+
 <p>MySQL Sandbox 3.0.32 and later include a script that lets you deploy a sandbox quickly to several hosts.</p>
-<pre>
- $ deploy_to_remote_sandboxes.sh -h
+
+<pre><code> $ deploy_to_remote_sandboxes.sh -h
  Deploy to remote sandboxes.
  Usage: deploy_to_remote_sandboxes.sh [options]
  -h               =&gt; help
@@ -713,30 +686,27 @@ Once you create your file, you can run it with</p>
  -t tarball       =&gt; MySQL tarball to install remotely (none)
  
  This command takes the list of nodes and installs a MySQL sandbox in each one.
- You must have ssh access to the remote nodes, or this script won't work.</pre>
-<p>
-</p>
-<hr />
-<h1><a name="copyright">COPYRIGHT</a></h1>
+ You must have ssh access to the remote nodes, or this script won&#39;t work.</code></pre>
+
+<h1 id="COPYRIGHT">COPYRIGHT</h1>
+
 <p>Version 3.0</p>
+
 <p>Copyright (C) 2006-2013 Giuseppe Maxia</p>
-<p>Home Page  <a href="http://launchpad.net/mysql-sandbox/">http://launchpad.net/mysql-sandbox/</a></p>
-<p>
-</p>
-<hr />
-<h1><a name="legal_notice">LEGAL NOTICE</a></h1>
-<p>This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; version 2 of the License.</p>
-<p>This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.</p>
-<p>You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
-USA</p>
+
+<p>Home Page http://launchpad.net/mysql-sandbox/</p>
+
+<h1 id="LEGAL-NOTICE">LEGAL NOTICE</h1>
+
+<p>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License.</p>
+
+<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA</p>
+
 
 </body>
 
 </html>
+
+

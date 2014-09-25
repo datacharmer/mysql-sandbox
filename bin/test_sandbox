@@ -825,9 +825,9 @@ sub run_tuning_test {
     }
     my ($bare_version, $version) = get_bare_version($ver);
 
-    if ($bare_version =~ /^5\.([567])/ ) {
+    if (($bare_version =~ /^5\.([567])/ ) || ($bare_version =~ /^10/ )) {
          for my $i ( 1 .. 6) { 
-            print "ok - skipped (this test is not available in MySQL 5.$1)\n";
+            print "ok - skipped (this test is not available in MySQL $bare_version)\n";
          }
          return;
     }
@@ -1017,17 +1017,13 @@ sub run_smoke_test {
         },
         {
             min_version => 6 ,
-            engine  => 'falcon'
-        },
-        {
-            min_version => 6 ,
-            engine  => 'maria'
-        },
+            engine  => 'innodb'
+        }
     );
 
     for my $test_engine (@test_engines) {
         my $major_version = 0; 
-        if ($version =~ /(\d)/) {
+        if ($version =~ /(\d+)/) {
             $major_version = $1;
         }
         if ($major_version <  $test_engine->{'min_version'} ) {
@@ -1100,7 +1096,7 @@ sub run_smoke_test {
             $verbose);
     my $sandbox_dirs = how_many_dirs("$sandbox_home/msb_$version/data");
 
-    ok($sandbox_dirs == ($bare_version ge '5.5'? 3 : 2) , "single SB ($bare_version) - effective clean up ");
+    ok($sandbox_dirs == (($bare_version ge '5.5') or ($bare_version ge '10.0') ? 3 : 2) , "single SB ($bare_version) - effective clean up ");
 
     tprint "** cleaning up - please wait\n";
     my $clear = get_exec_result("$sandbox_home/msb_$version/clear");

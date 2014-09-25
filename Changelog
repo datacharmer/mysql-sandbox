@@ -1,3 +1,11 @@
+3.0.46	25-Sep-2014
+	- Changes to allow installation of MySQL 5.7.5:
+		- added creation of 'test' database
+		- moved lower_case_table_names to the my.sandbox.cnf file (mysql_install_db does not support this option)
+		- allow for changed syntax --insecure instead of --skip-random-password
+		- removed tmpdir from options to mysql_install_db
+	- Updated test_sandbox to avoid a 'skip-innodb' test with MariaDB 10.x
+	- Updated test_sandbox to detect correctly MariaDB versions
 3.0.45	30-Aug-2014
 	- Fixing bug#1361851 "start/stop/status scripts don't actually check if
 	  running"
