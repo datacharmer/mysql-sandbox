@@ -1,4 +1,5 @@
 3.0.46	25-Sep-2014
+	- Modified smoke test in test_sandbox to check correctly older and newer versions
 	- Changes to allow installation of MySQL 5.7.5:
 		- added creation of 'test' database
 		- moved lower_case_table_names to the my.sandbox.cnf file (mysql_install_db does not support this option)
