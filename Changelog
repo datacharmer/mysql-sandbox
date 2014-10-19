@@ -1,3 +1,5 @@
+3.0.47	19-Oct-2014
+	- Added support for MySQL with data dictionary (5.7.5 labs edition)
 3.0.46	25-Sep-2014
 	- Modified smoke test in test_sandbox to check correctly older and newer versions
 	- Changes to allow installation of MySQL 5.7.5:
