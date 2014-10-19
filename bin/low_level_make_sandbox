@@ -663,8 +663,17 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
             }
         }
         for my $table_name (qw(user db tables_priv columns_priv)) {
-            die "table $table_name not installed\n"
-                unless -f "$sandbox_directory/data/mysql/$table_name.frm";
+            my $frm =   "$sandbox_directory/data/mysql/$table_name.frm";
+            my $myd =   "$sandbox_directory/data/mysql/$table_name.MYD";
+            if ( (-f $frm ) or ( -f $myd) )
+            {
+                # do nothing
+                print "Table $table_name found\n" if $DEBUG;
+            }
+            else
+            {
+                die "table $table_name not installed\n";
+            }
         }
         for my $logfile (qw(ib_logfile0 ib_logfile1))
         {
