@@ -1,3 +1,6 @@
+3.0.48	09-Mar-2015
+	- Added provisional support for MySQL 5.7.6 (changed syntax for SET
+	PASSWORD but keep using deprecated mysql_install_db)
 3.0.47	19-Oct-2014
 	- Added support for MySQL with data dictionary (5.7.5 labs edition)
 3.0.46	25-Sep-2014
