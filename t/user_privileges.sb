@@ -1,6 +1,8 @@
 ###########################################
 # checking default user privileges
 ###########################################
+#
+# Note: this script is broken in MySQL 5.7.6
 
 shell:
 command  = make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=msb_XXXX

@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.47";
+our $VERSION="3.0.48";
 
 our @MANIFEST = (
 'clear.sh',
@@ -39,6 +39,7 @@ our @MANIFEST = (
 'connection.json',
 'default_connection.json',
 'grants.mysql',
+'grants_5_7_6.mysql',
 'json_in_db.sh',
 '# INSTALL FILES',
 'sandbox_action.pl',
@@ -1456,6 +1457,47 @@ create schema if not exists test;
 
 GRANTS_MYSQL
 
+
+    'grants_5_7_6.mysql'  => <<'GRANTS_MYSQL_5_7_6',
+
+use mysql;
+set password='_DBPASSWORD_';
+
+delete from user where user like '_DBUSER_';
+delete from user where user like '_DBUSERREPL_';
+delete from user where user like '_DBUSERRO_';
+delete from user where user like '_DBUSERRW_';
+flush privileges;
+
+create user _DBUSER_@'_REMOTE_ACCESS_' identified by '_DBPASSWORD_';
+grant all on *.* to _DBUSER_@'_REMOTE_ACCESS_' ;
+
+create user _DBUSER_@'localhost' identified by '_DBPASSWORD_';
+grant all on *.* to _DBUSER_@'localhost';
+
+create user _DBUSERRW_@'localhost' identified by '_DBPASSWORD_';
+grant SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,
+    SHOW DATABASES,CREATE TEMPORARY TABLES,LOCK TABLES, EXECUTE 
+    on *.* to _DBUSERRW_@'localhost';
+
+create user _DBUSERRW_@'_REMOTE_ACCESS_' identified by '_DBPASSWORD_';
+grant SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,
+    SHOW DATABASES,CREATE TEMPORARY TABLES,LOCK TABLES, EXECUTE 
+    on *.* to _DBUSERRW_@'_REMOTE_ACCESS_';
+
+create user _DBUSERRO_@'_REMOTE_ACCESS_' identified by '_DBPASSWORD_';
+create user _DBUSERRO_@'localhost' identified by '_DBPASSWORD_';
+create user _DBUSERREPL_@'_REMOTE_ACCESS_' identified by '_DB_REPL_PASSWORD_';
+grant SELECT,EXECUTE on *.* to _DBUSERRO_@'_REMOTE_ACCESS_';
+grant SELECT,EXECUTE on *.* to _DBUSERRO_@'localhost';
+grant REPLICATION SLAVE on *.* to _DBUSERREPL_@'_REMOTE_ACCESS_';
+delete from user where authentication_string='';
+delete from db where user='';
+flush privileges;
+create schema if not exists test;
+
+GRANTS_MYSQL_5_7_6
+
     'load_grants.sh' => << 'LOAD_GRANTS_SCRIPT',
 #!_BINBASH_
 __LICENSE__
@@ -1464,6 +1506,13 @@ BASEDIR='_BASEDIR_'
 export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
 MYSQL="$BASEDIR/bin/mysql --no-defaults --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock --port=_SERVERPORT_"
+# START UGLY WORKAROUND
+VERSION=`$MYSQL -u root -BN -e 'select version()' | perl -ne 'print $1 if /(\d+\.\d+\.\d+)/'`
+if [ "$VERSION" == "5.7.6" ]
+then
+    cp $SBDIR/grants_5_7_6.mysql $SBDIR/grants.mysql
+fi
+# END UGLY WORKAROUND
 $MYSQL -u root < $SBDIR/grants.mysql
 # echo "source $SBDIR/grants.mysql" | $SBDIR/use -u root --password= 
 $SBDIR/my sqldump _EVENTS_OPTIONS_ mysql > $SBDIR/rescue_mysql_dump.sql
