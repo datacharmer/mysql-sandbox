@@ -176,6 +176,7 @@ TMPL3="master_password='$MySQL::Sandbox::default_users{'repl_password'}',"
 TMPL4="master_port"
 TMPL="\$TMPL1 \$TMPL2 \$TMPL3 \$TMPL4"
 ));
+$msb->write_to($circular_replication_script, '>>', "$group_directory/use_all 'reset master' ");
 $msb->write_to($circular_replication_script, '>>', "$group_directory/use_all 'stop slave' ");
 }
 
