@@ -1095,8 +1095,22 @@ sub run_smoke_test {
             q{ drop database install_test;},
             $verbose);
     my $sandbox_dirs = how_many_dirs("$sandbox_home/msb_$version/data");
-
-    ok($sandbox_dirs == ((($bare_version ge '5.5') or ($bare_version =~ /^10/)) ? 3 : 2) , "single SB ($bare_version) - effective clean up ");
+    my $expected_dirs = 2;
+    if ($bare_version ge '5.7.7')
+    {
+        $expected_dirs = 4;
+    }
+    elsif ($bare_version =~ /^10/)
+    {
+        $expected_dirs = 3;
+    }
+    elsif ($bare_version ge '5.5')
+    {
+        $expected_dirs = 3;
+    }
+    
+    #ok($sandbox_dirs == ((($bare_version ge '5.5') or ($bare_version =~ /^10/)) ? 3 : 2) , "single SB ($bare_version) - effective clean up ");
+    ok($sandbox_dirs ==  $expected_dirs, "single SB ($bare_version) - effective clean up ");
 
     tprint "** cleaning up - please wait\n";
     my $clear = get_exec_result("$sandbox_home/msb_$version/clear");
@@ -1259,6 +1273,11 @@ sub run_sbtool_test {
     ok( $group_sandbox =~ /group directory installed/,
             "group SB installed" );
 
+    # workaround for MySQL 5.7.7 behavioral change with relay nodes
+    $sql_result = get_exec_result(
+            "$sandbox_home/tree_sb/use_all 'reset master'",
+          $verbose); 
+
     my $tree_sandbox = get_exec_result("sbtool -o tree --tree_dir=$sandbox_home/tree_sb"
             . " --tree_nodes='1-2 3 4-5 6|7|8 9'" );
     ok($tree_sandbox =~ 'node 1 is master', 'tree SB master');
@@ -1329,6 +1348,7 @@ sub how_many_dirs {
     my ($path) = @_;
     my @subdirs = glob("$path/*/");
     my $dir_count =0;
+    # warn Dumper \@subdirs;
     for (@subdirs) {
         $dir_count++ if -d $_;
     }

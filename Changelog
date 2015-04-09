@@ -1,3 +1,8 @@
+3.0.49	08-Apr-2015
+	- Fixed version detection to support also MySLQL 5.7.7 and MySQL 5.7.8.
+	  A more resilient patch will follow.
+	  Notice that, due to a change (possibly a bug) in MySQL 5.7.7, circular
+	  replication and in general any topology containing a relay slave may fail.
 3.0.48	09-Mar-2015
 	- Added provisional support for MySQL 5.7.6 (changed syntax for SET
 	PASSWORD but keep using deprecated mysql_install_db)
