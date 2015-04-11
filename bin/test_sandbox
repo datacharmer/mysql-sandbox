@@ -1274,9 +1274,9 @@ sub run_sbtool_test {
             "group SB installed" );
 
     # workaround for MySQL 5.7.7 behavioral change with relay nodes
-    $sql_result = get_exec_result(
-            "$sandbox_home/tree_sb/use_all 'reset master'",
-          $verbose); 
+    #$sql_result = get_exec_result(
+    #        "$sandbox_home/tree_sb/use_all 'reset master'",
+    #      $verbose); 
 
     my $tree_sandbox = get_exec_result("sbtool -o tree --tree_dir=$sandbox_home/tree_sb"
             . " --tree_nodes='1-2 3 4-5 6|7|8 9'" );

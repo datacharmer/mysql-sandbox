@@ -1,3 +1,7 @@
+3.0.50	11-Apr-2015
+	- Fixed issue with the 'clear' script in MySQL 5.7.7. Since a new default
+	database was added ('sys') and the clear command did not know about it, 
+	the new database was being removed.
 3.0.49	08-Apr-2015
 	- Fixed version detection to support also MySLQL 5.7.7 and MySQL 5.7.8.
 	  A more resilient patch will follow.

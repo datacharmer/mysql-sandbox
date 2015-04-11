@@ -274,6 +274,8 @@ sub make_tree {
         . "master_user='msandbox', master_password='msandbox',"
         . "master_port=";
 
+    print "$dir/use_all 'reset master'\n";
+    system "$dir/use_all 'reset master'";
     print "$dir/stop_all\n";
     system "$dir/stop_all";
 

@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.49";
+our $VERSION="3.0.50";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1319,7 +1319,7 @@ function is_running
 
 if [ -n "$(is_running)" ]
 then
-    for D in `echo "show databases " | ./use -B -N | grep -v "^mysql$" | grep -iv "^information_schema$" | grep -iv "^performance_schema"` 
+    for D in `echo "show databases " | ./use -B -N | grep -v "^mysql$" | grep -iv "^information_schema$" | grep -iv "^performance_schema" | grep -ivw "^sys"` 
     do
         echo "set sql_mode=ansi_quotes;drop database \"$D\"" | ./use 
     done
@@ -1333,7 +1333,11 @@ then
     then
         for T in general_log slow_log plugin proc func
         do
-            ./use -e "truncate mysql.$T"
+            exists_table=$(./use -e "show tables from mysql like '$T'")
+            if [ -n "$exists_table" ]
+            then
+                ./use -e "truncate mysql.$T"
+            fi
         done
     fi
 fi
@@ -1361,7 +1365,7 @@ fi
 #
 # remove all databases if any
 #
-for D in `ls -d data/*/ | grep -w -v mysql | grep -iv performance_schema` 
+for D in `ls -d data/*/ | grep -w -v mysql | grep -iv performance_schema | grep -ivw sys` 
 do
     rm -rf $D
 done
