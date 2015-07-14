@@ -55,6 +55,7 @@ my @versions = ( '5.0.86', '5.1.43');
 my $verbose = $DEBUG || $ENV{'VERBOSE'} || 0;
 
 my %tests = (
+    tarball     => 1,
     single      => 1,
     replication => 1,
     circular    => 1,
@@ -219,6 +220,11 @@ tprintf "** currently there are (%d) mysqld processes and (%d) mysqld_safe proce
 #
 for my $ver (@versions) {
     my ($bare_version, $version) = get_bare_version ($ver);
+
+    if ($tests{'tarball'}) {
+        # print "run_tarball_test($ver, $version, $bare_version)\n";
+        run_tarball_test($ver, $version, $bare_version);
+    }
 
     if ($tests{'single'}) {
         # print "run_single_test($ver, $version, $bare_version)\n";
@@ -503,6 +509,94 @@ sub check_sandbox_files
         }
     }
    
+}
+
+sub run_tarball_test{
+    my ($ver, $version, $bare_version) = @_;
+    # print "ver $ver - version $version - bare_version $bare_version\n"; exit;
+    # ver ma10.0.13 - version ma10_0_13 - bare_version 10.0.13
+    # ver 5.7.8 - version 5_7_8 - bare_version 5.7.8
+    # ver ps5.6.40 - version ps5_6_40 - bare_version 5.6.40
+    my $prefix='';
+    my $prefix_option='';
+    my $tmpdir = $ENV{TMPDIR} || '/tmp';
+    if (! -d $tmpdir)
+    {
+        die "Can't find temporary directory $tmpdir\n";
+    }
+    $tmpdir =~ s{/$}{};
+    my $tardir="$tmpdir/tmp$$";
+    mkdir $tardir;
+    if ( ! -d $tardir)
+    {
+        die "Error creating $tardir\n";
+    }
+    my @name_patterns = (
+    'Percona-Server-_VER_-rel61.0.tar.gz',
+    'mariadb-_VER_-osx10.9-x86_64.tar.gz',
+    'mysql-_VER_-osx10.6-x86_64.tar.gz',
+    'mysql-_VER_-m11-osx10.6-x86_64.tar.gz',
+    'mysql-advanced-_VER_-osx10.7-x86_64.tar.gz',
+    'mysql-_VER_-labs-multi-src-rep.tar.gz',
+    '13242627.mysql-_VER_-rc-osx10.8-x86_64.tar.gz',
+    );
+    unless ($ENV{SANDBOX_BINARY})
+    {
+        die "Variable SANDBOX_BINARY not set\n";
+    }
+    unless (-d $ENV{SANDBOX_BINARY})
+    {
+        die "Directory $ENV{SANDBOX_BINARY} not found\n";
+    }
+    my $curdir = $ENV{PWD};
+    if ($ver =~ /^(\D+)/)
+    {
+        $prefix = $1;
+    }
+    for my $pattern (@name_patterns)
+    {
+        $pattern =~ s/_VER_/$ver/;
+        chdir $tardir;
+        my $pattern_dir= $pattern;
+        $pattern_dir =~ s/\.tar.gz//;
+        $pattern_dir =~ s{^\d+\.}{};
+
+        system "cp -R $ENV{SANDBOX_BINARY}/$ver $pattern_dir" ;
+        ok(-d "$tardir/$pattern_dir", "$tardir/$pattern_dir exists") or exit 1;
+        system "tar -c $pattern_dir | gzip -c > $pattern";
+        system "rm -rf $pattern_dir";
+        chdir $curdir;
+        ok(! -d "$tardir/$pattern_dir", "$tardir/$pattern_dir was removed") or exit 1;
+        ok( -f "$tardir/$pattern", "$tardir/$pattern exists") or exit 1;
+        if ($prefix)
+        {
+            $prefix_option= "--add_prefix=$prefix";
+        }
+        ok_exec( {
+                command  => "make_sandbox $prefix_option $tardir/$pattern -- --no_confirm", 
+                expected => 'sandbox server started',
+                msg      => "single tarball SB ($bare_version) started"
+                });
+        ok(-d "$tardir/$ver", "$tardir/$ver was created") or exit 1;
+        ok(-d "$sandbox_home/msb_$version", "$sandbox_home/$version was created") or exit 1;
+        # check_sandbox_files( 'single', "$sandbox_home/msb_$version");
+        ok_sql( {
+                path     => "$sandbox_home/msb_$version", 
+                query    => 'select version(), @@server_id',
+                expected => $bare_version,
+                msg      => "single tarball SB version ($bare_version) SQL"
+                });
+        ok_exec( {
+                command  => "sbtool -o delete -s $sandbox_home/msb_$version", 
+                expected => 'has been removed',
+                msg      => "single tarball SB ($bare_version) removed"
+                }) or exit 1;
+        system "rm -rf $tardir/$ver";
+        ok(! -d "$tardir/$bare_version", "$tardir/$bare_version was removed") or exit 1;
+        system "rm -f $tardir/$pattern";
+        ok(! -f "$tardir/$pattern", "$tardir/$pattern was removed") or exit 1;
+     }
+     system "rm -rf $tardir";
 }
 
 sub run_single_test {
@@ -1015,10 +1109,10 @@ sub run_smoke_test {
             min_version => 5 ,
             engine  => 'innodb'
         },
-        {
-            min_version => 6 ,
-            engine  => 'innodb'
-        }
+        #{
+        #    min_version => 6 ,
+        #    engine  => 'innodb'
+        #}
     );
 
     for my $test_engine (@test_engines) {
