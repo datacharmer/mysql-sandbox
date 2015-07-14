@@ -96,8 +96,26 @@ if  ( (( (-f $where_to_install)  or ( -d $where_to_install))  # the file exists
 my $prefix_regex = join('|', @prefixes );
 $prefix_regex = qr/(?:$prefix_regex)/i;
 
+#my $ignore_leading_number = 0;
+sub basename
+{
+    my ($path) = @_;
+    $path =~ s{.*/}{};
+    $path;
+}
+
+my $barename = basename($where_to_install);
+if ($barename =~ /^\d+\..*\.tar\.gz/)
+{
+    # $ignore_leading_number = 1;
+    if ($barename eq $where_to_install)
+    {
+        $where_to_install="$ENV{PWD}/$barename"; 
+    }
+}
+
 # current directory
-if  ( $where_to_install =~ m{^$prefix_regex\D+\d+\.\d+\.\d+.*\.tar\.gz$ }x ) { 
+if  ( $where_to_install =~ m{^(?:\d+\.)?$prefix_regex\D+\d+\.\d+\.\d+.*\.tar\.gz$ }x ) { 
     $where_to_install = $ENV{PWD} . '/' . $where_to_install;
     unless ( -f $where_to_install ) {
         die "file not found in current directory ($where_to_install)\n";
@@ -135,7 +153,7 @@ elsif  ( $where_to_install =~ m{^(/.+)/.*(\d+)\.(\d+)\.(\d+)$}x ) {
 }
 
 # full path to tarball
-elsif  ( $where_to_install =~ m{^(/.+)/($prefix_regex\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.gz$ }x ) { 
+elsif  ( $where_to_install =~ m{^(/.+)/(?:\d+\.)?($prefix_regex\D+(\d+)\.(\d+)\.(\d+)[^/]*)\.tar\.gz$ }x ) { 
     my $new_dir;
     unless ( -f $where_to_install ) {
         die "tarball file not found ($where_to_install)\n";
@@ -219,6 +237,7 @@ elsif  ( $where_to_install =~ m{^(/.+)/($prefix_regex\D+(\d+)\.(\d+)\.(\d+)[^/]*
 }
 # not a full path
 elsif ($where_to_install =~ m{[^/].*\.tar\.gz$} ) {
+    print "<$where_to_install>\n";
     get_help( "You must enter a full path to the tarball. Relative paths are not supported.\n");
 }
 # not a tarball

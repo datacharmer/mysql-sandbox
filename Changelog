@@ -1,3 +1,6 @@
+3.0.51	14-Jul-2015
+	- Added ability of opening tarball with name like 123456.mysql*.tar.gz
+	- Added many tests for tarball name checking
 3.0.50	11-Apr-2015
 	- Fixed issue with the 'clear' script in MySQL 5.7.7. Since a new default
 	database was added ('sys') and the clear command did not know about it, 
