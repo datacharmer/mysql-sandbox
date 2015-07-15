@@ -71,9 +71,13 @@ ok_exec( {
 });
 
 # Test --master and --slaveof
-
+my $master_extra_options='';
+if ($TEST_VERSION =~ /5\.7\.8/)
+{
+    $master_extra_options .= ' -c show_compatibility_56=on '
+}
 ok_exec({
-    command     => "make_sandbox $TEST_VERSION -- --master --sandbox_directory=msb_master --sandbox_port=8000 --no_confirm",
+    command     => "make_sandbox $TEST_VERSION -- --master --sandbox_directory=msb_master --sandbox_port=8000 --no_confirm $master_extra_options",
     expected    => 'sandbox server started',
     msg         => 'sandbox master installed',
 });

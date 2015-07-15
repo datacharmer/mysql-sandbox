@@ -105,6 +105,12 @@ if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     $release_no = $3;
     $dashed_version = "${prefix}$1_$2_$3";
     $base_version =~ s/^0+//;
+    if ($base_version == 578)
+    {
+        my $additional_master_options = $ENV{NODE_OPTIONS} || '';
+        $additional_master_options .= ' -c show_compatibility_56=on ';
+        $ENV{NODE_OPTIONS} = $additional_master_options;
+    }
 }
 else {
     $msb->get_help("No recognizable version pattern in $msb->{options}{server_version}\n");
