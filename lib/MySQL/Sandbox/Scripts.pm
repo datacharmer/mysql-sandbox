@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.51";
+our $VERSION="3.0.52";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1512,7 +1512,7 @@ export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
 MYSQL="$BASEDIR/bin/mysql --no-defaults --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock --port=_SERVERPORT_"
 # START UGLY WORKAROUND
 VERSION=`$MYSQL -u root -BN -e 'select version()' | perl -ne 'print $1 if /(\d+\.\d+\.\d+)/'`
-if [[ $VERSION =~ 5.7.[678] ]]
+if [[ $VERSION =~ 5.7.[6789] ]]
 then
     cp $SBDIR/grants_5_7_6.mysql $SBDIR/grants.mysql
 fi
