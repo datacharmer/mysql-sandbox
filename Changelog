@@ -1,4 +1,4 @@
-3.0.51	15-Jul-2015
+3.0.52	15-Jul-2015
 	- Added a workaround for Bug#77732 in MySQL 5.7.8 
 	  -- https://bugs.mysql.com/bug.php?id=77732 --
 3.0.51	14-Jul-2015
