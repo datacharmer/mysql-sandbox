@@ -1,3 +1,6 @@
+3.0.53	16-Jul-2015
+    - Improved workaround for Bug#77732. Deployments with --master would only
+	work within the test suite, but would fail in standalone installations.
 3.0.52	15-Jul-2015
 	- Added a workaround for Bug#77732 in MySQL 5.7.8 
 	  -- https://bugs.mysql.com/bug.php?id=77732 --

@@ -105,6 +105,7 @@ if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     $release_no = $3;
     $dashed_version = "${prefix}$1_$2_$3";
     $base_version =~ s/^0+//;
+    # workaround for Bug#77732
     if ($base_version == 578)
     {
         my $additional_master_options = $ENV{NODE_OPTIONS} || '';

@@ -129,7 +129,12 @@ if ($msb->{options}{'slaveof'} or $msb->{options}{'master'})
         unshift @{ $msb->{options}{'my_clause'}},  $clause; 
     }
 }
-
+# workaround for Bug#77732
+my $mysql_version = qx($msb->{options}{basedir}/bin/mysql_config --version);
+if (($mysql_version =~ /\b5\.7\.8\b/ ) && $msb->{options}{master})  
+{
+    push @{$msb->{options}{my_clause}}, ' show_compatibility_56=on';
+}
 
 if ($msb->{options}{'interactive'}) {
     $msb->{options}{no_confirm} = 0;
@@ -477,9 +482,11 @@ else {
     get_help ('sandbox directory not specified');
 }
 
-print $msb->credits(),
-      "installing with the following parameters:\n";
-
+print $msb->credits();
+unless ($msb->{options}{no_show})
+{
+    print "Installing with the following parameters:\n";
+}
 #open my $CURRENT_CONF , q{>}, "$install_dir/current_options.conf"
 #    or die "error creating current_options.conf ($ERRNO)\n";
 

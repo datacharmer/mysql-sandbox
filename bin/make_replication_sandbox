@@ -147,9 +147,10 @@ if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     {
         $create_gtid_script=1;
     } 
+    # workaround for Bug#77732
     if (($major == 5) && ($minor == 7) && ($rev == 8))
     {
-        $additional_master_options .= ' -c show_compatibility_56=on';
+        $additional_master_options .= ' -c show_compatibility_56=on ';
     }
 }
 else {
