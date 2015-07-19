@@ -147,6 +147,10 @@ if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     {
         $create_gtid_script=1;
     } 
+    if ($create_gtid_script && ($major == 10))
+    {
+        $create_gtid_script =0;
+    }
     # workaround for Bug#77732
     if (($major == 5) && ($minor == 7) && ($rev == 8))
     {
@@ -431,10 +435,17 @@ $msb->write_to('check_slaves', '>>', "  $replication_directory/node\$NNUM/use -e
 $msb->write_to('check_slaves', '>>', 'done ' );
 chmod 0755, 'check_slaves';
 
+system "cp m n1";
+chmod 0755, "n1";
+
 for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
     $msb->write_to("s$slave", '>', "#!/bin/sh");
     $msb->write_to("s$slave", '>', qq($replication_directory/node$slave/use "\$@"));
     chmod 0755, "s$slave";
+    my $N=$slave+1;
+    system "cp s$slave n$N";
+    chmod 0755, "s$slave";
+    chmod 0755, "n$N";
 }
 
 $msb->write_to('initialize_slaves', '>', "#!/bin/sh");
@@ -566,6 +577,18 @@ then
 fi
 END_TEMPLATE
 
+    $msb->write_to('test_replication', '>', '#!/bin/bash' );
+    my $test_replication="$ENV{SANDBOX_HOME}/test_replication";
+    $msb->write_to('test_replication', '>>', "cd $replication_directory" );
+    $msb->write_to('test_replication', '>>', "TEST_REPLICATION=$test_replication" );
+    $msb->write_to('test_replication', '>>', 'if [ -x $TEST_REPLICATION ]' );
+    $msb->write_to('test_replication', '>>', 'then' );
+    $msb->write_to('test_replication', '>>', '    $TEST_REPLICATION' );
+    $msb->write_to('test_replication', '>>', 'else' );
+    $msb->write_to('test_replication', '>>', '    echo "$TEST_REPLICATION not found"' );
+    $msb->write_to('test_replication', '>>', '    exit 1' );
+    $msb->write_to('test_replication', '>>', 'fi' );
+    chmod 0755, 'test_replication';
     if ($create_gtid_script)
     {
         $gtid_script_template =~ s/_REPLICATION_DIR_/$replication_directory/;
