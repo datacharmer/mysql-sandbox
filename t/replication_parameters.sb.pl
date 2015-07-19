@@ -12,11 +12,11 @@
 #
 my $TEST_VERSION = $ENV{TEST_VERSION};
 my $expected_gtid = 'does not exist';
-if ($TEST_VERSION ge '5.6') 
+my ($version, $name_version) = get_bare_version($TEST_VERSION);
+if ($version ge '5.6') 
 {
     $expected_gtid = 'exists';
 }
-my ($version, $name_version) = get_bare_version($TEST_VERSION);
 my $replication_dir = "rsandbox_$name_version";
 $ENV{MASTER_OPTIONS} = '-c key-buffer-size=20M';
 $ENV{SLAVE_OPTIONS}  = '-c key-buffer-size=25M';
