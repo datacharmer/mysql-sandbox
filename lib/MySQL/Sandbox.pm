@@ -27,7 +27,7 @@ our @EXPORT_OK= qw( is_port_open
                     validate_json_object
                     ) ;
 
-our $VERSION="3.0.55";
+our $VERSION="3.0.56";
 our $DEBUG;
 
 BEGIN {
@@ -233,7 +233,7 @@ sub credits {
     my ($self) = @_;
     my $CREDITS = 
           qq(    The MySQL Sandbox,  version $VERSION\n) 
-        . qq(    (C) 2006-2013 Giuseppe Maxia\n);
+        . qq(    (C) 2006-2015 Giuseppe Maxia\n);
     return $CREDITS;
 }
 
