@@ -1489,7 +1489,7 @@ Bash shell
 
 Version 3.0
 
-Copyright (C) 2006-2013 Giuseppe Maxia
+Copyright (C) 2006-2015 Giuseppe Maxia
 
 Home Page  http://launchpad.net/mysql-sandbox/
 

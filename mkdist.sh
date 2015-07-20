@@ -7,6 +7,8 @@ fi
 
 VERSION=$1
 
+export YEAR=$(date +%Y)
+perl -i.1bak -pe 'BEGIN{$y=shift;};s/(2006-)\d+ (Giuseppe Maxia)/$1$y $2/' $YEAR lib/MySQL/Sandbox.pm
 perl -i.bak -pe 'BEGIN{$V=shift;};s/^(our \$VERSION=)([^;]+)/$1"$V"/' $VERSION lib/MySQL/Sandbox.pm
 perl -i.bak -pe 'BEGIN{$V=shift;};s/^(our \$VERSION=)([^;]+)/$1"$V"/' $VERSION lib/MySQL/Sandbox/Scripts.pm
 perl -i.bak -pe 'BEGIN{$V=shift;};s/^(our \$VERSION=)([^;]+)/$1"$V"/' $VERSION lib/MySQL/Sandbox/Recipes.pm
