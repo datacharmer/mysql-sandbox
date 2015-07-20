@@ -14,7 +14,7 @@ BEGIN {
             plan skip_all => 'This module is not for Windows'
         }
         else {
-            plan tests => 37;
+            plan tests => 36;
         }
 }
 # 7 tests
@@ -43,13 +43,13 @@ ok_shell_result( "low_level_make_sandbox --help",
             '-d --sandbox_directory = name'], 
             "low_level_make_sandbox");
 
-# 4 tests
-my @time_items = localtime(time);
-my $year = $time_items[5] + 1900;
+# 3 tests
+# my @time_items = localtime(time);
+# my $year = $time_items[5] + 1900;
 ok_shell_result( "make_sandbox --help", 
             ['make_sandbox', 
             'version',
-            "2006-$year"
+            # "2006-$year"
             ], 
             "make_sandbox");
 
