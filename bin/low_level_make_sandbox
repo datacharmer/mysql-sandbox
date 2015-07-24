@@ -567,13 +567,26 @@ my $sandbox_directory = sprintf('%s/%s', $msb->{options}{'upper_directory'}, $ms
 
 if ( -d $sandbox_directory ) {
     if ($msb->{options}{'force'} ) {
-        warn "$sandbox_directory already exists. Overwriting its contents\n" if $DEBUG;
-        if ( -f "$sandbox_directory/clear") {
-            system("$sandbox_directory/clear");
+        my $new_datadir = "$sandbox_directory/data";
+        my $old_datadir = "$sandbox_directory/old_data";
+        if ( -d $old_datadir)
+        {
+            system "rm -rf $old_datadir";
         }
-        if ( -d "$sandbox_directory/data/mysql") {
-            system("rm -rf $sandbox_directory/data/mysql");
+
+        if ( -x "$sandbox_directory/stop") {
+            system("$sandbox_directory/stop");
         }
+        system "mv $new_datadir $old_datadir";
+        warn "Directory $new_datadir already exists. Renamed to $old_datadir\n" if $DEBUG;
+
+        #warn "$sandbox_directory already exists. Overwriting its contents\n" if $DEBUG;
+        #if ( -f "$sandbox_directory/clear") {
+        #    system("$sandbox_directory/clear");
+        #}
+        #if ( -d "$sandbox_directory/data/mysql") {
+        #    system("rm -rf $sandbox_directory/data/mysql");
+        #}
     }
     else {
         die "$sandbox_directory already exists.\n'--force' option not specified.\nInstallation halted\n";
@@ -611,42 +624,55 @@ for my $file_spec ( @file_list) {  #, @doc_file_list) {
 }
 
 if ($msb->{options}{datadir_from} eq 'script' ) {
+    my $additional_options = "";
     my $script = sprintf '%s/scripts/mysql_install_db', $msb->{options}{basedir} ;
-    unless ( -x $script ) {
-        if ( -e $script ) {
-            die "$script is not executable\n";
-        }
-        $script = sprintf '%s/bin/mysql_install_db', $msb->{options}{basedir} ;
-    }
-    if ( -x $script ) {
-
-        my $additional_options = "";
-        my $mysql_version = qx($msb->{options}{basedir}/bin/mysql_config --version);
-        if ($mysql_version)
+    my $mysql_version = qx($msb->{options}{basedir}/bin/mysql_config --version);
+    if ($mysql_version)
+    {
+        chomp $mysql_version;
+        my ($major, $minor, $rev) ;
+        if ($mysql_version =~ /^(\d+)\.(\d+)\.(\d+)/ )
         {
-            my $major ;
-            if ($mysql_version =~ /^(\d+)/ )
-            {
-                $major = $1;
-            }
-            else
-            {
-                die "Can't get major version number from <$mysql_version>\n";
-            }
-            if (($mysql_version ge '5.7.5' ) && ($major < 10))  # exclude MariaDB from this feature
-            {
-                $additional_options .= ' --insecure' ;
-            }
-            elsif (($mysql_version ge '5.7.4' ) && ($major < 10))  # exclude MariaDB from this feature
-            {
-                $additional_options .= ' --skip-random-password' ;
-            }
+            $major = $1;
+            $minor=$2;
+            $rev = $3;
         }
         else
         {
-            die "Can't determine MySQL version\n";
+            die "Can't get version components numbers from <$mysql_version>\n";
         }
-        
+        $mysql_version=sprintf('%d.%d.%d', $major,$minor, $rev);
+        if ($mysql_version eq '5.7.5' )
+        {
+            $additional_options .= ' --insecure' ;
+        }
+        elsif (($mysql_version ge '5.7.6' ) && ($major < 10))  # exclude MariaDB from this feature
+        {
+            # mysql_install_db is deprecated. It is now replaced by 'mysqld --initialize'
+            # https://dev.mysql.com/doc/refman/5.7/en/mysql-install-db.html
+            # https://dev.mysql.com/doc/refman/5.7/en/data-directory-initialization-mysqld.html
+            # $additional_options .= ' --initialize-insecure --skip-ssl' ;
+            $additional_options .= ' --initialize-insecure' ;
+            $script = sprintf '%s/bin/mysqld', $msb->{options}{basedir} ;
+        }
+    }
+    else
+    {
+        die "Can't determine MySQL version\n";
+    }
+    
+    if ($script =~ /mysql_install_db/)
+    {
+        unless ( -x $script ) 
+        {
+            if ( -e $script ) {
+                die "$script is not executable\n";
+            }
+            $script = sprintf '%s/bin/mysql_install_db', $msb->{options}{basedir} ;
+        }
+    }
+    if ( -x $script ) 
+    {
         #my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data --tmpdir=%s/tmp %s', 
         my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data %s', 
             $script,
@@ -658,9 +684,36 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         if ($DEBUG) {
             print "$cmd $additional_options\n";
         }
-        my $result = qx($cmd $additional_options 2>&1);
-        if (($CHILD_ERROR) or ($result && ($result =~ /\berror\b/i))) {
-            die "error while creating grant tables\n$result\n";
+        if ($ENV{TRACE_INSTALL})
+        {
+            # This instruction will never execute unless the user variable is defined.
+            # It is only needed for testing purposes
+            system qq[echo "\$(date) $mysql_version - $cmd $additional_options" >> $ENV{TMPDIR}/trace_install.txt ];
+        }
+        my $will_abort = 0;
+        my $result     = qx($cmd $additional_options 2>&1);
+        if ($CHILD_ERROR) {
+            $will_abort = 1;
+        }
+        $result = '' unless defined $result;
+        my $abort_msg  = "error while creating grant tables\n$result\n";
+        if ($result && ($result =~ /\berror\b/i)) 
+        {
+            # We look for the word 'error' in the output
+            while ($result =~ /(.*\berror\b.*)/ig)
+            {
+                my $error_line = $1;
+                # If the line containing 'error' will also say [Warning], we skip it
+                if ($error_line =~ /\[Warning\]/)
+                {
+                    print "# Found [Warning]: skipping line containing 'error'\n" if $DEBUG;
+                }
+                else
+                {
+                    # otherwise, we mark this operation as an error
+                    $will_abort++;
+                }
+            } 
         }
         if ($DEBUG)
         {
@@ -668,6 +721,10 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
             {
                 print "++ $1\n";
             }
+        }
+        if ($will_abort)
+        {
+            die $abort_msg;
         }
         for my $table_name (qw(user db tables_priv columns_priv)) {
             my $frm =   "$sandbox_directory/data/mysql/$table_name.frm";

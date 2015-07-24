@@ -20,7 +20,17 @@ my %plugin_version = (
     '5.1.48' => '1.0.9',
     '5.1.57' => '1.0.16',
     '5.1.63' => '1.0.17',
+    '5.1.73' => '5.1.73',
 );
+
+my $skip_tests=0;
+
+unless (defined $plugin_version{$TEST_VERSION})
+{
+    warn "# No plugin info found for version $TEST_VERSION\n";
+    $plugin_version{$TEST_VERSION} = "<missing>";
+    $skip_tests=1;
+}
 
 my @test_sb = (
     { 
@@ -103,16 +113,38 @@ my @test_sb = (
 
 for my $test (@test_sb) {
 
-    if ($test->{type} eq 'exec') {
-        ok_exec( $test);
+    if ($skip_tests)
+    {
+        my $msg = $test->{msg} || '';
+        my $expected = $test->{expected} || '';
+        if ($expected)
+        {
+            if (ref $expected)
+            {
+                for my $e (@$expected)
+                {
+                    print "ok - skipped - $msg ($e)\n";
+                }
+            }
+            else
+            {
+                print "ok - skipped - $msg ($expected)\n";
+            }
+        }
     }
-    elsif ($test->{type} eq 'sql') {
-        ok_sql($test);
-    }
-    elsif ($test->{type} eq 'sleep') {
-        sleep($test->{how_much} || 1 );
-    }
-    else {
-        die "unrecognized type\n";
+    else
+    {
+        if ($test->{type} eq 'exec') {
+            ok_exec( $test);
+        }
+        elsif ($test->{type} eq 'sql') {
+            ok_sql($test);
+        }
+        elsif ($test->{type} eq 'sleep') {
+            sleep($test->{how_much} || 1 );
+        }
+        else {
+            die "unrecognized type\n";
+        }
     }
 }

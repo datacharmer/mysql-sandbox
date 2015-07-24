@@ -7,5 +7,6 @@ if ( $ENV{TEST_VERSION} =~ /5.7.[678]/)
 }
 else
 {
+    warn "# Using version <$ENV{TEST_VERSION}>\n" if $ENV{SBDEBUG};
     test_sandbox( 'test_sandbox --user_test=./t/user_privileges.sb', 50, 0);
 }
