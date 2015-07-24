@@ -27,7 +27,7 @@ our @EXPORT_OK= qw( is_port_open
                     validate_json_object
                     ) ;
 
-our $VERSION="3.0.56";
+our $VERSION="3.0.60";
 our $DEBUG;
 
 BEGIN {
@@ -963,7 +963,7 @@ making sure that your sandbox is really not conflicting with anything.
 
 The default behavior when asking to install a sandbox over an existing 
 one is to abort. If you specify the C<--force> option, the old sandbox
-will be overwritten.
+will be saved as 'old_data' and a new one created.
 Instead, using the C<--check_port> option, MySQL Sandbox searches for the
 first available unused port, and uses it. It will also create a non 
 conflicting data directory. For example
@@ -976,7 +976,7 @@ either C<--force> or C<--check_port>.
 
  make_sandbox 5.0.79 --force
  # Creates a sandbox with port 5079 under $SANDBOX_HOME/msb_5_0_79
- # The contents of the previous data directory are removed.
+ # The contents of the previous data directory are saved as 'old_data'.
 
  make_sandbox 5.0.79 --check_port
  # Creates a sandbox with port 5080 under $SANDBOX_HOME/msb_5_0_79_a

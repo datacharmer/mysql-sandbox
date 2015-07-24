@@ -65,7 +65,7 @@ my @test_sb = (
         path        => "$sandbox_home/group_server/node2",
         query       => " show tables from test ",
         expected    => 't1',
-        msg         => ' replication working on group_server/node2',
+        msg         => 'replication working on group_server/node2',
     },
     { 
         type        => 'exec',

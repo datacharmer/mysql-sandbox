@@ -66,7 +66,7 @@ sub test_sandbox {
 }
 
 sub find_plugindir {
-    my ($minimum_version, $maximum_version) = @_;
+    my ($minimum_version, $maximum_version, $use_current) = @_;
     my $plugindir;
 
     if  ( 
@@ -97,8 +97,9 @@ sub find_plugindir {
         # print "<@dirs> <$highest_version> <$TEST_VERSION>\n";
         unless ( grep { $TEST_VERSION eq $_ } @dirs ) {
             #skip_all("$TEST_VERSION is not suitable for this test");
-            $TEST_VERSION = $highest_version;
+            $TEST_VERSION = $highest_version unless $use_current;
         }
+        warn "# Testing plugin with <$TEST_VERSION>\n";
         $ENV{TEST_VERSION} = $TEST_VERSION;
         $plugindir = "$ENV{SANDBOX_BINARY}/$TEST_VERSION/lib/plugin";
         unless ( -d $plugindir) {

@@ -293,9 +293,9 @@ if ($tests{'sbtool'}) {
 tprintf "*** Executed %d tests. Passed %d (%5.2f%%). Failed %d (%5.2f%%)\n",
         $test_results{'run'},
         $test_results{'passed'},
-        $test_results{'passed'} / $test_results{'run'} * 100,
+        $test_results{'run'} ? $test_results{'passed'} / $test_results{'run'} * 100 : 0,
         $test_results{'failed'},
-        $test_results{'failed'} / $test_results{'run'} * 100
+        $test_results{'run'} ? $test_results{'failed'} / $test_results{'run'} * 100 : 0
         ;
 
 if ($test_results{'failed'}) {
