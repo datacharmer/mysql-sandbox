@@ -3,6 +3,7 @@
 ###########################################
 #
 # Note: this script is broken in MySQL 5.7.6 and later
+# DEPRECATED: replaced by user_privileges.sb.pl
 
 shell:
 command  = make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=msb_XXXX
@@ -91,6 +92,12 @@ shell:
 command     = make_replication_sandbox --replication_directory=rsandbox_XXXX $TEST_VERSION 
 expected    = replication directory installed
 msg         = replication started
+
+sql:
+path     = $SANDBOX_HOME/rsandbox_XXXX/node1/
+query    = select sleep(1)
+expected = 0
+msg      = pause, waiting for replication
 
 sql:
 path     = $SANDBOX_HOME/rsandbox_XXXX/master/

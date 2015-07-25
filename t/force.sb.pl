@@ -20,6 +20,12 @@ msg         => 'db1 schema was created',
 });
 
 ok_exec({
+command     => "make_sandbox $TEST_VERSION -- --sandbox_port=8000 --no_confirm 2>&1 || echo 1",
+expected    => [ 'already exists', 'not specified', 'Installation halted' ],
+msg         => 'Server installation denied without --force',
+});
+
+ok_exec({
 command     => "make_sandbox $TEST_VERSION -- --sandbox_port=8000 --no_confirm --force",
 expected    => 'sandbox server started',
 msg         => 'Same sandbox installation with --force is accepted',
