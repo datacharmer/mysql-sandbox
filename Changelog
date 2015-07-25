@@ -1,4 +1,4 @@
-3.0.60	24-Jul-2015
+3.0.60	25-Jul-2015
 	- Changed installation method for MySQL 5.7.6 and later. 
 	Using 'mysqld --initialize' instead of deprecated mysql_install_db.
 	Installation for earlier MySQL versions and MariaDB still use
@@ -7,10 +7,11 @@
 	"error" message in the output for the text '[Warning]'. If an "error"
 	appears as warning, the installation is not halted.
 	- Incompatible change: when using --force to install on top of an existing
-	sandbox, the old data directory is copied to old_data. This is due to the
-	different behavior of 'mysqld --initialize' that does not support
-	overwriting a data directory.
+	sandbox, the old data directory is copied to 'old_data' instead of being
+	overwritten. This is due to the different behavior of 'mysqld --initialize' 
+	that does not support iintializing an existing data directory.
 	- Added more tests. Improved a few of the existing ones.
+	- Fixed test for user privileges that was broken in 5.7.6+
 3.0.57	to 3.0.59 not released
 3.0.56	20-Jul-2015
 	- Adjusted credis date

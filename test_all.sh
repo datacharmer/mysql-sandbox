@@ -8,14 +8,26 @@ fi
 echo "" >> results.txt
 echo "## $(date)" >> results.txt
 echo "#" >> results.txt
-for V in $(cat test_versions.txt)   
+[ -z "$SANDBOX_BINARY" ] && SANDBOX_BINARY=$HOME/opt/mysql
+
+
+for V in $(grep -v '^\s*#' test_versions.txt)   
 do 
+    if [ ! -d $SANDBOX_BINARY/$V ]
+    then
+        echo "# $V not found in $SANDBOX_BINARY"
+        echo "# $V skipped" >> results.txt
+        continue
+    fi 
+    echo "# Testing $V"
     perl Makefile.PL 
+    if [ "$?" != "0" ] ; then continue ; fi
     make 
+    if [ "$?" != "0" ] ; then continue ; fi
     TEST_VERSION=$V make test 
     EC=$? 
     echo "`date` - $V - $EC" >> results.txt   
-    running_mysql=$(ps auxw |grep mysqld)
+    running_mysql=$(pgrep mysqld)
     if [ -n "$running_mysql" ]
     then
         pkill mysqld
