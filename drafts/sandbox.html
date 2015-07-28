@@ -376,7 +376,7 @@ making sure that your sandbox is really not conflicting with anything.</p>
 <h3><a name="single_sandbox_port_checking">Single sandbox port checking</a></h3>
 <p>The default behavior when asking to install a sandbox over an existing 
 one is to abort. If you specify the <code>--force</code> option, the old sandbox
-will be overwritten.
+will be saved as 'old_data' and a new one created.
 Instead, using the <code>--check_port</code> option, MySQL Sandbox searches for the
 first available unused port, and uses it. It will also create a non 
 conflicting data directory. For example</p>
@@ -388,7 +388,7 @@ either <code>--force</code> or <code>--check_port</code>.</p>
 <pre>
  make_sandbox 5.0.79 --force
  # Creates a sandbox with port 5079 under $SANDBOX_HOME/msb_5_0_79
- # The contents of the previous data directory are removed.</pre>
+ # The contents of the previous data directory are saved as 'old_data'.</pre>
 <pre>
  make_sandbox 5.0.79 --check_port
  # Creates a sandbox with port 5080 under $SANDBOX_HOME/msb_5_0_79_a</pre>

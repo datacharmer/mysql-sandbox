@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.60";
+our $VERSION="3.0.61";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1496,9 +1496,14 @@ create user _DBUSERREPL_@'_REMOTE_ACCESS_' identified by '_DB_REPL_PASSWORD_';
 grant SELECT,EXECUTE on *.* to _DBUSERRO_@'_REMOTE_ACCESS_';
 grant SELECT,EXECUTE on *.* to _DBUSERRO_@'localhost';
 grant REPLICATION SLAVE on *.* to _DBUSERREPL_@'_REMOTE_ACCESS_';
-delete from user where authentication_string='';
-delete from db where user='';
-flush privileges;
+# << 
+# workaround for Bug#77732. 
+grant SELECT on performance_schema.global_variables to _DBUSERREPL_@'_REMOTE_ACCESS_';
+grant SELECT on performance_schema.session_variables to _DBUSERREPL_@'_REMOTE_ACCESS_';
+# >>
+#delete from user where authentication_string='';
+#delete from db where user='';
+#flush privileges;
 create schema if not exists test;
 
 GRANTS_MYSQL_5_7_6
