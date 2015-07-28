@@ -3,6 +3,24 @@
 #
 my $TEST_VERSION = $ENV{TEST_VERSION};
 my ($bare_version, $version) = get_bare_version ($TEST_VERSION);
+my $reference_schema = 'information_schema';
+my $additional_5_7_options='';
+
+if ($TEST_VERSION =~ /5\.(\d+)\.(\d+)/)
+{
+    my $minor=$1;
+    my $rev=$2;
+    # Starting with MySQL 5.7.8, information_schema.global_* tables 
+    # are now in performance_schema
+    if ( ($minor > 7) 
+            or 
+        ( ($minor == 7) && ($rev >= 6)) 
+       )
+    {
+        # $additional_5_7_options = "--node_options=' -c show_compatibility_56=on'";
+        $reference_schema='performance_schema';
+    }
+}
 
 my $plugindir = $ENV{SB_PLUGIN_DIR} 
     or die "expected environment variable \$SB_PLUGIN_DIR not set\n";
@@ -13,7 +31,7 @@ my @test_sb = (
     {
         type        => 'exec',
         command     => "make_replication_sandbox "
-                       . "--replication_directory=group_server $TEST_VERSION ",
+                       . "--replication_directory=group_server $TEST_VERSION $additional_5_7_options ",
         expected    => 'replication directory installed',
         msg         => 'group directory started',
     },
@@ -38,7 +56,7 @@ my @test_sb = (
         type        => 'sql',
         path        => "$sandbox_home/group_server/master",
         query       => "select variable_value "
-                        . "from information_schema . global_status "
+                        . "from $reference_schema . global_status "
                         . "where variable_name = 'Rpl_semi_sync_master_yes_tx'",
         expected    => 1,
         msg         => 'semi-synch plugin working on group_server/master - 1',
@@ -47,7 +65,7 @@ my @test_sb = (
         type        => 'sql',
         path        => "$sandbox_home/group_server/master",
         query       => "select variable_value "
-                        . "from information_schema . global_status "
+                        . "from $reference_schema . global_status "
                         . "where variable_name = 'Rpl_semi_sync_master_no_tx'",
         expected    => 0,
         msg         => 'semi-synch plugin working on group_server/master - 2',

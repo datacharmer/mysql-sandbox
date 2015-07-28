@@ -151,11 +151,6 @@ if ( $temp_path =~ /(\d+)\.(\d+)\.(\d+)/ ) {
     {
         $create_gtid_script =0;
     }
-    # workaround for Bug#77732
-    if (($major == 5) && ($minor == 7) && ($rev == 8))
-    {
-        $additional_master_options .= ' -c show_compatibility_56=on ';
-    }
 }
 else {
     $msb->get_help("No recognizable version pattern in $msb->{options}{server_version}\n");
