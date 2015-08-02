@@ -4,23 +4,18 @@
 #
 
 my $TEST_VERSION = $ENV{TEST_VERSION};
-my ($bare_version, $version) = get_bare_version ($TEST_VERSION);
+my ($bare_version, $version, $major, $minor, $rev) = get_bare_version ($TEST_VERSION);
 my $SANDBOX_HOME= $ENV{SANDBOX_HOME} || "$ENV{HOME}/sandboxes";
 my $password_field='password';
 
-if ($TEST_VERSION =~ /5\.(\d+)\.(\d+)/)
+if ( (($major ==5) &&  ($minor > 7) )
+        or 
+    ( ($major ==5) && ($minor == 7) && ($rev > 5) ) 
+   )
+# Starting with MySQL 5.7.6, the 'password' column in the user table is gone
+# There is , instead, a column named 'authentication_string'
 {
-    my $minor=$1;
-    my $rev=$2;
-    # Starting with MySQL 5.7.6, the 'password' column in the user table is gone
-    # There is , instead, a column named 'authentication_string'
-    if ( ($minor > 7) 
-            or 
-        ( ($minor == 7) && ($rev > 5)) 
-       )
-    {
-        $password_field='authentication_string';
-    }
+    $password_field='authentication_string';
 }
 
 

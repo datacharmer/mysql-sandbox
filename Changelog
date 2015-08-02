@@ -1,3 +1,11 @@
+3.0.62	01-Aug-2015
+	- Added default name for relay log files.
+	- Added 'show_binlog' script in each sandbox
+	- improved tests by getting all the version components from a single
+	function call
+	- Added GTID initialization options for MySQL 5.6, 5.7, and MariaDB 10
+	- Added GTID enabling test for MySQL 5.6 and 5.7
+	- added and improved more tests
 3.0.61	27-Jul-2015
 	- Simplified workaround for Bug#77732. No defaults are changed.
 	The only addition is a GRANT SELECT on a given table to the replication

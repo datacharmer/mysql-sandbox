@@ -2,24 +2,19 @@
 #
 #
 my $TEST_VERSION = $ENV{TEST_VERSION};
-my ($bare_version, $version) = get_bare_version ($TEST_VERSION);
+my ($bare_version, $version, $major,$minor, $rev) = get_bare_version ($TEST_VERSION);
 my $reference_schema = 'information_schema';
 my $additional_5_7_options='';
 
-if ($TEST_VERSION =~ /5\.(\d+)\.(\d+)/)
+# Starting with MySQL 5.7.8, information_schema.global_* tables 
+# are now in performance_schema
+if ( (($major ==5) &&  ($minor > 7) )
+        or 
+    ( ($major ==5) && ($minor == 7) && ($rev >= 8) ) 
+   )
 {
-    my $minor=$1;
-    my $rev=$2;
-    # Starting with MySQL 5.7.8, information_schema.global_* tables 
-    # are now in performance_schema
-    if ( ($minor > 7) 
-            or 
-        ( ($minor == 7) && ($rev >= 6)) 
-       )
-    {
-        # $additional_5_7_options = "--node_options=' -c show_compatibility_56=on'";
-        $reference_schema='performance_schema';
-    }
+    # $additional_5_7_options = "--node_options=' -c show_compatibility_56=on'";
+    $reference_schema='performance_schema';
 }
 
 my $plugindir = $ENV{SB_PLUGIN_DIR} 

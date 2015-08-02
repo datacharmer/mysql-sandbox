@@ -124,7 +124,7 @@ if ( $msb->{options}{'high_performance'})
 
 if ($msb->{options}{'slaveof'} or $msb->{options}{'master'}) 
 {
-    for my $clause (('log-bin=mysql-bin', 'server-id=' . $msb->{options}{sandbox_port} ))
+    for my $clause (('log-bin=mysql-bin', 'server-id=' . $msb->{options}{sandbox_port}, 'relay-log=mysql-relay', 'relay-log-index=mysql-relay' ))
     { 
         unshift @{ $msb->{options}{'my_clause'}},  $clause; 
     }

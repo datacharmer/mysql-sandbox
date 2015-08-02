@@ -36,7 +36,10 @@ t/15_user_privileges.t
 t/16_replication_options.t
 t/17_replication_flow.t
 t/18_force_creation.t
+t/19_replication_gtid.t
+t/20_add_option.t
 t/Test_Helper.pm
+t/add_option.sb.pl
 t/check_replication.sb
 t/check_single_server.sb
 t/custom_user_pwd.sb.pl
@@ -45,6 +48,7 @@ t/group_port_checking.sb
 t/group_port_checking.sb.pl
 t/innodb_plugin_install.sb.pl
 t/replication_flow.sh
+t/replication_gtid.sb.pl
 t/replication_options.sb.pl
 t/replication_parameters.sb.pl
 t/semi_synch_plugin_install.sb.pl
