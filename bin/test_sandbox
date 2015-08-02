@@ -966,14 +966,17 @@ sub run_tuning_test {
 sub get_bare_version {
     my ($ver) = @_;
     $ver =~ s{.*/}{};
-    if ($ver =~ /((?:\w+)?\d+\.\d+\.\d+)/) {
+    if ($ver =~ /((?:\w+)?(\d+)\.(\d+)\.(\d+))/) {
         my $bv = $1;
+        my $major = $2;
+        my $minor = $3;
+        my $rev = $4;
         my $underscored_version = $bv;
         $underscored_version =~ s/\./_/g;
         $bv =~ s/^\D+//;
         # print STDERR "$ver, $bv, $underscored_version \n"; exit;
         if (wantarray) {
-            return ($bv, $underscored_version);
+            return ($bv, $underscored_version, $major, $minor, $rev);
         }
         else {
             return $bv;

@@ -4,6 +4,8 @@ use lib './t';
 use Test_Helper;
 use MySQL::Sandbox;
 
+confirm_version('5.5.1','10.1.99');
+
 my $use_current = 0;
 
 if ($ENV{TEST_VERSION} gt '5.6')

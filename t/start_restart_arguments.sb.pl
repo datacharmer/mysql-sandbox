@@ -3,9 +3,7 @@
 # Creates single and multiple sandboxes, sends a "start_all" call with 
 # parameters, and checks that the parameter was received.
 #
-my $ver = '5.5.31';
-my $TEST_VERSION = $ENV{TEST_VERSION} || $ver;
-my ($bare_version, $version) = get_bare_version ($ver);
+my $TEST_VERSION = $ENV{TEST_VERSION};
 my @test_sb = (
     { 
         command     => "make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=single_server",

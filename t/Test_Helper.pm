@@ -25,8 +25,41 @@ use strict;
 use warnings;
 use base qw( Exporter);
 our @ISA= qw(Exporter);
-our @EXPORT_OK= qw( test_sandbox find_plugindir skip_all);
+our @EXPORT_OK= qw( test_sandbox find_plugindir skip_all confirm_version);
 our @EXPORT = @EXPORT_OK;
+
+sub get_version_parts
+{
+    my ($version) = @_;
+    if ($version =~ /(\d+)\.(\d+)\.(\d+)/)
+    {
+        my ($major, $minor, $rev) = ($1, $2, $3) ;
+        return ($major, $minor, $rev);
+    }    
+    else
+    {
+        die "# version $version does not have expected components"
+    }
+}
+
+sub confirm_version
+{
+    my ($min_version, $max_version) = @_;
+    my $will_skip =0;
+    my ($major, $minor, $rev) = get_version_parts($test_version);
+    my ($major1, $minor1, $rev1) = get_version_parts($min_version);
+    my ($major2, $minor2, $rev2) = get_version_parts($max_version);
+    my $compare_test = sprintf("%05d-%05d-%05d", $major,  $minor,  $rev);
+    my $compare_min  = sprintf("%05d-%05d-%05d", $major1, $minor1, $rev1);
+    my $compare_max  = sprintf("%05d-%05d-%05d", $major2, $minor2, $rev2);
+    unless (($compare_test ge $compare_min) && ($compare_test le $compare_max))
+    {
+        warn "# Skipping version $test_version for this test. It is not in the required range ($min_version - $max_version)\n";
+        print "1..1\n";
+        print "ok 1 # Test version $test_version is not in the required range for this test ($min_version - $max_version)\n";
+        exit;
+    }
+}
 
 sub test_sandbox {
     my ($cmd, $expected_tests, $informative) = @_;

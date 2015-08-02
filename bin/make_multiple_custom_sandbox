@@ -177,6 +177,8 @@ for my $ver_counter (0 .. $#versions) {
      --prompt_prefix=node$node \\
      --sandbox_port=$node_port \\
      -c server-id=10$node \\
+     -c relay-log-index=mysql-relay \\
+     -c relay-log=mysql-relay \\
      -c log-bin=mysql-bin $additional_node_options
      );
     if ($msb->{options}{interactive} 

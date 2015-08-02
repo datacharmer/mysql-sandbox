@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.61";
+our $VERSION="3.0.62";
 
 our @MANIFEST = (
 'clear.sh',
@@ -41,6 +41,8 @@ our @MANIFEST = (
 'grants.mysql',
 'grants_5_7_6.mysql',
 'json_in_db.sh',
+'show_binlog.sh',
+'add_option.sh',
 '# INSTALL FILES',
 'sandbox_action.pl',
 'test_replication.sh',
@@ -2027,13 +2029,93 @@ test_summary
 
 TEST_REPLICATION
 
+    'show_binlog.sh' => <<'SHOW_BINLOG',
+#!_BINBASH_
+__LICENSE__
+
+curdir="_HOME_DIR_/_SANDBOXDIR_"
+cd $curdir
+
+if [ ! -d ./data ]
+then
+    echo "$curdir/data not found"
+    exit 1
+fi
+
+pattern=$1
+[ -z "$pattern" -o "$pattern" == 'N' ] && pattern='[0-9]*'
+if [ "$pattern" == "-h" -o "$pattern" == "--help" -o "$pattern" == "-help" -o "$pattern" == "help" ]
+then
+    echo "# Usage: $0 [BINLOG_PATTERN] [pager] "
+    echo "# Where BINLOG_PATTERN is a number, or part of a number used after 'mysql-bin'"
+    echo "# (The default is '[0-9]*]': you can use 'N' to confirm the default pattern)"
+    echo "# The default 'pager' is 'less'. You may use 'vim -', or 'grep GTID_NEXT', or whatever is right"
+    echo "# examples:" 
+    echo "#          ./show_binlog 000012 'vim -'"
+    echo "#          ./show_binlog N 'grep -i \"CREATE TABLE\"'"
+    exit 0
+fi
+set -x
+last_binlog=$(ls -lotr data/mysql-bin.$pattern | tail -n 1 | awk '{print $NF}')
+
+if [ -z "$last_binlog" ]
+then
+    echo "No binlog found in $curdir/data"
+    exit 1
+fi
+
+pager="$2"
+
+if [ -z "$pager" ] 
+then
+    pager=less
+fi
+
+(printf "#\n# using '$pager' with  $last_binlog\n#\n" ; ./my sqlbinlog $last_binlog ) | $pager
+
+SHOW_BINLOG
+
+    'add_option.sh' => <<'ADD_OPTION',
+#!_BINBASH_
+__LICENSE__
+
+curdir="_HOME_DIR_/_SANDBOXDIR_"
+cd $curdir
+
+if [ -z "$*" ]
+then
+    echo "# Syntax $0 options-for-my.cnf [more options] "
+    exit
+fi
+
+CHANGED=''
+for OPTION in $@
+do
+    option_exists=$(grep $OPTION ./my.sandbox.cnf)
+    if [ -z "$option_exists" ]
+    then
+        echo "$OPTION" >> my.sandbox.cnf
+        echo "# option '$OPTION' added to configuration file"
+        CHANGED=1
+    else
+        echo "# option '$OPTION' already exists configuration file"
+    fi
+done
+
+if [ -n "$CHANGED" ]
+then
+    ./restart
+fi
+
+ADD_OPTION
+
 );
 
 # --- END SCRIPTS IN CODE ---
 
 my $license_text = <<'LICENSE';
 #    The MySQL Sandbox
-#    Copyright (C) 2006-2013 Giuseppe Maxia
+#    Copyright (C) 2006-2015 Giuseppe Maxia
 #    Contacts: http://datacharmer.org
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -2182,7 +2264,7 @@ For a reference manual, see L<MySQL::Sandbox>. For a cookbook, see L<MySQL::Sand
 
 Version 3.0
 
-Copyright (C) 2006-2013 Giuseppe Maxia
+Copyright (C) 2006-2015 Giuseppe Maxia
 
 Home Page  http://launchpad.net/mysql-sandbox/
 
