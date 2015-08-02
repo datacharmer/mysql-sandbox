@@ -1,6 +1,5 @@
 # Test for add_option script
 #
-#
 my $TEST_VERSION = $ENV{TEST_VERSION};
 ok_exec ( { 
         command     => "make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=single_server",
@@ -10,20 +9,21 @@ ok_exec ( {
     });
 
     ok ( -x "$sandbox_home/single_server/add_option", "script add_option is installed");
+
     ok_exec({
-         command    => "$sandbox_home/single_server/add_option general_log=1",
+         command    => "$sandbox_home/single_server/add_option key-buffer-size=25M",
          expected   => 'ok',
-         msg        => 'General log option installed',
+         msg        => 'key buffer size option installed',
      });
     ok_sql({
          path       => "$sandbox_home/single_server",
-         query      => 'select @@general_log',
-         expected   => '1',
-         msg        => 'general_log option is active',
+         query      => "show variables like 'key_buffer_size'",
+         expected   => '26214400',
+         msg        => 'got right buffer size (25M)',
      });
 
-    my $is_in_my_cnf = qx( grep 'general_log=1' "$sandbox_home/single_server/my.sandbox.cnf");
-    ok ($is_in_my_cnf && ($is_in_my_cnf =~ /general_log/), "option general_log is in configuration file");
+    my $is_in_my_cnf = qx( grep 'key.buffer.size=25M' "$sandbox_home/single_server/my.sandbox.cnf");
+    ok ($is_in_my_cnf && ($is_in_my_cnf =~ /key.buffer.size/), "option key_buffer_size is in configuration file");
 
     ok_exec( {
         command => "sbtool -o delete -s $sandbox_home/single_server", 
