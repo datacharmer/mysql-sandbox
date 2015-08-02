@@ -1,4 +1,4 @@
-3.0.62	01-Aug-2015
+3.0.62	02-Aug-2015
 	- Added default name for relay log files.
 	- Added 'show_binlog' script in each sandbox
 	- improved tests by getting all the version components from a single
