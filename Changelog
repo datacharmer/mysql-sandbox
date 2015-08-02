@@ -1,6 +1,6 @@
 3.0.62	02-Aug-2015
 	- Added default name for relay log files.
-	- Added 'show_binlog' script in each sandbox
+	- Added 'show_binlog' and 'add_option' scripts in each sandbox
 	- improved tests by getting all the version components from a single
 	function call
 	- Added GTID initialization options for MySQL 5.6, 5.7, and MariaDB 10
