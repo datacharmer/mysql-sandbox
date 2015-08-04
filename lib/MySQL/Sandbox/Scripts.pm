@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.62";
+our $VERSION="3.0.63";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1271,7 +1271,9 @@ SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 cd $SBDIR
 ./use -e 'drop table if exists test.connection_json'
 ./use -e 'create table test.connection_json(t longtext)'
-./use -e "insert into test.connection_json values (load_file('$SBDIR/connection.json'))"
+./use -e '/*!50708 alter table test.connection_json modify t json */'
+#./use -e "insert into test.connection_json values (load_file('$SBDIR/connection.json'))"
+./use -e "insert into test.connection_json values ( /*!50708 convert( */ load_file('$SBDIR/connection.json') /*!50708 using UTF8 ) */ )"
 if [ "$?" != "0" ]
 then
     echo "error loading connection.json to the database"
@@ -1469,11 +1471,11 @@ GRANTS_MYSQL
 
 use mysql;
 set password='_DBPASSWORD_';
+delete from tables_priv;
+delete from columns_priv;
+delete from db;
+delete from user where user != 'root';
 
-delete from user where user like '_DBUSER_';
-delete from user where user like '_DBUSERREPL_';
-delete from user where user like '_DBUSERRO_';
-delete from user where user like '_DBUSERRW_';
 flush privileges;
 
 create user _DBUSER_@'_REMOTE_ACCESS_' identified by '_DBPASSWORD_';
@@ -1503,9 +1505,6 @@ grant REPLICATION SLAVE on *.* to _DBUSERREPL_@'_REMOTE_ACCESS_';
 grant SELECT on performance_schema.global_variables to _DBUSERREPL_@'_REMOTE_ACCESS_';
 grant SELECT on performance_schema.session_variables to _DBUSERREPL_@'_REMOTE_ACCESS_';
 # >>
-#delete from user where authentication_string='';
-#delete from db where user='';
-#flush privileges;
 create schema if not exists test;
 
 GRANTS_MYSQL_5_7_6
@@ -2042,20 +2041,34 @@ then
     exit 1
 fi
 
+# Checks if the output is a terminal or a pipe
+if [  -t 1 ]
+then
+    echo "###################### WARNING ####################################"
+    echo "# You are not using a pager."
+    echo "# The output of this script can be quite large."
+    echo "# Please pipe this script with a pager, such as 'less' or 'vim -'"
+    echo "# ENTER 'q' to exit or simply RETURN to continue"
+    read answer
+    if [ "$answer" == "q" ]
+    then
+        exit
+    fi
+fi
+
 pattern=$1
 [ -z "$pattern" -o "$pattern" == 'N' ] && pattern='[0-9]*'
 if [ "$pattern" == "-h" -o "$pattern" == "--help" -o "$pattern" == "-help" -o "$pattern" == "help" ]
 then
-    echo "# Usage: $0 [BINLOG_PATTERN] [pager] "
+    echo "# Usage: $0 [BINLOG_PATTERN] "
     echo "# Where BINLOG_PATTERN is a number, or part of a number used after 'mysql-bin'"
-    echo "# (The default is '[0-9]*]': you can use 'N' to confirm the default pattern)"
-    echo "# The default 'pager' is 'less'. You may use 'vim -', or 'grep GTID_NEXT', or whatever is right"
+    echo "# (The default is '[0-9]*]')"
     echo "# examples:" 
-    echo "#          ./show_binlog 000012 'vim -'"
-    echo "#          ./show_binlog N 'grep -i \"CREATE TABLE\"'"
+    echo "#          ./show_binlog 000012 | vim -
+    echo "#          ./show_binlog  | grep -i 'CREATE TABLE'"
     exit 0
 fi
-set -x
+# set -x
 last_binlog=$(ls -lotr data/mysql-bin.$pattern | tail -n 1 | awk '{print $NF}')
 
 if [ -z "$last_binlog" ]
@@ -2064,14 +2077,7 @@ then
     exit 1
 fi
 
-pager="$2"
-
-if [ -z "$pager" ] 
-then
-    pager=less
-fi
-
-(printf "#\n# using '$pager' with  $last_binlog\n#\n" ; ./my sqlbinlog $last_binlog ) | $pager
+(printf "#\n# Showing $last_binlog\n#\n" ; ./my sqlbinlog --verbose $last_binlog ) 
 
 SHOW_BINLOG
 

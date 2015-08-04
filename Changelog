@@ -1,5 +1,8 @@
-3.0.63	02-Aug-2015 (not released)
+3.0.63	03-Aug-2015 (not released)
 	- Modified test add_option.sb.pl so that it can also run on MySQL 5.0
+	- modified sandbox script json_in_db to use type JSON when version >=
+	5.7.8
+	- Simplified grants.mysql and show_binlogs scripts
 3.0.62	02-Aug-2015
 	- Added default name for relay log files.
 	- Added 'show_binlog' and 'add_option' scripts in each sandbox
