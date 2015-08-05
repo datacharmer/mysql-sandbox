@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.63";
+our $VERSION="3.0.64";
 
 our @MANIFEST = (
 'clear.sh',
@@ -2064,7 +2064,8 @@ then
     echo "# Where BINLOG_PATTERN is a number, or part of a number used after 'mysql-bin'"
     echo "# (The default is '[0-9]*]')"
     echo "# examples:" 
-    echo "#          ./show_binlog 000012 | vim -
+    echo "#          ./show_binlog 000001 | less "
+    echo "#          ./show_binlog 000012 | vim - "
     echo "#          ./show_binlog  | grep -i 'CREATE TABLE'"
     exit 0
 fi

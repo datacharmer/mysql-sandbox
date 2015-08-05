@@ -1,3 +1,5 @@
+3.0.64	05-Aug-2015 
+	- Fixed quoting error in show_binlog script
 3.0.63	04-Aug-2015 
 	- Modified test add_option.sb.pl so that it can also run on MySQL 5.0
 	- modified sandbox script json_in_db to use type JSON when version >=
