@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.64";
+our $VERSION="3.0.65";
 
 our @MANIFEST = (
 'clear.sh',
@@ -42,6 +42,7 @@ our @MANIFEST = (
 'grants_5_7_6.mysql',
 'json_in_db.sh',
 'show_binlog.sh',
+'show_relaylog.sh',
 'add_option.sh',
 '# INSTALL FILES',
 'sandbox_action.pl',
@@ -2048,7 +2049,7 @@ then
     echo "# You are not using a pager."
     echo "# The output of this script can be quite large."
     echo "# Please pipe this script with a pager, such as 'less' or 'vim -'"
-    echo "# ENTER 'q' to exit or simply RETURN to continue"
+    echo "# ENTER 'q' to exit or simply RETURN to continue without a pager"
     read answer
     if [ "$answer" == "q" ]
     then
@@ -2057,7 +2058,7 @@ then
 fi
 
 pattern=$1
-[ -z "$pattern" -o "$pattern" == 'N' ] && pattern='[0-9]*'
+[ -z "$pattern" ] && pattern='[0-9]*'
 if [ "$pattern" == "-h" -o "$pattern" == "--help" -o "$pattern" == "-help" -o "$pattern" == "help" ]
 then
     echo "# Usage: $0 [BINLOG_PATTERN] "
@@ -2081,6 +2082,63 @@ fi
 (printf "#\n# Showing $last_binlog\n#\n" ; ./my sqlbinlog --verbose $last_binlog ) 
 
 SHOW_BINLOG
+
+    'show_relaylog.sh' => <<'SHOW_RELAYLOG',
+#!_BINBASH_
+__LICENSE__
+
+curdir="_HOME_DIR_/_SANDBOXDIR_"
+cd $curdir
+
+if [ ! -d ./data ]
+then
+    echo "$curdir/data not found"
+    exit 1
+fi
+
+# Checks if the output is a terminal or a pipe
+if [  -t 1 ]
+then
+    echo "###################### WARNING ####################################"
+    echo "# You are not using a pager."
+    echo "# The output of this script can be quite large."
+    echo "# Please pipe this script with a pager, such as 'less' or 'vim -'"
+    echo "# ENTER 'q' to exit or simply RETURN to continue without a pager"
+    read answer
+    if [ "$answer" == "q" ]
+    then
+        exit
+    fi
+fi
+
+relay_basename=$1
+[ -z "$relay_basename" ] && relay_basename='mysql-relay'
+pattern=$2
+[ -z "$pattern" ] && pattern='[0-9]*'
+if [ "$pattern" == "-h" -o "$pattern" == "--help" -o "$pattern" == "-help" -o "$pattern" == "help" ]
+then
+    echo "# Usage: $0 [ relay-base-name [BINLOG_PATTERN]] "
+    echo "# Where relay-basename is the initial part of the relay ('$relay_basename')"
+    echo "# and BINLOG_PATTERN is a number, or part of a number used after '$relay_basename'"
+    echo "# (The default is '[0-9]*]')"
+    echo "# examples:" 
+    echo "#          ./show_relaylog relay-log-alpha 000001 | less "
+    echo "#          ./show_relaylog relay-log 000012 | vim - "
+    echo "#          ./show_relaylog  | grep -i 'CREATE TABLE'"
+    exit 0
+fi
+# set -x
+last_relaylog=$(ls -lotr data/$relay_basename.$pattern | tail -n 1 | awk '{print $NF}')
+
+if [ -z "$last_relaylog" ]
+then
+    echo "No relay log found in $curdir/data"
+    exit 1
+fi
+
+(printf "#\n# Showing $last_relaylog\n#\n" ; ./my sqlbinlog --verbose $last_relaylog ) 
+
+SHOW_RELAYLOG
 
     'add_option.sh' => <<'ADD_OPTION',
 #!_BINBASH_
