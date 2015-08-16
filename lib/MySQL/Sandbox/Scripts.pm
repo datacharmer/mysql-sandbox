@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.65";
+our $VERSION="3.0.66";
 
 our @MANIFEST = (
 'clear.sh',
@@ -30,6 +30,7 @@ our @MANIFEST = (
 'send_kill.sh',
 'load_grants.sh',
 'use.sh',
+'mycli.sh',
 'proxy_start.sh',
 'my.sh',
 'change_paths.sh',
@@ -1291,17 +1292,33 @@ export LD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$DYLD_LIBRARY_PATH
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 BASEDIR=_BASEDIR_
-MYSQL="$BASEDIR/bin/mysql"
+[ -z "$MYSQL_EDITOR" ] && MYSQL_EDITOR="$BASEDIR/bin/mysql"
 export MYSQL_HISTFILE="$SBDIR/.mysql_history"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 __SBINSTR_SH__
 if [ -f $PIDFILE ]
 then
-    $MYSQL --defaults-file=$SBDIR/my.sandbox.cnf $MYCLIENT_OPTIONS "$@"
+    $MYSQL_EDITOR --defaults-file=$SBDIR/my.sandbox.cnf $MYCLIENT_OPTIONS "$@"
 #else
 #    echo "PID file $PIDFILE not found "
 fi
 USE_SCRIPT
+
+    'mycli.sh' => <<'MYCLI_SCRIPT',
+#!_BINBASH_
+__LICENSE__
+export LD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$DYLD_LIBRARY_PATH
+SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+BASEDIR=_BASEDIR_
+mycli --user=_DBUSER_ \
+    --pass=_DBPASSWORD_ \
+    --port=_SERVERPORT_ \
+    --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock \
+    --_MYSQL_PROMPT_ "$@"
+
+MYCLI_SCRIPT
+
 
     'clear.sh' => <<'CLEAR_SCRIPT', 
 #!_BINBASH_

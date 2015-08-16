@@ -1,3 +1,7 @@
+3.0.66	07-Aug-2015 
+	- Added MYSQL_EDITOR variable to ./use script
+	- Added ./mycli script to invoke the mycli command
+	 <http://github.com/dbcli/mycli>
 3.0.65	06-Aug-2015 
 	- Added show_relaylog script, similar to show_binlog
 3.0.64	05-Aug-2015 
