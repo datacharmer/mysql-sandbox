@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.0.66";
+our $VERSION="3.1.00";
 
 our @MANIFEST = (
 'clear.sh',
@@ -65,15 +65,6 @@ sub manifest {
     return @MANIFEST;
 }
 my %parse_options_low_level_make_sandbox = (
-##
-# DEPRECATED and removed 
-# (April fool's edition)
-#    query_analyzer         => {
-#                                value => 0,
-#                                parse=> 'query_analyzer',
-#                                so  => 5,
-#                                help => ['solves your tuning problems at once']
-#    },
     upper_directory        => {
                                 value => $ENV{'SANDBOX_HOME'} || $ENV{'HOME'},       
                                 parse => 'upper_directory=s',         
@@ -438,6 +429,22 @@ my %parse_options_low_level_make_sandbox = (
                                 so    => 190,
                                 help  => [
                                             'does not show options or ask confirmation to the user',
+                                         ],
+                            },
+    keep_uuid             => {
+                                value => $ENV{KEEP_UUID} || $ENV{keep_uuid} || 0, 
+                                parse => 'keep_uuid',
+                                so    => 195,
+                                help  => [
+                                            'does not modify server UUID in MySQL 5.6+',
+                                         ],
+                            },
+    history_dir             => {
+                                value => $ENV{HISTORY_DIR} || $ENV{HISTORYDIR} || '', 
+                                parse => 'history_dir=s',
+                                so    => 197,
+                                help  => [
+                                            'Sets the history directory for mysql client to a given path',
                                          ],
                             },
 
@@ -1123,14 +1130,14 @@ fi
 if [ -f $PIDFILE ]
 then
     echo " sandbox server started"
-    if [ -f $SBDIR/needs_reload ]
-    then
-        if [ -f $SBDIR/rescue_mysql_dump.sql ]
-        then
-            $SBDIR/use mysql < $SBDIR/rescue_mysql_dump.sql
-        fi
-        rm $SBDIR/needs_reload
-    fi
+    #if [ -f $SBDIR/needs_reload ]
+    #then
+    #    if [ -f $SBDIR/rescue_mysql_dump.sql ]
+    #    then
+    #        $SBDIR/use mysql < $SBDIR/rescue_mysql_dump.sql
+    #    fi
+    #    rm $SBDIR/needs_reload
+    #fi
 else
     echo " sandbox server not started yet"
     exit 1
@@ -1293,7 +1300,9 @@ export DYLD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$DYLD_LIBRARY_PATH
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 BASEDIR=_BASEDIR_
 [ -z "$MYSQL_EDITOR" ] && MYSQL_EDITOR="$BASEDIR/bin/mysql"
-export MYSQL_HISTFILE="$SBDIR/.mysql_history"
+HISTDIR=_HISTORY_DIR_
+[ -z "$HISTDIR" ] && HISTDIR=$SBDIR
+export MYSQL_HISTFILE="$HISTDIR/.mysql_history"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 __SBINSTR_SH__
 if [ -f $PIDFILE ]
@@ -1347,14 +1356,19 @@ then
         echo "set sql_mode=ansi_quotes;drop database \"$D\"" | ./use 
     done
     VERSION=`./use -N -B  -e 'select left(version(),3)'`
-    if [ `perl -le 'print $ARGV[0] ge "5.0" ? "1" : "0" ' "$VERSION"` = "1" ]
+    #if [ `perl -le 'print $ARGV[0] ge "5.0" ? "1" : "0" ' "$VERSION"` = "1" ]
+    #then
+    #    ./use -e "truncate mysql.proc"
+    #    ./use -e "truncate mysql.func"
+    #fi
+    is_slave=$(ls data | grep relay)
+    if [ -n "$is_slave" ]
     then
-        ./use -e "truncate mysql.proc"
-        ./use -e "truncate mysql.func"
+        ./use -e "stop slave; reset slave;"
     fi
     if [ `perl -le 'print $ARGV[0] ge "5.1" ? "1" : "0" ' "$VERSION"` = "1" ]
     then
-        for T in general_log slow_log plugin proc func
+        for T in general_log slow_log plugin
         do
             exists_table=$(./use -e "show tables from mysql like '$T'")
             if [ -n "$exists_table" ]
@@ -1365,6 +1379,12 @@ then
     fi
 fi
 
+is_master=$(ls data | grep 'mysql-bin')
+if [ -n "$is_master" ]
+then
+    ./use -e 'reset master'
+fi
+
 ./stop
 #./send_kill
 rm -f data/`hostname`*
@@ -1373,16 +1393,16 @@ rm -f data/*.log
 rm -f data/falcon*
 rm -f data/mysql-bin*
 rm -f data/*relay-bin*
-rm -f data/ib*
+rm -f data/ib_*
 rm -f data/*.info
 rm -f data/*.err
 rm -f data/*.err-old
-if [ `perl -le 'print $ARGV[0] ge "5.6" ? "1" : "0" ' "$VERSION"` = "1" ]
-then
-    rm -f data/mysql/slave_*
-    rm -f data/mysql/innodb_*
-    touch needs_reload
-fi
+#if [ `perl -le 'print $ARGV[0] ge "5.6" ? "1" : "0" ' "$VERSION"` = "1" ]
+#then
+#    rm -f data/mysql/slave_*
+#    rm -f data/mysql/innodb_*
+#    touch needs_reload
+#fi
 # rm -rf data/test/*
 
 #
@@ -1518,11 +1538,6 @@ create user _DBUSERREPL_@'_REMOTE_ACCESS_' identified by '_DB_REPL_PASSWORD_';
 grant SELECT,EXECUTE on *.* to _DBUSERRO_@'_REMOTE_ACCESS_';
 grant SELECT,EXECUTE on *.* to _DBUSERRO_@'localhost';
 grant REPLICATION SLAVE on *.* to _DBUSERREPL_@'_REMOTE_ACCESS_';
-# << 
-# workaround for Bug#77732. 
-grant SELECT on performance_schema.global_variables to _DBUSERREPL_@'_REMOTE_ACCESS_';
-grant SELECT on performance_schema.session_variables to _DBUSERREPL_@'_REMOTE_ACCESS_';
-# >>
 create schema if not exists test;
 
 GRANTS_MYSQL_5_7_6
@@ -1535,16 +1550,25 @@ BASEDIR='_BASEDIR_'
 export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
 MYSQL="$BASEDIR/bin/mysql --no-defaults --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock --port=_SERVERPORT_"
-# START UGLY WORKAROUND
+# START UGLY WORKAROUND for grants syntax changes in 5.7.6
 VERSION=`$MYSQL -u root -BN -e 'select version()' | perl -ne 'print $1 if /(\d+\.\d+\.\d+)/'`
-if [[ $VERSION =~ 5.7.[6789] ]]
+MAJOR=$(echo $VERSION | tr '.' ' ' | awk '{print $1}')
+MINOR=$(echo $VERSION | tr '.' ' ' | awk '{print $2}')
+REV=$(echo $VERSION | tr '.' ' ' | awk '{print $3}')
+if [ "$MAJOR" == "5" -a "$MINOR" == "7" -a "$REV" == "8" ]
+then
+    # workaround for Bug#77732.
+    echo "grant SELECT on performance_schema.global_variables to _DBUSERREPL_@'_REMOTE_ACCESS_';" >> $SBDIR/grants_5_7_6.mysql
+    echo "grant SELECT on performance_schema.session_variables to _DBUSERREPL_@'_REMOTE_ACCESS_';" >> $SBDIR/grants_5_7_6.mysql
+fi
+if [ "$MAJOR" == "5" -a "$MINOR" == "7" -a $REV -gt 5 ]
 then
     cp $SBDIR/grants_5_7_6.mysql $SBDIR/grants.mysql
 fi
 # END UGLY WORKAROUND
 $MYSQL -u root < $SBDIR/grants.mysql
 # echo "source $SBDIR/grants.mysql" | $SBDIR/use -u root --password= 
-$SBDIR/my sqldump _EVENTS_OPTIONS_ mysql > $SBDIR/rescue_mysql_dump.sql
+# $SBDIR/my sqldump _EVENTS_OPTIONS_ mysql > $SBDIR/rescue_mysql_dump.sql
 LOAD_GRANTS_SCRIPT
 
     'default_connection.json' => <<'END_DEFAULT_CONNECTION_JSON',
@@ -2198,20 +2222,19 @@ ADD_OPTION
 my $license_text = <<'LICENSE';
 #    The MySQL Sandbox
 #    Copyright (C) 2006-2015 Giuseppe Maxia
-#    Contacts: http://datacharmer.org
 #
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; version 2 of the License
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#                                                                             
+#        http://www.apache.org/licenses/LICENSE-2.0
+#                                                                             
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
 LICENSE
 
 sub license_text {
@@ -2344,25 +2367,25 @@ For a reference manual, see L<MySQL::Sandbox>. For a cookbook, see L<MySQL::Sand
 
 =head1 COPYRIGHT
 
-Version 3.0
+Version 3.1
 
 Copyright (C) 2006-2015 Giuseppe Maxia
 
-Home Page  http://launchpad.net/mysql-sandbox/
+Home Page  http://github.com/datacharmer
 
 =head1 LEGAL NOTICE
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; version 2 of the License.
+   Copyright 2006-2015 Giuseppe Maxia
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
-USA
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 

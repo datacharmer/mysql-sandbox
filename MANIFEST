@@ -1,8 +1,8 @@
-COPYING
+LICENSE
 Changelog
 MANIFEST
 Makefile.PL
-README
+README.md
 bin/deploy_to_remote_sandboxes.sh
 bin/low_level_make_sandbox
 bin/make_multiple_custom_sandbox

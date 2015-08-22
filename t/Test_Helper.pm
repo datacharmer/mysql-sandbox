@@ -16,7 +16,7 @@ BEGIN {
     $ENV{TEST_SANDBOX_HOME}="$ENV{PWD}/t/test_sb";
     $ENV{PERL5LIB}="$ENV{PWD}/lib";
     $ENV{PATH}="$ENV{PWD}/bin:$ENV{PATH}";
-    $ENV{TEST_VERSION} = $ENV{TEST_VERSION} || '5.6.25';
+    $ENV{TEST_VERSION} = $ENV{TEST_VERSION} || '5.6.26';
     $ENV{SANDBOX_AS_ROOT} = 1;
     $test_version = $ENV{TEST_VERSION} ;
 };
