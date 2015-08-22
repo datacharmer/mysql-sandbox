@@ -258,7 +258,7 @@ sub fix_server_uuid
         die "<$operation_dir> not found\n";
     }
     chdir $operation_dir;
-    print "$operation_dir\n";
+    print "# operation_dir is $operation_dir\n" if $DEBUG;
     if ( ($operation_dir =~ m{/node\d/data$})  && (-d "../../master"))
     {
         $increase_id =1;
