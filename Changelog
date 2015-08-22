@@ -1,4 +1,6 @@
-3.0.67	20-Aug-2015 
+3.1.00	22-Aug-2015 
+	- Migrated repository to github (github.com/datacharmer/mysql-sandbox)
+	- Changed license to Apache 2.0
 	- Limited workaround for bug#77732 to MySQL 5.7.8 only
 	- Added usability feature for Server-UUID. Whenever server-id is used, the
 	server-uuid is converted into an easy-to-read string of numbers

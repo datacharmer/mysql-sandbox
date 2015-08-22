@@ -46,6 +46,7 @@ make clean
 
 find . -name "*~" -exec rm {} \;
 find . -name "*.bak" -exec rm {} \;
+find . -name "*.1bak" -exec rm {} \;
 rm -rf t/test_sb/
 rm -f pod*.tmp
 
