@@ -1,8 +1,0 @@
-#!_BINBASH_
-__LICENSE__
-
-SBDIR="_HOME_DIR_/_SANDBOXDIR_"
-$SBDIR/stop
-$SBDIR/start $@
-
-
