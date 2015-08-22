@@ -1,9 +1,0 @@
-
-use mysql;
-set password=password('_DBPASSWORD_');
-grant all on *.* to _DBUSER_ identified by '_DBPASSWORD_';
-delete from user where password='';
-delete from db where user='';
-flush privileges;
-
-
