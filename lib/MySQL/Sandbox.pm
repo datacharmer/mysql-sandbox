@@ -25,9 +25,10 @@ our @EXPORT_OK= qw( is_port_open
                     get_json_from_dirs
                     get_option_file_contents 
                     validate_json_object
+                    fix_server_uuid
                     ) ;
 
-our $VERSION="3.0.66";
+our $VERSION="3.1.00";
 our $DEBUG;
 
 BEGIN {
@@ -235,6 +236,64 @@ sub credits {
           qq(    The MySQL Sandbox,  version $VERSION\n) 
         . qq(    (C) 2006-2015 Giuseppe Maxia\n);
     return $CREDITS;
+}
+
+sub fix_server_uuid
+{
+    my ($server_id, $version, $port, $sandbox_directory) = @_;
+    if ($version =~ /(\d+)\.(\d+)/)
+    {
+        my ($major, $minor ) = ($1, $2);
+        unless (($major == 5) && ($minor >=6))
+        {
+            return;
+        }
+    }
+    my $current_dir = $ENV{PWD};
+    my $increase_id = 0;
+    $sandbox_directory =~ s{/$}{};
+    my $operation_dir= "$sandbox_directory/data";
+    if ( ! -d $operation_dir)
+    {
+        die "<$operation_dir> not found\n";
+    }
+    chdir $operation_dir;
+    print "$operation_dir\n";
+    if ( ($operation_dir =~ m{/node\d/data$})  && (-d "../../master"))
+    {
+        $increase_id =1;
+    }
+    #               12345678 1234 1234 1234 123456789012
+    # my $new_uuid='00000000-0000-0000-0000-000000000000';
+    my $group1 = sprintf('%08d', $port);
+
+    my $group2= sprintf('%04d-%04d-%04d-%012d', 0,0,0,0);
+    if ($server_id < 10)
+    {
+        $group2 =~ s/\d/$server_id/g;
+    }
+    elsif (($server_id >= 100) && ($server_id < 110))
+    {
+        $server_id -= 100;
+        $server_id += 1 if $increase_id;    # 101 => 2
+        $group2 =~ s/\d/$server_id/g;
+    }
+    else
+    {
+        my $second_id = $server_id;
+        if ($second_id > 9999)
+        {
+            $second_id = 9999;
+        }
+        $group2 = sprintf( '%04d-%04d-%04d-%012d', $second_id, $second_id, $second_id, $server_id );
+    }
+    my $new_uuid= "$group1-$group2";
+    open my $FH, '>', 'auto.cnf'
+        or die "Error updating 'auto.cnf' ($!)\n";
+    print $FH "[auto]\n";
+    print $FH "server-uuid=$new_uuid\n";
+    close $FH;
+    chdir $current_dir;
 }
 
 sub validate_json_object {
@@ -667,20 +726,23 @@ __END__
 
 =head1 NAME
 
-MySQL::Sandbox - Quickly installs MySQL side server, either standalone or in groups
+MySQL::Sandbox - Quickly installs one or more MySQL servers in the same host, either standalone or in groups
 
 =head1 SYNOPSIS
 
  make_sandbox /path/to/MySQL-VERSION.tar.gz
 
- make_sandbox $HOME/opt/mysql/VERSION
+ export SANDBOX_BINARY=$HOME/opt/mysql
+ make_sandbox --export_binaries /path/to/MySQL-VERSION.tar.gz
+
+ make_sandbox $SANDBOX_BINARY/VERSION
 
  make_sandbox VERSION
 
 =head1 PURPOSE
 
 This package is a sandbox for testing features under any version of
-MySQL from 3.23 to 6.0.
+MySQL from 3.23 to 5.x (and MariaDB 10).
 
 It will install one node under your home directory, and it will
 provide some useful commands to start, use and stop this sandbox.
@@ -706,13 +768,13 @@ and PATH variables.
 
    # as normal user
    export PATH=$HOME/usr/local/bin:$PATH
-   export PERL5LIB=$HOME/usr/local/lib/perl5/site_perl/5.8.8
+   export PERL5LIB=$HOME/usr/local/lib/perl5/site_perl/x.x.x
    perl Makefile.PL PREFIX=$HOME/usr/local
    make
    make test
    make install
 
-Notice that PERL5LIB could be different in different operating systems. If you opt for this installation method, you must adapt it to your operating system path and Perl version.
+Notice that PERL5LIB could be different in various operating systems. If you opt for this installation method, you must adapt it to your operating system path and Perl version.
 
 See also under L</"TESTING"> for more options before running 'make test'
 
@@ -974,14 +1036,14 @@ conflicting data directory. For example
 A further call to the same command will be aborted unless you specify 
 either C<--force> or C<--check_port>.
 
- make_sandbox 5.0.79 --force
+ make_sandbox 5.0.79 -- --force
  # Creates a sandbox with port 5079 under $SANDBOX_HOME/msb_5_0_79
  # The contents of the previous data directory are saved as 'old_data'.
 
- make_sandbox 5.0.79 --check_port
+ make_sandbox 5.0.79 -- --check_port
  # Creates a sandbox with port 5080 under $SANDBOX_HOME/msb_5_0_79_a
 
- make_sandbox 5.0.79 --check_port
+ make_sandbox 5.0.79 -- --check_port
  # Creates a sandbox with port 5081 under $SANDBOX_HOME/msb_5_0_79_b
 
 Notice that this option is disabled when you use a group sandbox (replication or multiple). Even if you set NODE_OPTIONS=--check_port, it won't be used, because every group sandbox invokes make_sandbox with the --no_check_port option.
@@ -1114,7 +1176,7 @@ But the msb can do even more. If you invoke it with a dotted version number, the
 
   $ msb 5.1.35
   # same as calling 
-  # make_sandbox 5.1.35 --no_confirm
+  # make_sandbox 5.1.35 -- --no_confirm
   # and then
   # $SANDBOX_HOME/msb_5_1_35/use
 
@@ -1355,14 +1417,15 @@ When you build the package and run
 
   make test
 
-test_sandbox is called, and the tests are performed on a temporary directory
-under C<$INSTALLATION_DIRECTORY/t/test_sb>. By default, version 5.0.77 is used.
+test_sandbox is called, in addition to many other tests in the ./t directory, 
+and the tests are performed on a temporary directory under 
+C<$INSTALLATION_DIRECTORY/t/test_sb>. By default, version 5.6.26 is used.
 If this version is not found in C<$HOME/opt/mysql/>, the test is skipped.
 You can override this option by setting the TEST_VERSION environment variable.
 
-  TEST_VERSION=5.1.30 make test
-  TEST_VERSION=$HOME/opt/mysql/5.1.30 make test
-  TEST_VERSION=/path/to/myswl-tarball-5.1.30.tar.gz make test
+  TEST_VERSION=5.7.9 make test
+  TEST_VERSION=$HOME/opt/mysql/5.7.9 make test
+  TEST_VERSION=/path/to/myswl-tarball-5.7.9.tar.gz make test
 
 =head2 User defined tests
 
@@ -1487,25 +1550,25 @@ Bash shell
 
 =head1 COPYRIGHT
 
-Version 3.0
+Version 3.1
 
 Copyright (C) 2006-2015 Giuseppe Maxia
 
-Home Page  http://launchpad.net/mysql-sandbox/
+Home Page  http://github.com/datacharmer
 
 =head1 LEGAL NOTICE
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; version 2 of the License.
+   Copyright 2006-2015 Giuseppe Maxia
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
-USA
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 

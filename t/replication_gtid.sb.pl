@@ -28,6 +28,27 @@ ok_sql({
 });
 
 ok_sql({
+    path    => "$sandbox_home/$replication_dir/master",
+    query   => 'select @@global.server_uuid',
+    expected => '1111-111111111111',
+    msg      => 'Master UUID was modified',    
+});
+
+ok_sql({
+    path    => "$sandbox_home/$replication_dir/node1",
+    query   => 'select @@global.server_uuid',
+    expected => '2222-222222222222',
+    msg      => 'slave 1 UUID was modified',    
+});
+
+ok_sql({
+    path    => "$sandbox_home/$replication_dir/node2",
+    query   => 'select @@global.server_uuid',
+    expected => '3333-333333333333',
+    msg      => 'slave 2 UUID was modified',    
+});
+
+ok_sql({
     path    => "$sandbox_home/$replication_dir/node1",
     query   => 'select @@global.gtid_mode',
     expected => 'ON',
@@ -67,14 +88,14 @@ ok_sql({
 ok_sql({
     path    => "$sandbox_home/$replication_dir/master",
     query   => 'select @@global.gtid_executed',
-    expected => '-2',
+    expected => '1111-111111111111:1-2',
     msg      => 'Master has produced a GTID',    
 });
 
 ok_sql({
     path    => "$sandbox_home/$replication_dir/node1",
     query   => 'select @@global.gtid_executed',
-    expected => '-2',
+    expected => '1111-111111111111:1-2',
     msg      => 'Slave has retrieved a GTID',    
 });
 

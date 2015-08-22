@@ -1,28 +1,26 @@
 #!/usr/bin/perl 
 # low_level_make_sandbox
 #    The MySQL Sandbox
-#    Copyright (C) 2006-2010 Giuseppe Maxia
-#    Contacts: http://datacharmer.org
+#    Copyright (C) 2006-2015 Giuseppe Maxia
 #
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; version 2 of the License
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#        http://www.apache.org/licenses/LICENSE-2.0
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
 
 use strict;
 use warnings;
 use English qw( -no_match_vars ); 
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox qw( find_safe_port_and_directory exists_in_path runs_as_root use_env sbinstr);
+use MySQL::Sandbox qw( find_safe_port_and_directory exists_in_path runs_as_root use_env sbinstr fix_server_uuid);
 use MySQL::Sandbox::Scripts;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
@@ -52,25 +50,6 @@ GetOptions (
     map { $msb->{parse_options}{$_}{parse}, \$msb->{options}{$_} }        
         grep { $msb->{parse_options}{$_}{parse}}  keys %{$msb->{parse_options}} 
 ) or $msb->get_help();
-
-##
-# DEPRECATED and removed 
-# (April fool's edition)
-#if ( $msb->{options}{query_analyzer}) {
-#my $QA = <<'ENDFISH';
-#  o         
-#  o
-#o
-#  o  ___/|__
-#o  _/       \  /|
-# o/  @ \\    \/ |
-#  \_   //    /\ |
-#    \_______/  \|
-#
-#ENDFISH
-#print $QA, "Thanks for having so much faith in my skills\n";
-#exit 1;
-#}
 
 # 
 # We are not expecting bare arguments
@@ -252,6 +231,7 @@ my %replace_options = (
     _BIND_ADDRESS_      => 'bind_address',
     _MSB_VERSION_       =>  'msb_version',
     _LOWER_CASE_TABLE_NAMES_ => 'lower_case_table_names',
+    _HISTORY_DIR_       => 'history_dir',
 );
 
 $msb->{options}{msb_version} = $MySQL::Sandbox::VERSION;
@@ -354,6 +334,14 @@ if ( @{ $msb->{options}{'my_clause'} } ) {
     $msb->{options}{'more_options'} .= qq(#\n# additional options passed through 'my_clause' \n#\n);
     for my $clause ( @{ $msb->{options}{'my_clause'} }) {
         $msb->{options}{'more_options'} .= $clause . "\n";
+        if ($clause =~ /server.id=(\d+)/)
+        {
+            my $sid=$1;
+            $msb->{options}{fix_server_uuid} = [ $sid,  
+                $msb->{options}{install_version}, 
+                $msb->{options}{sandbox_port}, 
+                "$msb->{options}{upper_directory}/$msb->{options}{sandbox_directory}"];
+        }
     }
 }
 
@@ -780,6 +768,10 @@ else {
     die "unrecognized value for option 'datadir_from' ($msb->{options}{datadir_from})\n";
 }
 
+if ($msb->{options}{fix_server_uuid} && ( ! $msb->{options}{keep_uuid})) {
+    print Dumper $msb->{options}{fix_server_uuid};
+    fix_server_uuid( @{ $msb->{options}{fix_server_uuid} } );
+}
 if ($msb->{options}{load_grants}) {
     print "loading grants\n";
     system "$sandbox_directory/start"

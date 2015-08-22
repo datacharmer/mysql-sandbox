@@ -1,3 +1,12 @@
+3.0.67	20-Aug-2015 
+	- Limited workaround for bug#77732 to MySQL 5.7.8 only
+	- Added usability feature for Server-UUID. Whenever server-id is used, the
+	server-uuid is converted into an easy-to-read string of numbers
+	- Simplified './clear' script. Does not attempt to remove stored routines.
+	Makes the intrusive mysqldump that was running with load_grants
+	unnecessary
+	- Changed location for MySQL history in group sandboxes to be shared
+	between single ones. 
 3.0.66	07-Aug-2015 
 	- Added MYSQL_EDITOR variable to ./use script
 	- Added ./mycli script to invoke the mycli command
