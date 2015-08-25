@@ -1637,7 +1637,7 @@ END_DEFAULT_CONNECTION_JSON
             "DriverManager" : "con=DriverManager.getConnection(\\\"jdbc:mysql://127.0.0.1:_SERVERPORT_/test\\\", \\\"_DBUSER_\\\", \\\"_DBPASSWORD_\\\")"            
         },
         "ruby" : {
-            "mysql" : "connection = Mysql.new '127.0.0.1', '_DBUSER_', '_DBPASSWORD_', 'test', _SERVER_PORT_"
+            "mysql" : "connection = Mysql.new '127.0.0.1', '_DBUSER_', '_DBPASSWORD_', 'test', _SERVERPORT_"
         },
         "shell" : {
             "generic": "_BASEDIR_/bin/mysql -h 127.0.0.1 -P _SERVERPORT_ -u _DBUSER_ -p_DBPASSWORD_"
