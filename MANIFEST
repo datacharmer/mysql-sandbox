@@ -58,5 +58,3 @@ t/start_restart_arguments.sb
 t/start_restart_arguments.sb.pl
 t/user_privileges.sb
 t/user_privileges.sb.pl
-MYMETA.json
-MYMETA.yml
