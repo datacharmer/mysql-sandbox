@@ -1566,7 +1566,9 @@ then
     cp $SBDIR/grants_5_7_6.mysql $SBDIR/grants.mysql
 fi
 # END UGLY WORKAROUND
-$MYSQL -u root < $SBDIR/grants.mysql
+VERBOSE_SQL=''
+[ -n "$SBDEBUG" ] && VERBOSE_SQL=-v
+$MYSQL -u root $VERBOSE_SQL < $SBDIR/grants.mysql
 # echo "source $SBDIR/grants.mysql" | $SBDIR/use -u root --password= 
 # $SBDIR/my sqldump _EVENTS_OPTIONS_ mysql > $SBDIR/rescue_mysql_dump.sql
 LOAD_GRANTS_SCRIPT
