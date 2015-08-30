@@ -299,10 +299,20 @@ sub fix_server_uuid
 sub validate_json_object {
     my ($json_filename, $json_text) = @_;
 
-    eval "use JSON;";
-    if ($@)
+    my $JSON_module = undef;
+    for my $module ( 'JSON', 'JSON::PP', 'JSON::XS')
     {
-        # print "# JSON module not installed - skipped evaluation\n";
+        eval "use $module;";
+        if (! $@)
+        {
+            print "# Using $module\n" if $DEBUG;
+            $JSON_module=$module;
+           last; 
+        }
+    }
+    unless ($JSON_module)
+    {
+        print "# JSON modules not installed - skipped evaluation\n" if $DEBUG;
         return -1;
     }
 
@@ -310,7 +320,7 @@ sub validate_json_object {
     {
         $json_text = slurp($json_filename);
     }
-    my $json = JSON->new->allow_nonref;
+    my $json = $JSON_module->new->allow_nonref;
 
     my $perl_value;
     eval {
@@ -318,7 +328,7 @@ sub validate_json_object {
     };
     if ($@)
     {
-        # print "error decoding json object\n";
+        print "error decoding json object\n" if $DEBUG;
         return ;
     }
     return 1;
