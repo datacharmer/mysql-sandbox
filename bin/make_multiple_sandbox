@@ -311,7 +311,9 @@ $msb->write_to('status_all', '>>', "echo $group_type $gdir" );
 
 $msb->write_to('status_all', '>>', 'for SNUM in ' . $node_list);
 $msb->write_to('status_all', '>>', 'do ' );
-$msb->write_to('status_all', '>>', $group_directory . '/node$SNUM/status');
+$msb->write_to('status_all', '>>', '  ' . $group_directory . '/node$SNUM/status');
+$msb->write_to('status_all', '>>', '  ' . $group_directory . '/node$SNUM/use -BN -e'
+            . qq( "select CONCAT('port: ', \@\@port) AS port" ));
 $msb->write_to('status_all', '>>', 'done ' );
 chmod 0755, 'status_all';
 
@@ -319,11 +321,13 @@ $msb->write_to('check_slaves', '>', '#!/bin/sh' );
 $msb->write_to('check_slaves', '>>', 'for NNUM in ' . $node_list );
 $msb->write_to('check_slaves', '>>', 'do' );
 $msb->write_to('check_slaves', '>>', '  echo "node # $NNUM"');
+$msb->write_to('check_slaves', '>>', '  ' . $group_directory . '/node$NNUM/use -BN -e'
+            . qq( "select CONCAT('port: ', \@\@port) AS port" ));
 $msb->write_to('check_slaves', '>>', "  $group_directory/node\$NNUM/use -e "
             . qq( 'show master status\\G' | grep "File\\|Position" ));
 $msb->write_to('check_slaves', '>>', ' echo "" ' );
 $msb->write_to('check_slaves', '>>', "  $group_directory/node\$NNUM/use -e "
-            . " 'show slave status\\G' | grep Running:" );
+            . qq( 'show slave status\\G' | grep "\\(Running:\\|Master_Log_Pos\\|\\<Master_Log_File\\)") );
 $msb->write_to('check_slaves', '>>', 'done ' );
 chmod 0755, 'check_slaves';
 

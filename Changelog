@@ -1,6 +1,8 @@
-3.1.01	22-Aug-2015 
+3.1.01	09-Sep-2015 
 	- Removed message that should only appear with debug
-	- Corrected Makefile.PL to generate correct licensing metadata
+	- Modified Makefile.PL to generate correct licensing metadata
+	- Added port info to replication status and check-slaves (Thanks to Mark
+	Leith)
 3.1.00	22-Aug-2015 
 	- Migrated repository to github (github.com/datacharmer/mysql-sandbox)
 	- Changed license to Apache 2.0
