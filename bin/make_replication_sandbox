@@ -416,22 +416,30 @@ my $rdir = $replication_directory;
 $rdir =~ s{.*/}{};
 $msb->write_to('status_all', '>>', "echo REPLICATION $rdir");
 $msb->write_to('status_all', '>>', $replication_directory . '/master/status');
+$msb->write_to('status_all', '>>', $replication_directory . '/master/use -BN -e'
+            . qq( "select CONCAT('port: ', \@\@port) AS port" ));
 $msb->write_to('status_all', '>>', '');
 $msb->write_to('status_all', '>>', 'for SNUM in ' . $slave_list);
 $msb->write_to('status_all', '>>', 'do ' );
-$msb->write_to('status_all', '>>', $replication_directory . '/node$SNUM/status');
+$msb->write_to('status_all', '>>', '  ' . $replication_directory . '/node$SNUM/status');
+$msb->write_to('status_all', '>>', '  ' . $replication_directory . '/node$SNUM/use -BN -e'
+            . qq( "select CONCAT('port: ', \@\@port) AS port" ));
 $msb->write_to('status_all', '>>', 'done ' );
 chmod 0755, 'status_all';
 
 
 $msb->write_to('check_slaves', '>', '#!/bin/sh' );
-$msb->write_to('check_slaves', '>>', '  echo "master"');
-$msb->write_to('check_slaves', '>>', "  $replication_directory/master/use -e "
+$msb->write_to('check_slaves', '>>', 'echo "master"');
+$msb->write_to('check_slaves', '>>', $replication_directory . '/master/use -BN -e'
+            . qq( "select CONCAT('port: ', \@\@port) AS port" ));
+$msb->write_to('check_slaves', '>>', $replication_directory . '/master/use -e'
             . qq( 'show master status\\G' | grep "File\\|Position" ));
 $msb->write_to('check_slaves', '>>', 'for NNUM in ' . $slave_list );
 $msb->write_to('check_slaves', '>>', 'do' );
 $msb->write_to('check_slaves', '>>', '  echo "slave # $NNUM"');
-$msb->write_to('check_slaves', '>>', "  $replication_directory/node\$NNUM/use -e "
+$msb->write_to('check_slaves', '>>', '  ' . $replication_directory . '/node$NNUM/use -BN -e'
+            . qq( "select CONCAT('port: ', \@\@port) AS port" ));
+$msb->write_to('check_slaves', '>>', '  ' . $replication_directory . '/node$NNUM/use -e'
             . qq( 'show slave status\\G' | grep "\\(Running:\\|Master_Log_Pos\\|\\<Master_Log_File\\)") );
 $msb->write_to('check_slaves', '>>', 'done ' );
 chmod 0755, 'check_slaves';
