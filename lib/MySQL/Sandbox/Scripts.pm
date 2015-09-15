@@ -1500,7 +1500,7 @@ grant REPLICATION SLAVE on *.* to _DBUSERREPL_@'_REMOTE_ACCESS_' identified by '
 delete from user where password='';
 delete from db where user='';
 flush privileges;
-create schema if not exists test;
+create database if not exists test;
 
 GRANTS_MYSQL
 
