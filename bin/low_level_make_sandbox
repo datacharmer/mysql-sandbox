@@ -769,7 +769,10 @@ else {
 }
 
 if ($msb->{options}{fix_server_uuid} && ( ! $msb->{options}{keep_uuid})) {
-    print Dumper $msb->{options}{fix_server_uuid} if $DEBUG;
+    if ( $DEBUG )
+    {
+        print Dumper $msb->{options}{fix_server_uuid};
+    }
     fix_server_uuid( @{ $msb->{options}{fix_server_uuid} } );
 }
 if ($msb->{options}{load_grants}) {

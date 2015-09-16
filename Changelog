@@ -3,6 +3,10 @@
 	- Modified Makefile.PL to generate correct licensing metadata
 	- Added port info to replication status and check-slaves (Thanks to Mark
 	Leith)
+	- changed 'create schema' to 'create' database to allow installation in
+	MySQL 4.1 (thanks to Daniël van Eeden)
+	- updated sbtool to prevent deletion of the whole sandboxes directory
+	- minor changes to sem-sync plugin test
 3.1.00	22-Aug-2015 
 	- Migrated repository to github (github.com/datacharmer/mysql-sandbox)
 	- Changed license to Apache 2.0
