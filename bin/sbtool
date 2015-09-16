@@ -670,9 +670,14 @@ sub delete_sandbox {
     }
     $source =~ s/^\s//;
     $source =~ s/\s*$//;
+    $source =~ s{/$}{};
+    $ENV{SANDBOX_HOME} =~ s{/$}{};
     $source =~ s/^\s*~/$ENV{HOME}/;
     unless ($source =~ m{^/} ) {
         croak_die "Source directory must be an absolute path.\n"; 
+    }
+    if ($source eq $ENV{SANDBOX_HOME} ) {
+        croak_die "Source directory must not be the whole sandbox home ($ENV{SANDBOX_HOME}.)\n"; 
     }
     unless ( -d $source )  {
         croak_die "directory $source does not exist\n";
