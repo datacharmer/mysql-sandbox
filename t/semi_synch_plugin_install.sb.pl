@@ -17,8 +17,8 @@ if ( (($major ==5) &&  ($minor > 7) )
     $reference_schema='performance_schema';
 }
 
-my $plugindir = $ENV{SB_PLUGIN_DIR} 
-    or die "expected environment variable \$SB_PLUGIN_DIR not set\n";
+#my $plugindir = $ENV{SB_PLUGIN_DIR} 
+#    or die "expected environment variable \$SB_PLUGIN_DIR not set\n";
 
 # print "<$TEST_VERSION>";exit;
 
