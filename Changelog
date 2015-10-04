@@ -1,12 +1,14 @@
-3.1.01	09-Sep-2015 
+3.1.01	04-Oct-2015 
 	- Removed message that should only appear with debug
 	- Modified Makefile.PL to generate correct licensing metadata
 	- Added port info to replication status and check-slaves (Thanks to Mark
 	Leith)
-	- changed 'create schema' to 'create' database to allow installation in
+	- Changed 'create schema' to 'create' database to allow installation in
 	MySQL 4.1 (thanks to Daniël van Eeden)
-	- updated sbtool to prevent deletion of the whole sandboxes directory
-	- minor changes to sem-sync plugin test
+	- Updated sbtool to prevent deletion of the whole sandboxes directory
+	- Minor changes to semi-sync plugin test
+	- Added debug message in make_sandbox_from_source
+	- Tested with MySQL 5.7.9 and MariaDB 10.1.6
 3.1.00	22-Aug-2015 
 	- Migrated repository to github (github.com/datacharmer/mysql-sandbox)
 	- Changed license to Apache 2.0
