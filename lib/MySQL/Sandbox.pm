@@ -272,7 +272,7 @@ sub fix_server_uuid
     {
         $group2 =~ s/\d/$server_id/g;
     }
-    elsif (($server_id >= 100) && ($server_id < 110))
+    elsif (($server_id >= 100) && ($server_id < 109))
     {
         $server_id -= 100;
         $server_id += 1 if $increase_id;    # 101 => 2
