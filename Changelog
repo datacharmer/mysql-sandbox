@@ -1,4 +1,4 @@
-3.1.02	18-Oct-2015 
+3.1.02	21-Nov-2015 
 	- Fixed error in UUID generation for server-id=110
 	- Merged change by Mark Leith to preserve mysql.sys user
 	- Adapted privileges test for the above change
