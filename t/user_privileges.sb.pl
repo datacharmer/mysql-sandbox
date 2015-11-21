@@ -7,6 +7,7 @@ my $TEST_VERSION = $ENV{TEST_VERSION};
 my ($bare_version, $version, $major, $minor, $rev) = get_bare_version ($TEST_VERSION);
 my $SANDBOX_HOME= $ENV{SANDBOX_HOME} || "$ENV{HOME}/sandboxes";
 my $password_field='password';
+my $number_of_users = 8;
 
 if ( (($major ==5) &&  ($minor > 7) )
         or 
@@ -18,6 +19,15 @@ if ( (($major ==5) &&  ($minor > 7) )
     $password_field='authentication_string';
 }
 
+if ( (($major ==5) &&  ($minor > 7) )
+        or 
+    ( ($major ==5) && ($minor == 7) && ($rev > 7) ) 
+   )
+# Starting with MySQL 5.7.8 we have the sys schema included with MySQL.
+# This requires an extra user
+{
+   $number_of_users = 9;
+}
 
 ok_exec({
 command  => "make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=msb_XXXX",
@@ -41,7 +51,7 @@ msg      => "sandbox creation",
 ok_sql({
 path     => "$SANDBOX_HOME/msb_XXXX/",
 query    => "select count(*) from mysql.user",
-expected => "8",
+expected => "$number_of_users",
 msg      => "number of users",
 });
 
@@ -125,7 +135,7 @@ sleep 1;
 ok_sql({
 path     => "$SANDBOX_HOME/rsandbox_XXXX/master/",
 query    => "select count(*) from mysql.user",
-expected => "8",
+expected => "$number_of_users",
 msg      => "number of users (master)",
 });
 
@@ -196,7 +206,7 @@ msg      => "replication slave user (master)",
 ok_sql({
 path     => "$SANDBOX_HOME/rsandbox_XXXX/node1/",
 query    => "select count(*) from mysql.user",
-expected => "8",
+expected => "$number_of_users",
 msg      => "number of users (node1)",
 });
 
@@ -290,7 +300,7 @@ msg      => "sandbox creation",
 ok_sql({
 path     => "$SANDBOX_HOME/msb_XXXX/",
 query    => "select count(*) from mysql.user",
-expected => "8",
+expected => "$number_of_users",
 msg      => "number of users",
 });
 
@@ -317,7 +327,7 @@ msg         => "replication started",
 ok_sql({
 path     => "$SANDBOX_HOME/rsandbox_XXXX/node1/",
 query    => "select count(*) from mysql.user",
-expected => "8",
+expected => "$number_of_users",
 msg      => "number of users (node1)",
 });
 
@@ -338,7 +348,7 @@ msg      => "number of users with host '%' (node1)",
 ok_sql({
 path     => "$SANDBOX_HOME/rsandbox_XXXX/master/",
 query    => "select count(*) from mysql.user",
-expected => "8",
+expected => "$number_of_users",
 msg      => "number of users (master)",
 });
 

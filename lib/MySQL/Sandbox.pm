@@ -28,7 +28,7 @@ our @EXPORT_OK= qw( is_port_open
                     fix_server_uuid
                     ) ;
 
-our $VERSION="3.1.01";
+our $VERSION="3.1.02";
 our $DEBUG;
 
 BEGIN {

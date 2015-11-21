@@ -1,5 +1,7 @@
 3.1.02	18-Oct-2015 
 	- Fixed error in UUID generation for server-id=110
+	- Merged change by Mark Leith to preserve mysql.sys user
+	- Adapted privileges test for the above change
 3.1.01	04-Oct-2015 
 	- Removed message that should only appear with debug
 	- Modified Makefile.PL to generate correct licensing metadata
