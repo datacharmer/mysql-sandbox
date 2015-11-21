@@ -28,7 +28,10 @@ my $DEBUG = $MySQL::Sandbox::DEBUG;
 #my $install_dir;
 #$install_dir = $PROGRAM_NAME;
 #$install_dir =~ s{/\w+(\.pl)?$}{};
-
+if ($ENV{HOME} =~ / /)
+{
+    die "# The variable \$HOME contains spaces. Please fix this problem before continuing\n";
+}
 my $msb = MySQL::Sandbox->new();
 
 runs_as_root();
@@ -61,6 +64,20 @@ if (@ARGV){
 $msb->get_help() if $msb->{options}{'help'};
 
 # print Dumper(\%{$msb->{options}}, \@ARGV); exit;
+
+my $with_space='';
+for my $option (qw(upper_directory basedir datadir))
+{
+    next unless (defined $msb->{options}{$option});
+    if ($msb->{options}{$option} =~ / /)
+    {
+        $with_space .= " $option";
+    }
+}
+if ($with_space)
+{
+    die "# Options <$with_space> contain space. Aborting\n";
+}
 
 $msb->{options}{globaltmpdir} = $ENV{TMPDIR};
 
