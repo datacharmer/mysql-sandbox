@@ -21,10 +21,9 @@ if ( (($major ==5) &&  ($minor > 7) )
 
 if ( (($major ==5) &&  ($minor > 7) )
         or 
-    ( ($major ==5) && ($minor == 7) && ($rev > 7) ) 
+    ( ($major ==5) && ($minor == 7) && ($rev > 8) ) 
    )
-# Starting with MySQL 5.7.8 we have the sys schema included with MySQL.
-# This requires an extra user
+# Starting with MySQL 5.7.9 we have the mysql.sys user created by default.
 {
    $number_of_users = 9;
 }

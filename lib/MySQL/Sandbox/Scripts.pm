@@ -1509,9 +1509,9 @@ GRANTS_MYSQL
 
 use mysql;
 set password='_DBPASSWORD_';
-delete from tables_priv;
-delete from columns_priv;
-delete from db;
+-- delete from tables_priv;
+-- delete from columns_priv;
+-- delete from db;
 delete from user where user not in ('root', 'mysql.sys');
 
 flush privileges;
