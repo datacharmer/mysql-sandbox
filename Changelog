@@ -1,3 +1,6 @@
+3.1.03	04-Dec-2015 
+	- Increased timeout for 'start' script, needed when restart requires 
+	a longer time.
 3.1.02	21-Nov-2015 
 	- Fixed error in UUID generation for server-id=110
 	- Merged change by Mark Leith to preserve mysql.sys user

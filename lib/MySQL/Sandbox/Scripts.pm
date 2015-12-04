@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.1.02";
+our $VERSION="3.1.03";
 
 our @MANIFEST = (
 'clear.sh',
@@ -1095,7 +1095,7 @@ function is_running
     fi
 }
 
-TIMEOUT=60
+TIMEOUT=180
 if [ -n "$(is_running)" ]
 then
     echo "sandbox server already started (found pid file $PIDFILE)"
