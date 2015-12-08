@@ -19,7 +19,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox qw(use_env);
+use MySQL::Sandbox qw(use_env greater_version);
 use English qw( -no_match_vars );
 use Carp;
 
@@ -1185,14 +1185,13 @@ sub run_smoke_test {
               expected  => '^0$',
               msg       => "tables in install_test "
             });
-
     $sql_result = get_sql_result(
            "$sandbox_home/msb_$version", 
             q{ drop database install_test;},
             $verbose);
     my $sandbox_dirs = how_many_dirs("$sandbox_home/msb_$version/data");
     my $expected_dirs = 2;
-    if ($bare_version ge '5.7.7')
+    if (greater_version( $bare_version, '5.7.7') && ( $bare_version !~ /^10/))
     {
         $expected_dirs = 4;
     }

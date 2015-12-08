@@ -26,9 +26,11 @@ our @EXPORT_OK= qw( is_port_open
                     get_option_file_contents 
                     validate_json_object
                     fix_server_uuid
+                    greater_version
+                    split_version
                     ) ;
 
-our $VERSION="3.1.03";
+our $VERSION="3.1.04";
 our $DEBUG;
 
 BEGIN {
@@ -237,6 +239,41 @@ sub credits {
         . qq(    (C) 2006-2015 Giuseppe Maxia\n);
     return $CREDITS;
 }
+
+sub split_version 
+{
+    my ($v) = @_;
+    if ($v =~ /(\d+)\.(\d+)\.(\d+)/ )
+    {
+        return ($1, $2, $3)
+    }
+    else
+    {
+        die "# Split version: could not get components from <$v>\n";
+    }
+}
+
+sub greater_version
+{
+    my ($v1, $v2) = @_;
+
+    my ($v1_major, $v1_minor, $v1_rev) = split_version($v1);
+    my ($v2_major, $v2_minor, $v2_rev) = split_version($v2);
+    if ( $v1_major > $v2_major)
+    {
+        return 1;
+    }
+    elsif ( ($v1_major == $v2_major) &&  ($v1_minor > $v2_minor))
+    {
+        return 1;
+    }
+    elsif ( ($v1_major == $v2_major) && ($v1_minor == $v2_minor) && ($v1_rev > $v2_rev) )
+    {
+        return 1;
+    }
+    return 0
+}
+
 
 sub fix_server_uuid
 {

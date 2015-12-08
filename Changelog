@@ -1,3 +1,6 @@
+3.1.04	07-Dec-2015 
+	- Fixed wrong version comparison (affects usage of MySQL 5.7.10)
+	- Changed tests to use smarter version comparison
 3.1.03	04-Dec-2015 
 	- Increased timeout for 'start' script, needed when restart requires 
 	a longer time.

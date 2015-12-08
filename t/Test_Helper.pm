@@ -12,7 +12,7 @@ BEGIN {
     if ($^O =~ /^(?:mswin|win)/i) {
         skip_all ('This module is not for Windows');        
     }
-    use MySQL::Sandbox;
+    use MySQL::Sandbox qw/split_version/;
     $ENV{TEST_SANDBOX_HOME}="$ENV{PWD}/t/test_sb";
     $ENV{PERL5LIB}="$ENV{PWD}/lib";
     $ENV{PATH}="$ENV{PWD}/bin:$ENV{PATH}";
@@ -28,27 +28,27 @@ our @ISA= qw(Exporter);
 our @EXPORT_OK= qw( test_sandbox find_plugindir skip_all confirm_version);
 our @EXPORT = @EXPORT_OK;
 
-sub get_version_parts
-{
-    my ($version) = @_;
-    if ($version =~ /(\d+)\.(\d+)\.(\d+)/)
-    {
-        my ($major, $minor, $rev) = ($1, $2, $3) ;
-        return ($major, $minor, $rev);
-    }    
-    else
-    {
-        die "# version $version does not have expected components"
-    }
-}
+#sub get_version_parts
+#{
+#    my ($version) = @_;
+#    if ($version =~ /(\d+)\.(\d+)\.(\d+)/)
+#    {
+#        my ($major, $minor, $rev) = ($1, $2, $3) ;
+#        return ($major, $minor, $rev);
+#    }    
+#    else
+#    {
+#        die "# version $version does not have expected components"
+#    }
+#}
 
 sub confirm_version
 {
     my ($min_version, $max_version) = @_;
     my $will_skip =0;
-    my ($major, $minor, $rev) = get_version_parts($test_version);
-    my ($major1, $minor1, $rev1) = get_version_parts($min_version);
-    my ($major2, $minor2, $rev2) = get_version_parts($max_version);
+    my ($major, $minor, $rev) = split_version($test_version);
+    my ($major1, $minor1, $rev1) = split_version($min_version);
+    my ($major2, $minor2, $rev2) = split_version($max_version);
     my $compare_test = sprintf("%05d-%05d-%05d", $major,  $minor,  $rev);
     my $compare_min  = sprintf("%05d-%05d-%05d", $major1, $minor1, $rev1);
     my $compare_max  = sprintf("%05d-%05d-%05d", $major2, $minor2, $rev2);
@@ -100,6 +100,24 @@ sub test_sandbox {
 
 sub find_plugindir {
     my ($minimum_version, $maximum_version, $use_current) = @_;
+    my $minimum_version_str;
+    my $maximum_version_str;
+    if ($minimum_version =~ /(\d+)\.(\d+)\.(\d+)/)
+    {
+        $minimum_version_str = sprintf('%02d-%02d-%02d', $1, $2, $3);
+    }
+    else
+    {
+        die "# Invalid minimum version provided : $minimum_version\n";
+    }
+    if ($maximum_version =~ /(\d+)\.(\d+)\.(\d+)/)
+    {
+        $maximum_version_str = sprintf('%02d-%02d-%02d', $1, $2, $3);
+    }
+    else
+    {
+        die "# Invalid maximum version provided : $maximum_version\n";
+    }
     my $plugindir;
 
     if  ( 
@@ -114,8 +132,8 @@ sub find_plugindir {
         my $highest_version = '';
         my @versions = ();
         my @dirs =  sort { $b cmp $a } 
-                    grep { ($_ ge $minimum_version) && ($_ le $maximum_version) }
-                    map { m{(\d\.\d\.\d+)/?$}; $1 }
+                    grep { ($_ ge $minimum_version_str) && ($_ le $maximum_version_str) }
+                    map { m{(\d)\.(\d)\.(\d+)/?$}; sprintf('%02d-%02d-%02d',$1,$2,$3) }
                         grep { /\d+\.\d+\.\d+/ } 
                         grep { -d $_ } 
                             glob("$ENV{SANDBOX_BINARY}/*/" ) ;
@@ -123,7 +141,7 @@ sub find_plugindir {
             skip_all("no directories found under $ENV{SANDBOX_BINARY}");
         }
         $highest_version = $dirs[0];
-        if ($highest_version lt $minimum_version)  {
+        if ($highest_version lt $minimum_version_str)  {
             skip_all("no suitable version found for this test");
         }
         my $TEST_VERSION = $ENV{TEST_VERSION} || $highest_version;
