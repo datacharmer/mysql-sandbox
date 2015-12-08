@@ -646,7 +646,7 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         {
             $additional_options .= ' --insecure' ;
         }
-        elsif (($mysql_version ge '5.7.6' ) && ($major < 10))  # exclude MariaDB from this feature
+        elsif (($major == 5) && ($minor == 7) && ($rev >= 6))  # exclude MariaDB from this feature
         {
             # mysql_install_db is deprecated. It is now replaced by 'mysqld --initialize'
             # https://dev.mysql.com/doc/refman/5.7/en/mysql-install-db.html
