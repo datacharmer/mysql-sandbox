@@ -1,7 +1,7 @@
 #!/usr/bin/perl 
 # low_level_make_sandbox
 #    The MySQL Sandbox
-#    Copyright (C) 2006-2015 Giuseppe Maxia
+#    Copyright (C) 2006-2016 Giuseppe Maxia
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -632,11 +632,8 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         chomp $mysql_version;
         my ($major, $minor, $rev) = split_version($mysql_version);
         $mysql_version=sprintf('%d.%d.%d', $major,$minor, $rev);
-        if (greater_version($mysql_version, '5.7.5' ) && ($major < 10) )
-        {
-            $additional_options .= ' --insecure' ;
-        }
-        elsif ((greater_version($mysql_version, '5.7.6') ) && ($major < 10))  # exclude MariaDB from this feature
+        print "#1 $mysql_version - $major - $minor - $rev - $script\n" if $DEBUG;
+        if ((greater_version($mysql_version, '5.7.6') ) && ($major < 10))  # exclude MariaDB from this feature
         {
             # mysql_install_db is deprecated. It is now replaced by 'mysqld --initialize'
             # https://dev.mysql.com/doc/refman/5.7/en/mysql-install-db.html
@@ -645,6 +642,11 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
             $additional_options .= ' --initialize-insecure' ;
             $script = sprintf '%s/bin/mysqld', $msb->{options}{basedir} ;
         }
+        elsif (greater_version($mysql_version, '5.7.5' ) && ($major < 10) )
+        {
+            $additional_options .= ' --insecure' ;
+        }
+        print "#2 $mysql_version - $major - $minor - $rev - $script\n" if $DEBUG;
     }
     else
     {
