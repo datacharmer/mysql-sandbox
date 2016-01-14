@@ -30,7 +30,7 @@ our @EXPORT_OK= qw( is_port_open
                     split_version
                     ) ;
 
-our $VERSION="3.1.04";
+our $VERSION="3.1.05";
 our $DEBUG;
 
 BEGIN {
@@ -236,7 +236,7 @@ sub credits {
     my ($self) = @_;
     my $CREDITS = 
           qq(    The MySQL Sandbox,  version $VERSION\n) 
-        . qq(    (C) 2006-2015 Giuseppe Maxia\n);
+        . qq(    (C) 2006-2016 Giuseppe Maxia\n);
     return $CREDITS;
 }
 
@@ -1599,13 +1599,13 @@ Bash shell
 
 Version 3.1
 
-Copyright (C) 2006-2015 Giuseppe Maxia
+Copyright (C) 2006-2016 Giuseppe Maxia
 
 Home Page  http://github.com/datacharmer
 
 =head1 LEGAL NOTICE
 
-   Copyright 2006-2015 Giuseppe Maxia
+   Copyright 2006-2016 Giuseppe Maxia
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

@@ -19,10 +19,23 @@ do
 done
 
 export YEAR=$(date +%Y)
-perl -i.1bak -pe 'BEGIN{$y=shift;};s/(2006-)\d+ (Giuseppe Maxia)/$1$y $2/' $YEAR lib/MySQL/Sandbox.pm
-perl -i.bak -pe 'BEGIN{$V=shift;};s/^(our \$VERSION=)([^;]+)/$1"$V"/' $VERSION lib/MySQL/Sandbox.pm
-perl -i.bak -pe 'BEGIN{$V=shift;};s/^(our \$VERSION=)([^;]+)/$1"$V"/' $VERSION lib/MySQL/Sandbox/Scripts.pm
-perl -i.bak -pe 'BEGIN{$V=shift;};s/^(our \$VERSION=)([^;]+)/$1"$V"/' $VERSION lib/MySQL/Sandbox/Recipes.pm
+TOOLS="deploy_to_remote_sandboxes.sh low_level_make_sandbox make_multiple_custom_sandbox"
+TOOLS="$TOOLS make_multiple_sandbox make_replication_sandbox make_sandbox make_sandbox_from_installed"
+TOOLS="$TOOLS make_sandbox_from_source msandbox msb sbtool test_sandbox"
+LIBS="lib/MySQL/Sandbox.pm lib/MySQL/Sandbox/Scripts.pm lib/MySQL/Sandbox/Recipes.pm"
+
+CHANGE_COPYRIGHT_YEAR='BEGIN{$y=shift;};s/(2006-)\d+ (Giuseppe Maxia)/$1$y $2/'
+CHANGE_VERSION='BEGIN{$V=shift;};s/^(our \$VERSION=)([^;]+)/$1"$V"/' 
+
+for TOOL in $TOOLS
+do
+    perl -i.bak -pe $CHANGE_COPYRIGHT_YEAR $YEAR bin/$TOOL
+done
+for LIB in $LIBS
+do
+    perl -i.bak -pe $CHANGE_VERSION $VERSION $LIB
+    perl -i.1bak -pe $CHANGE_COPYRIGHT_YEAR $YEAR $LIB
+done
 
 pod2markdown lib/MySQL/Sandbox.pm > README.md
 
@@ -57,4 +70,5 @@ find . -name "*.1bak" -exec rm {} \;
 rm -rf t/test_sb/
 rm -f pod*.tmp
 rm -f Makefile.old
+
 

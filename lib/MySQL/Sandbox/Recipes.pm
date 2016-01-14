@@ -1,6 +1,6 @@
 package MySQL::Sandbox::Recipes;
 
-our $VERSION="3.1.04";
+our $VERSION="3.1.05";
 
 1;
 __END__
@@ -672,13 +672,13 @@ MySQL Sandbox 3.0.32 and later include a script that lets you deploy a sandbox q
 
 Version 3.1
 
-Copyright (C) 2006-2015 Giuseppe Maxia
+Copyright (C) 2006-2016 Giuseppe Maxia
 
 Home Page  http://github.com/datacharmer
 
 =head1 LEGAL NOTICE
 
-   Copyright 2006-2015 Giuseppe Maxia
+   Copyright 2006-2016 Giuseppe Maxia
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
