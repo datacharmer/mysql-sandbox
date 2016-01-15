@@ -103,6 +103,14 @@ ok_sql({
 });
 
 ok_sql({
+    path    => "$sandbox_home/msb_master/",
+    query   => "show variables like 'server_uuid'",
+    expected => '8000',
+    msg      => 'master server UUID',    
+});
+
+
+ok_sql({
     path    => "$sandbox_home/msb_slave/",
     query   => "show variables like 'server_id'",
     expected => '8001',
