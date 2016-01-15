@@ -483,7 +483,7 @@ sub ok ($;$) {
 
 sub check_sandbox_files
 {
-    my ($sandbox_type, $sandbox_path) = @_;
+    my ($sandbox_type, $sandbox_path, $version) = @_;
     for my $executable_script (@{ $expected_scripts{$sandbox_type}{executables}  })
     {
         ok( -x "$sandbox_path/$executable_script", "executable script $executable_script file found");
@@ -507,7 +507,22 @@ sub check_sandbox_files
             }
         }
     }
-   
+    if ($version)
+    {
+        my $expected_tool = 'mysql_install_db';
+        if ( greater_version($version, '5.7.6') && greater_version('10.0.0', $version))
+        {
+            $expected_tool = 'mysqld.*initialize-insecure';
+        }
+        my $trace_file = "$sandbox_path/trace_install.txt";
+        ok ( (-f $trace_file) || 0, "Trace file $trace_file found" );
+        open my $FH , '<', $trace_file
+            or die "Can't open $trace_file ($!)\n";
+        my @lines = <$FH>;
+        my $text = "@lines";
+        close $FH;  
+        ok (($text =~ $expected_tool) || 0, "tool $expected_tool found in $trace_file");
+    } 
 }
 
 sub run_tarball_test{
@@ -600,12 +615,15 @@ sub run_tarball_test{
 
 sub run_single_test {
     my ($ver, $version, $bare_version) = @_;
+    my $save_trace_install = $ENV{TRACE_INSTALL};
+    $ENV{TRACE_INSTALL} = 1;
     ok_exec( {
             command  => "make_sandbox $ver -- --no_confirm", 
             expected => 'sandbox server started',
             msg      => "single SB ($bare_version) started"
             });
-    check_sandbox_files( 'single', "$sandbox_home/msb_$version");
+    check_sandbox_files( 'single', "$sandbox_home/msb_$version", $ver);
+    $ENV{TRACE_INSTALL} = $save_trace_install;
     ok( -f "$sandbox_home/plugin.conf", "plugin template file found");
     ok_exec( {
             command  => "perl -c $sandbox_home/plugin.conf > /dev/null 2>&1", 

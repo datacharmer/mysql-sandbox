@@ -1,7 +1,9 @@
-3.1.05	13-Jan-2016 
+3.1.05	15-Jan-2016 
 	- Fixed mismatch in version checking to determnine whether to use
 	mysql_install_db or mysqld --initialize
 	- Updated copyright notice
+	- Added test for installation method used
+	- Added test for generated UUID
 3.1.04	07-Dec-2015 
 	- Fixed wrong version comparison (affects usage of MySQL 5.7.10)
 	- Changed tests to use smarter version comparison

@@ -680,7 +680,7 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         {
             # This instruction will never execute unless the user variable is defined.
             # It is only needed for testing purposes
-            system qq[echo "\$(date) $mysql_version - $cmd $additional_options" >> $ENV{TMPDIR}/trace_install.txt ];
+            system qq[echo "\$(date) $mysql_version - $cmd $additional_options" >> $sandbox_directory/trace_install.txt ];
         }
         my $will_abort = 0;
         my $result     = qx($cmd $additional_options 2>&1);
