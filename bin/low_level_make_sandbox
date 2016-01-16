@@ -642,7 +642,7 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
             $additional_options .= ' --initialize-insecure' ;
             $script = sprintf '%s/bin/mysqld', $msb->{options}{basedir} ;
         }
-        elsif (greater_version($mysql_version, '5.7.5' ) && ($major < 10) )
+        elsif (greater_version($mysql_version, '5.7.4' ) && ($major < 10) )
         {
             $additional_options .= ' --insecure' ;
         }

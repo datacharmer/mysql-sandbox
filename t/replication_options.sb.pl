@@ -7,8 +7,14 @@
 #  * --node_options all nodes, master and slaves
 #
 my $TEST_VERSION = $ENV{TEST_VERSION};
-my ($version, $name_version) = get_bare_version($TEST_VERSION);
+my ($version, $name_version, $major, $minor, $rev) = get_bare_version($TEST_VERSION);
 my $replication_dir = "rsandbox_$name_version";
+
+my $check_uuid =0;
+if ( ($major ==5) &&  ($minor >= 6) )
+{
+    $check_uuid=1;
+}
 
 $ENV{MASTER_OPTIONS} = '';
 $ENV{SLAVE_OPTIONS}  = '';
@@ -102,13 +108,19 @@ ok_sql({
     msg      => 'master server ID',    
 });
 
-ok_sql({
-    path    => "$sandbox_home/msb_master/",
-    query   => "show variables like 'server_uuid'",
-    expected => '8000',
-    msg      => 'master server UUID',    
-});
-
+if ($check_uuid)
+{
+    ok_sql({
+        path    => "$sandbox_home/msb_master/",
+        query   => "show variables like 'server_uuid'",
+        expected => '8000',
+        msg      => 'master server UUID',
+    });
+}
+else
+{
+    ok(1, 'skip UUID check');
+}
 
 ok_sql({
     path    => "$sandbox_home/msb_slave/",
