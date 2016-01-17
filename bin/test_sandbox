@@ -1209,7 +1209,7 @@ sub run_smoke_test {
             $verbose);
     my $sandbox_dirs = how_many_dirs("$sandbox_home/msb_$version/data");
     my $expected_dirs = 2;
-    if (greater_version( $bare_version, '5.7.7') && ( $bare_version !~ /^10/))
+    if (greater_version( $bare_version, '5.7.6') && ( $bare_version !~ /^10/))
     {
         $expected_dirs = 4;
     }
