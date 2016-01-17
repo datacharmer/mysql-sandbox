@@ -1,4 +1,4 @@
-3.1.05	15-Jan-2016 
+3.1.05	17-Jan-2016 
 	- Fixed mismatch in version checking to determnine whether to use
 	mysql_install_db or mysqld --initialize
 	- Updated copyright notice
