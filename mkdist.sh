@@ -24,9 +24,9 @@ TOOLS="$TOOLS make_multiple_sandbox make_replication_sandbox make_sandbox make_s
 TOOLS="$TOOLS make_sandbox_from_source msandbox msb sbtool test_sandbox"
 LIBS="lib/MySQL/Sandbox.pm lib/MySQL/Sandbox/Scripts.pm lib/MySQL/Sandbox/Recipes.pm"
 
-CHANGE_COPYRIGHT_YEAR='BEGIN{$y=shift;};s/(2006-)\d+ (Giuseppe Maxia)/$1$y $2/'
-CHANGE_VERSION='BEGIN{$V=shift;};s/^(our \$VERSION=)([^;]+)/$1"$V"/' 
-
+CHANGE_COPYRIGHT_YEAR='BEGIN{$y=shift;};s/(2006-)\d+(\s+)(Giuseppe\s+Maxia)/$1$y$2$3/'
+CHANGE_VERSION='BEGIN{$V=shift;};s/^(our\s+$VERSION=)([^;]+)/${1}q{$V}/' 
+#set -x
 for TOOL in $TOOLS
 do
     perl -i.bak -pe $CHANGE_COPYRIGHT_YEAR $YEAR bin/$TOOL
@@ -36,7 +36,7 @@ do
     perl -i.bak -pe $CHANGE_VERSION $VERSION $LIB
     perl -i.1bak -pe $CHANGE_COPYRIGHT_YEAR $YEAR $LIB
 done
-
+#set +x
 pod2markdown lib/MySQL/Sandbox.pm > README.md
 
 perl Makefile.PL PREFIX=$HOME/usr/local
@@ -64,9 +64,9 @@ fi
 
 make clean
 
-find . -name "*~" -exec rm {} \;
-find . -name "*.bak" -exec rm {} \;
-find . -name "*.1bak" -exec rm {} \;
+find . -name "*~"     -exec rm -f {} \;
+find . -name "*.bak"  -exec rm -f {} \;
+find . -name "*.1bak" -exec rm -f {} \;
 rm -rf t/test_sb/
 rm -f pod*.tmp
 rm -f Makefile.old
