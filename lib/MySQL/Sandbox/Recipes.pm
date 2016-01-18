@@ -1,5 +1,8 @@
 package MySQL::Sandbox::Recipes;
 
+use strict;
+use warnings;
+
 our $VERSION="3.1.05";
 
 1;
