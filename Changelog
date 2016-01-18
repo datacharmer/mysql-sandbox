@@ -1,11 +1,9 @@
 3.1.05	17-Jan-2016 
-	- Fixed mismatch in version checking to determine whether to use
+	- Fixed mismatch in version checking to determnine whether to use
 	mysql_install_db or mysqld --initialize
 	- Updated copyright notice
 	- Added test for installation method used
 	- Added test for generated UUID
-	- Merged pull request from Alexandr Ciornii : "Display repository URL
-	  on MetaCPAN"
 3.1.04	07-Dec-2015 
 	- Fixed wrong version comparison (affects usage of MySQL 5.7.10)
 	- Changed tests to use smarter version comparison
