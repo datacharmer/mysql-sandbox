@@ -1979,9 +1979,14 @@ fi
 $MASTER -e 'create schema if not exists test'
 $MASTER test -e 'drop table if exists t1'
 $MASTER test -e 'create table t1 (i int not null primary key, msg varchar(50), d date, t time, dt datetime, ts timestamp)'
-$MASTER test -e "insert into t1 values (1, 'test sandbox 1', '2015-07-16', '11:23:40','2015-07-17 12:34:50', null)"
+#$MASTER test -e "insert into t1 values (1, 'test sandbox 1', '2015-07-16', '11:23:40','2015-07-17 12:34:50', null)"
+#$MASTER test -e "insert into t1 values (2, 'test sandbox 2', '2015-07-17', '11:23:41','2015-07-17 12:34:51', null)"
+for N in $(seq -f '%02.0f' 1 20)
+do
+    #echo "$MASTER test -e \"insert into t1 values ($N, 'test sandbox $N', '2015-07-$N', '11:23:$N','2015-07-17 12:34:$N', null)\""
+    $MASTER test -e "insert into t1 values ($N, 'test sandbox $N', '2015-07-$N', '11:23:$N','2015-07-17 12:34:$N', null)"
+done
 sleep 0.5
-$MASTER test -e "insert into t1 values (2, 'test sandbox 2', '2015-07-17', '11:23:41','2015-07-17 12:34:51', null)"
 MASTER_RECS=$($MASTER -BN -e 'select count(*) from test.t1')
 
 master_status=master_status$$
