@@ -2029,6 +2029,13 @@ function test_summary
         printf "# FAILED: %5d (%5.1f%%)\n" $FAILED $PERCENT_FAILED
         printf "# PASSED: %5d (%5.1f%%)\n" $PASSED $PERCENT_PASSED
     fi
+    exit_code=0
+    if [ "$FAILED" != "0" ]
+    then
+        exit_code=1
+    fi
+    echo "# exit code: $exit_code"
+    exit $exit_code
 }
 
 for SLAVE_N in 1 2 3 4 5 6 7 8 9
