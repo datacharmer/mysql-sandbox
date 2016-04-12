@@ -18,6 +18,13 @@ BEGIN {
     $ENV{PATH}="$ENV{PWD}/bin:$ENV{PATH}";
     $ENV{TEST_VERSION} = $ENV{TEST_VERSION} || '5.6.26';
     $ENV{SANDBOX_AS_ROOT} = 1;
+    for my $env_var (qw(NODE_OPTIONS MASTER_OPTIONS SLAVE_OPTIONS))
+    {
+        if ($ENV{$env_var})
+        {
+            $ENV{$env_var} = undef;
+        }
+    }
     $test_version = $ENV{TEST_VERSION} ;
 };
 

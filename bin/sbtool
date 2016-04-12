@@ -24,14 +24,14 @@ use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
 use File::Copy qw/cp/;
 use File::Find;
-use MySQL::Sandbox qw( 
+use MySQL::Sandbox qw(
                 runs_as_root
-                is_a_sandbox 
+                is_a_sandbox
                 is_sandbox_running
-                get_sandbox_params 
+                get_sandbox_params
                 get_ports
                 get_ranges
-                get_option_file_contents 
+                get_option_file_contents
                 sbinstr
                 get_sb_info);
 
@@ -148,10 +148,10 @@ elsif ( $msb->{options}{operation} eq 'delete' ) {
     delete_sandbox( $msb->{options}{source_dir});
 }
 elsif ($msb->{options}{operation} eq 'plugin') {
-    add_plugin( 
-            $msb->{options}{source_dir}, 
-            $msb->{options}{plugin}, 
-            $msb->{options}{plugin_file} 
+    add_plugin(
+            $msb->{options}{source_dir},
+            $msb->{options}{plugin},
+            $msb->{options}{plugin_file}
     );
 }
 else {
@@ -180,13 +180,13 @@ sub get_help {
         my ( $short, $long ) = split /\|/, $parse;
         unless ($long) {
             $long = $short ;
-            $short = ''; 
+            $short = '';
         }
-        printf "\t%s%-5s --%-15s (%s) <%s> - %s\n", 
-                ($short? '-' : ' '), 
-                $short, 
-                $long, 
-                $expected, 
+        printf "\t%s%-5s --%-15s (%s) <%s> - %s\n",
+                ($short? '-' : ' '),
+                $short,
+                $long,
+                $expected,
                 $val || '',
                 $msb->{parse_options}{$op}{help} || '';
         if ( $msb->{parse_options}{$op}{accepted} ) {
@@ -215,30 +215,30 @@ sub make_tree {
         }
         else {
             croak_die " master not defined in tree_nodes\n";
-        } 
+        }
         if ($mid) {
             $msb->{options}{mid_nodes} = $mid;
         }
         else {
             croak_die " middle nodes not defined in tree_nodes\n";
-        } 
+        }
         if ($leaf) {
             $msb->{options}{leaf_nodes} = $leaf;
         }
         else {
             croak_die " leaf nodes not defined in tree_nodes\n";
-        } 
-    
+        }
+
     }
     my @MID_NODES = split ' ', $msb->{options}{mid_nodes}
-        or croak_die "no mid nodes selected. Use the --mid_nodes option\n"; 
+        or croak_die "no mid nodes selected. Use the --mid_nodes option\n";
     for my $mid (@MID_NODES) {
         croak_die "middle nodes must be numeric" unless $mid =~ /^\d+$/;
     }
     my @LEAF_NODES = ();
-    
+
     my @chunks = split /\|/, $msb->{options}{leaf_nodes}
-        or croak_die "no leaf nodes selected. Use the --leaf_nodes option\n"; 
+        or croak_die "no leaf nodes selected. Use the --leaf_nodes option\n";
     # print Data::Dumper->Dump([\@chunks], ['chunks']);
     for my $c (@chunks) {
         my @leaf = split ' ', $c;
@@ -298,13 +298,13 @@ sub make_tree {
         unless ($HAS_REPORT) {
           system qq(  echo "report-host=node$mid_node" >> $dir/node$mid_node/my.sandbox.cnf) ;
           system qq(  echo "report-port=$MID_NODE_PORT" >> $dir/node$mid_node/my.sandbox.cnf) ;
-        } 
+        }
         unless ( $HAS_UPDATES) {
             print  "enabling node $mid_node to relay updates\n";
             system qq(echo "log_slave_updates" >> $dir/node$mid_node/my.sandbox.cnf) ;
             system qq($dir/node$mid_node/restart) ;
-        } 
-         
+        }
+
         system qq($dir/n$mid_node -e "stop slave") ;
         system qq($dir/n$mid_node -e "$CHANGE_MASTER_Q $N1PORT") ;
         system qq($dir/n$mid_node -e "start slave") ;
@@ -316,7 +316,7 @@ sub make_tree {
             unless ( -e  $LEAF_NODE_INFO->{opt}{socket}) {
                 system "$dir/node$leaf_node/start";
             }
-            check_report($dir,$leaf_node, 1, $MID_NODE_PORT, $LN_PORT); 
+            check_report($dir,$leaf_node, 1, $MID_NODE_PORT, $LN_PORT);
             system qq($dir/n$leaf_node -e "stop slave");
             system qq($dir/n$leaf_node -e "$CHANGE_MASTER_Q $MID_NODE_PORT");
             system qq($dir/n$leaf_node -e "start slave");
@@ -351,7 +351,7 @@ sub get_node_info {
     my ($dir, $node) = @_;
     my ( $info ) = get_sandbox_params("$dir/node$node");
     # print Dumper($ports, $all_info);
-    confess "can't read port for node $node" unless $info; 
+    confess "can't read port for node $node" unless $info;
     return ($info, $info->{opt}{port});
 }
 sub move_sandbox {
@@ -369,7 +369,7 @@ sub move_sandbox {
     $source =~ s/^\s*~/$ENV{HOME}/;
     $dest   =~ s/^\s*~/$ENV{HOME}/;
     unless (($source =~ m{^/}) && ($dest =~ m{^/}) ) {
-        croak_die "Source and destination directories must be absolute paths.\n"; 
+        croak_die "Source and destination directories must be absolute paths.\n";
     }
     unless ( -d $source )  {
         croak_die "directory $source does not exist\n";
@@ -432,7 +432,7 @@ sub move_multiple_sandbox {
         }
     }
     for my $sd (@new_subdirs) {
-        move_single_sandbox( $sd->[0], $sd->[1], "already_moved" ); 
+        move_single_sandbox( $sd->[0], $sd->[1], "already_moved" );
     }
     chdir $new_dir;
     unless ($old_dir =~ m{/$} ) {
@@ -443,11 +443,11 @@ sub move_multiple_sandbox {
     }
     my @nodes  = glob("n[0-9]*");
     my @slaves = glob("s[0-9]*");
-    my @scripts = qw(m start_all stop_all clear_all send_kill_all 
+    my @scripts = qw(m start_all stop_all clear_all send_kill_all
                   check_slaves use_all initialize_slaves);
     for my $script (( @nodes, @slaves, @scripts ) ) {
         if ( -x $script ) {
-            system q(perl -i.bak -pe 'BEGIN{$old=shift;$new=shift};s/$old/$new/g') 
+            system q(perl -i.bak -pe 'BEGIN{$old=shift;$new=shift};s/$old/$new/g')
                    . " $old_dir $new_dir $script " ;
         }
     }
@@ -475,7 +475,7 @@ sub move_single_sandbox {
     if ( -d $new_dir && (! $already_moved ) ) {
         croak_die "directory $new_dir already exists\n";
     }
-    unless ( (-e "$old_dir/change_paths") 
+    unless ( (-e "$old_dir/change_paths")
              or ( $already_moved && -e "$new_dir/change_paths")  ) {
         croak_die   "script 'change_paths' not found. "
             . "Please get it from any Sandbox installed with version 2.0.15+\n";
@@ -674,10 +674,10 @@ sub delete_sandbox {
     $ENV{SANDBOX_HOME} =~ s{/$}{};
     $source =~ s/^\s*~/$ENV{HOME}/;
     unless ($source =~ m{^/} ) {
-        croak_die "Source directory must be an absolute path.\n"; 
+        croak_die "Source directory must be an absolute path.\n";
     }
     if ($source eq $ENV{SANDBOX_HOME} ) {
-        croak_die "Source directory must not be the whole sandbox home ($ENV{SANDBOX_HOME}.)\n"; 
+        croak_die "Source directory must not be the whole sandbox home ($ENV{SANDBOX_HOME}.)\n";
     }
     unless ( -d $source )  {
         croak_die "directory $source does not exist\n";
@@ -688,6 +688,9 @@ sub delete_sandbox {
         print "<no_clear> script found.\nDirectory <$source> can't be deleted. It's a permanent sandbox.\n";
         exit 0;
     }
+
+    $OS_ERROR       = undef;
+    $CHILD_ERROR    = 0;
     if ( (-x "$source/clear") && (-x "$source/stop" )) {
         $cmd1 = "$source/stop";
         $cmd2 = "$source/clear";
@@ -697,23 +700,42 @@ sub delete_sandbox {
         $cmd2 = "$source/clear_all";
     }
     else {
-        croak_die "directory $source does not seem to be a sandbox\n";
+        my @sandbox_subdirectories = grep { -d $_ } glob("$source/*");
+        unless (@sandbox_subdirectories)
+        {
+            croak_die "Directory $source does not seem to be a sandbox\n";
+        }
+        print "# Incomplete sandbox found at <$source> - Attempting to remove subdirectories\n";
+        for my $subdir (@sandbox_subdirectories)
+        {
+            print "# Deleting $subdir \n";
+            delete_sandbox($subdir);
+        }
+        system("rm -rf $source");
+        if ($CHILD_ERROR or $OS_ERROR)
+        {
+            croak_die "error deleting sandbox at $source\n ($CHILD_ERROR - $OS_ERROR)";
+        }
+        print "# Upper directory at <$source> has been removed \n";
+        return ;
     }
+    print "$cmd1\n" if $msb->{options}{verbose};
     $OS_ERROR       = undef;
     $CHILD_ERROR    = 0;
-    print "$cmd1\n" if $msb->{options}{verbose}; 
     system($cmd1);
-    if ($CHILD_ERROR or $OS_ERROR) {
-        croak_die "error stopping sandbox at $source\n ($CHILD_ERROR - $OS_ERROR)";        
+    if ($CHILD_ERROR or $OS_ERROR)
+    {
+        croak_die "error stopping sandbox at $source\n ($CHILD_ERROR - $OS_ERROR)";
     }
-    print "$cmd2\n" if $msb->{options}{verbose}; 
+    print "$cmd2\n" if $msb->{options}{verbose};
     system($cmd2);
     if ($CHILD_ERROR or $OS_ERROR) {
-        croak_die "error clearing sandbox at $source\n ($CHILD_ERROR - $OS_ERROR)";        
+        croak_die "error clearing sandbox at $source\n ($CHILD_ERROR - $OS_ERROR)";
     }
     system("rm -rf $source");
-    if ($CHILD_ERROR or $OS_ERROR) {
-        croak_die "error deleting sandbox at $source\n ($CHILD_ERROR - $OS_ERROR)";        
+    if ($CHILD_ERROR or $OS_ERROR)
+    {
+        croak_die "error deleting sandbox at $source\n ($CHILD_ERROR - $OS_ERROR)";
     }
     print "sandbox at <$source> has been removed\n";
 }
@@ -727,7 +749,7 @@ sub preserve_sandbox {
     $source =~ s/\s*$//;
     $source =~ s/^\s*~/$ENV{HOME}/;
     unless ($source =~ m{^/} ) {
-        croak_die "Source directory must be an absolute path.\n"; 
+        croak_die "Source directory must be an absolute path.\n";
     }
     unless ( -d $source )  {
         croak_die "directory $source does not exist\n";
@@ -773,7 +795,7 @@ sub unpreserve_sandbox {
     $source =~ s/\s*$//;
     $source =~ s/^\s*~/$ENV{HOME}/;
     unless ($source =~ m{^/} ) {
-        croak_die "Source directory must be an absolute path.\n"; 
+        croak_die "Source directory must be an absolute path.\n";
     }
     unless ( -d $source )  {
         croak_die "directory $source does not exist\n";
@@ -810,7 +832,7 @@ sub unpreserve_sandbox {
 }
 
 #
-# ---- Plugin 
+# ---- Plugin
 #
 
 sub add_plugin {
@@ -832,14 +854,14 @@ sub add_plugin {
     }
     if ( exist_all($source_dir, [qw(start stop restart use clear)]) ) {
         add_plugin_single($source_dir, $plugin, $plugin_file);
-    } 
+    }
     elsif ( exist_all($source_dir, [
                     qw(start_all stop_all restart_all use_all clear_all)]) ) {
         add_plugin_multiple($source_dir, $plugin, $plugin_file);
     }
     else {
         croak_die "directory $source_dir does not seem to be a sandbox\n";
-    } 
+    }
 }
 
 #
@@ -882,9 +904,9 @@ sub get_plugin_conf {
             . "configuration file ($plugin_conf_file)\n";
     }
     unless (
-            ref($plugin_definition->{$plugin}) 
+            ref($plugin_definition->{$plugin})
             &&
-            (ref( $plugin_definition->{$plugin}) eq 'HASH')) 
+            (ref( $plugin_definition->{$plugin}) eq 'HASH'))
     {
         croak_die "the definition of plugin '$plugin' must be a hash ref\n";
     }
@@ -900,10 +922,10 @@ sub is_option_set {
     my ($href, $value) = @_;
     my $value1 = $value;
     my $value2 = $value;
-    $value1 =~ s/[_-]/-/g; 
-    $value2 =~ s/[_-]/_/g; 
+    $value1 =~ s/[_-]/-/g;
+    $value2 =~ s/[_-]/_/g;
     # print "<$value1> <$value2>\n";exit;
-    return (defined($href->{$value1}) or defined($href->{$value2})) ; 
+    return (defined($href->{$value1}) or defined($href->{$value2})) ;
 }
 
 sub add_plugin_single {
@@ -911,31 +933,31 @@ sub add_plugin_single {
     my $is_slave = 0;
     my $is_master = 0;
     my $options_from_file = get_option_file_contents("$directory/my.sandbox.cnf");
-    # print Dumper $options_from_file; 
+    # print Dumper $options_from_file;
 
     #
     # it is a slave if slave related options
     # are found in the options file
     #
-    if (($options_from_file->{prompt} =~ /slave/) 
-         && 
+    if (($options_from_file->{prompt} =~ /slave/)
+         &&
          is_option_set( $options_from_file, 'report-host')
-        )  
+        )
     {
         $is_slave =1;
-    } 
-    # 
+    }
+    #
     # covers circular replication where a slave can also be a master
     #
-    if ($is_slave 
-        && 
+    if ($is_slave
+        &&
         is_option_set($options_from_file, 'auto_increment_increment')
         &&
-        is_option_set($options_from_file, 'auto_increment_offset') 
+        is_option_set($options_from_file, 'auto_increment_offset')
         &&
-        is_option_set($options_from_file, 'replicate-same-server-id') 
+        is_option_set($options_from_file, 'replicate-same-server-id')
         &&
-        is_option_set($options_from_file, 'log-slave-updates') 
+        is_option_set($options_from_file, 'log-slave-updates')
         )
     {
         $is_master = 1;
@@ -945,44 +967,44 @@ sub add_plugin_single {
     # is called *master/ and there is a prompt named "master"
     # something in its options file
     #
-    elsif ( ( $directory =~ m{master/?} ) 
+    elsif ( ( $directory =~ m{master/?} )
             &&
             ( $options_from_file->{prompt} =~ /master/ )
-          ) 
+          )
     {
         $is_master =1;
     }
     my $plugin_conf;
-    # 
+    #
     # reads the plugin configuration file
     #
     ($plugin_conf_file, $plugin_conf) = get_plugin_conf(
-                $directory, 
-                $plugin, 
+                $directory,
+                $plugin,
                 $plugin_conf_file);
-    # 
+    #
     # Looks for plugin libraries inside the options
     #
     my %plugin_libs = ();
     for my $mode (qw(all_servers master slave)) {
         next unless defined $plugin_conf->{$mode};
-        for my $item ( 
+        for my $item (
                 qw(operation_sequence options_file sql_commands startup_file )) {
             unless ($plugin_conf->{ $item }) {
                 $plugin_conf->{$item} = [];
             }
             unless (ref($plugin_conf->{$item}) eq 'ARRAY') {
                 croak_die "$item must be an array ref\n";
-            } 
+            }
         }
-        for my $line ( @{$plugin_conf->{$mode}{options_file}}, 
+        for my $line ( @{$plugin_conf->{$mode}{options_file}},
                    @{$plugin_conf->{$mode}{sql_commands}}) {
             while ( $line =~ /([-\w]+\.so)/g ) {
                 $plugin_libs{ $1 }++;
-            } 
-        } 
+            }
+        }
     }
-    # 
+    #
     # looks for the plugin directory
     #
     my $basedir = get_basedir($directory);
@@ -992,13 +1014,13 @@ sub add_plugin_single {
         croak_die "could not find $plugindir\n" unless -d $plugindir;
     }
     #
-    # makes sure that the plugin libraries 
+    # makes sure that the plugin libraries
     # mentioned in the configuration file exist
     #
     for my $lib (keys %plugin_libs) {
         unless ( -f "$plugindir/$lib" ) {
             croak_die "could not find plugin '$lib' in $plugindir\n";
-        } 
+        }
     }
     # All elements found. Now we can do the deed.
     #
@@ -1033,7 +1055,7 @@ sub add_plugin_single {
         unless ( defined $opseq ) {
             croak_die   "plugin definition in $plugin_conf_file "
                 . "($plugin, $inst_def) must "
-                . "contain 'operation_sequence'\n"; 
+                . "contain 'operation_sequence'\n";
         }
         #
         # Loops through the requested operations
@@ -1045,7 +1067,7 @@ sub add_plugin_single {
             if ( grep { $op eq $_} qw(start stop clear restart) ) {
                 my $result = system "$directory/$op";
                 croak_die "error executing $op\n" if $result;
-            } 
+            }
             #
             # Runs an update of the options file
             #
@@ -1072,12 +1094,12 @@ sub add_plugin_single {
             # Runs a batch of SQL commands
             #
             elsif ( $op eq 'sql_commands' ) {
-                run_sql_commands ($directory, 
+                run_sql_commands ($directory,
                         $plugin_conf->{$inst_def}{'sql_commands'}
                         );
             }
             #
-            # Nothing else is recognized. 
+            # Nothing else is recognized.
             #
             else {
                 croak_die "unrecognized command $op in operation_sequence\n";
@@ -1163,11 +1185,11 @@ sub update_options_file {
                 }
                 $found_plugindir = 1;
                 next;
-            } 
+            }
             if ($old_line eq $new_line) {
                 croak_die "option file already contains the line <$old_line>\n";
             }
-        }    
+        }
     }
     unless ($found_section) {
         croak_die "could not find section [$section] in $fname\n";
@@ -1193,7 +1215,7 @@ sub update_options_file {
         }
         #
         # If a new section starts,
-        # the new options are inserted 
+        # the new options are inserted
         #
         elsif ($old_line =~ /^\s*\[/) {
             if ($in_wanted_section) {
@@ -1204,8 +1226,8 @@ sub update_options_file {
         print $FH $old_line, "\n";
     }
     #
-    # If we reached the end of the file without 
-    # new sections, it means that we are still in the 
+    # If we reached the end of the file without
+    # new sections, it means that we are still in the
     # wanted section and we add the new options here.
     if ($in_wanted_section) {
         $in_wanted_section =0;
@@ -1238,7 +1260,7 @@ sub fill_startup_file {
                 if ($old_line eq $new_line) {
                     croak_die "startup file already contains the line <$old_line>\n";
                 }
-            }    
+            }
         }
         rename $fname, "$fname.bak"
             or croak_die "could not rename $fname to $fname.bak ($!)\n";
@@ -1258,7 +1280,7 @@ sub add_plugin_multiple {
         if ( exist_all($dir, [qw(start stop restart use clear)]) ) {
             print "Installing <$plugin> in <$dir>\n";
             add_plugin_single($dir, $plugin, $plugin_file);
-        } 
+        }
         else {
             print STDERR "WARNING: directory $dir is not a sandbox\n";
         }

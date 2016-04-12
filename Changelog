@@ -1,3 +1,7 @@
+3.1.06	12-Apr-2016
+	- Added explicit return code to test_replication script
+	- Enables sbtool to remove incomplete group sandboxes
+	- Test_Helper now cleans environment variables before starting a test
 3.1.05	17-Jan-2016 
 	- Fixed mismatch in version checking to determnine whether to use
 	mysql_install_db or mysqld --initialize
