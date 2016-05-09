@@ -38,6 +38,7 @@ t/17_replication_flow.t
 t/18_force_creation.t
 t/19_replication_gtid.t
 t/20_add_option.t
+t/21_replication_gtid_option.t
 t/Test_Helper.pm
 t/add_option.sb.pl
 t/check_replication.sb
