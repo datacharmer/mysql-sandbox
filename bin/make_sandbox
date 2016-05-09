@@ -220,6 +220,10 @@ elsif  ( $where_to_install =~ m{^(/.+)/(?:\d+\.)?($prefix_regex\D+(\d+)\.(\d+)\.
         if ($rename_result) {
             die "can't rename $new_dir to $new_name";
         }
+        # in case it is a debug build
+        if (-f "$new_name/bin/mysqld-debug" && ! -f "$new_name/bin/mysqld") {
+            system "cd $new_name/bin && ln -s mysqld-debug mysqld";
+        }
         # some versions of Perl and OS can't perform a rename across file systems
         # Bug #504789
         #rename $new_dir, $new_name
