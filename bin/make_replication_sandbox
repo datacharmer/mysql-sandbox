@@ -484,7 +484,11 @@ for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
     {
         $msb->write_to('initialize_slaves', '>>',  
              qq(, master_use_gtid=current_pos) );
-     }
+    }
+    if ($msb->{options}{gtid}) 
+    {
+        $msb->write_to('initialize_slaves', '>>',  ', MASTER_AUTO_POSITION=1');
+    }
     $msb->write_to('initialize_slaves', '>>',  
              qq(' | $replication_directory/node$slave/use -u root  ) );
 

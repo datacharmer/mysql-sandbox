@@ -36,6 +36,9 @@ ok_sql({
     msg      => 'Master GTID is enabled',    
 });
 
+# When GTID is enabled, the slaves take some time to get the synchronization info.
+sleep 3;
+
 ok_sql({
     path    => "$sandbox_home/$replication_dir/master",
     query   => 'select @@global.server_uuid',
