@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION="3.1.05";
+our $VERSION=q{3.1.06};
 
 our @MANIFEST = (
 'clear.sh',
@@ -31,6 +31,7 @@ our @MANIFEST = (
 'load_grants.sh',
 'use.sh',
 'mycli.sh',
+'mysqlsh.sh',
 'proxy_start.sh',
 'my.sh',
 'change_paths.sh',
@@ -306,6 +307,15 @@ my %parse_options_low_level_make_sandbox = (
                                 export => 1,
                                 help  => [
                                             'configures the server for high performance'
+                                         ]
+                            },
+    gtid            => {
+                                value => 0,      
+                                parse => 'gtid', 
+                                so    => 127,
+                                export => 1,
+                                help  => [
+                                            'enables GTID for MySQL 5.6.10+'
                                          ]
                             },
     prompt_prefix           => {
@@ -596,6 +606,16 @@ my %parse_options_replication = (
                                             '(Default: "" )'
                                          ]
                             },
+     gtid      => {
+                                value => 0,
+                                parse => 'gtid'  ,              
+                                so    => 140,
+                                help  => [
+                                            'Enables GTID for MYSQL 5.6.10+',
+                                            '(Default: NO )'
+                                         ]
+                            },
+  
   
     interactive           => {
                                 value => 0,                  
@@ -744,6 +764,16 @@ my %parse_options_many = (
                                             '(Default: "" )'
                                          ]
                             },
+     gtid      => {
+                                value => 0,
+                                parse => 'gtid'  ,              
+                                so    => 150,
+                                help  => [
+                                            'Enables GTID for MYSQL 5.6.10+',
+                                            '(Default: NO )'
+                                         ]
+                            },
+  
 
     interactive           => {
                                 value => 0,                  
@@ -1300,6 +1330,16 @@ export DYLD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$DYLD_LIBRARY_PATH
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 BASEDIR=_BASEDIR_
 [ -z "$MYSQL_EDITOR" ] && MYSQL_EDITOR="$BASEDIR/bin/mysql"
+if [ ! -x $MYSQL_EDITOR ]
+then
+    if [ -x $SBDIR/$MYSQL_EDITOR ]
+    then
+        MYSQL_EDITOR=$SBDIR/$MYSQL_EDITOR
+    else
+        echo "MYSQL_EDITOR '$MYSQL_EDITOR' not found or not executable"
+        exit 1
+    fi
+fi
 HISTDIR=_HISTORY_DIR_
 [ -z "$HISTDIR" ] && HISTDIR=$SBDIR
 export MYSQL_HISTFILE="$HISTDIR/.mysql_history"
@@ -1327,6 +1367,23 @@ mycli --user=_DBUSER_ \
     --_MYSQL_PROMPT_ "$@"
 
 MYCLI_SCRIPT
+
+
+    'mysqlsh.sh' => <<'MYSQLSH_SCRIPT',
+#!_BINBASH_
+__LICENSE__
+export LD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$DYLD_LIBRARY_PATH
+SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+BASEDIR=_BASEDIR_
+mysqlsh \
+    --sqlc \
+    --user=_DBUSER_ \
+    --password=_DBPASSWORD_ \
+    --port=_SERVERPORT_ \
+    --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock "$@"
+
+MYSQLSH_SCRIPT
 
 
     'clear.sh' => <<'CLEAR_SCRIPT', 

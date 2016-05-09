@@ -125,6 +125,56 @@ if ($msb->{options}{'slaveof'} or $msb->{options}{'master'})
         unshift @{ $msb->{options}{'my_clause'}},  $clause; 
     }
 }
+
+my $detected_mysql_version = qx($msb->{options}{basedir}/bin/mysql_config --version);
+if ($detected_mysql_version)
+{
+    $msb->{options}{detected_mysql_version} = $detected_mysql_version;
+}
+else
+{
+    die "# Can't get MySQL version from mysql_config\n";
+}
+
+if ($msb->{options}{'gtid'}) 
+{
+    my $mysql_version = $msb->{options}{detected_mysql_version};
+
+    my ($major, $minor, $rev) = split_version($mysql_version);
+
+    $mysql_version=sprintf('%d.%d.%d', $major,$minor, $rev);
+
+    if ((greater_version($mysql_version, '5.6.9') ) && ($major < 10))  # exclude MariaDB from this feature
+    {
+
+        my @clauses = ( "master-info-repository=table ", 
+            "relay-log-info-repository=table", 
+            "gtid_mode=ON", 
+            "enforce-gtid-consistency");
+                    
+        unless ( grep {/log.bin/}  @{ $msb->{options}{'my_clause'} })
+        {
+            push @clauses, 'log-bin' ;
+        }
+        unless ( grep {/server.id/}  @{ $msb->{options}{'my_clause'} })
+        {
+            push @clauses, 'server-id=' . $msb->{options}{sandbox_port} ;
+        }
+        unless (greater_version($mysql_version, '5.7.9')) 
+        {
+            push @clauses , "log-slave-updates";
+        }
+        for my $clause (@clauses)
+        {
+            unshift @{ $msb->{options}{'my_clause'}},  $clause; 
+        }
+    }
+    else
+    {
+        print "# enabling GTID is supported for MySQL 5.6.10 + - Skipping \n"
+    }
+}
+
 # my $mysql_version = qx($msb->{options}{basedir}/bin/mysql_config --version);
 
 if ($msb->{options}{'interactive'}) {
@@ -626,7 +676,7 @@ for my $file_spec ( @file_list) {  #, @doc_file_list) {
 if ($msb->{options}{datadir_from} eq 'script' ) {
     my $additional_options = "";
     my $script = sprintf '%s/scripts/mysql_install_db', $msb->{options}{basedir} ;
-    my $mysql_version = qx($msb->{options}{basedir}/bin/mysql_config --version);
+    my $mysql_version =  $msb->{options}{detected_mysql_version} ;
     if ($mysql_version)
     {
         chomp $mysql_version;

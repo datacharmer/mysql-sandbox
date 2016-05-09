@@ -259,6 +259,11 @@ if ($ENV{NODE_OPTIONS}) {
 }
 $additional_master_options .=  q{ };
 $additional_slave_options  .=  q{ };
+if ( $msb->{options}{gtid}) {
+    $additional_master_options .= ' --gtid ';
+    $additional_slave_options  .= ' --gtid ';
+}
+
 my $install_master='';
 my $install_master_command  = qq(
    make_sandbox $msb->{options}{server_version} -- \\

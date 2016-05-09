@@ -180,6 +180,10 @@ $msb->write_to($circular_replication_script, '>>', "$group_directory/use_all 'st
 
 for my $node (1 .. $msb->{options}{how_many_nodes}) {
     my $additional_node_options = $ENV{NODE_OPTIONS} || '';
+    if ($msb->{options}{gtid})
+    {
+        $additional_node_options .= ' --gtid ';
+    }
     my $this_node_options = $ENV{"NODE${node}_OPTIONS"} || '';
     my $node_port = $replication_port+ $node;
     if ($msb->{options}{'circular'}) {

@@ -25,7 +25,7 @@ TOOLS="$TOOLS make_sandbox_from_source msandbox msb sbtool test_sandbox"
 LIBS="lib/MySQL/Sandbox.pm lib/MySQL/Sandbox/Scripts.pm lib/MySQL/Sandbox/Recipes.pm"
 
 CHANGE_COPYRIGHT_YEAR='BEGIN{$y=shift;};s/(2006-)\d+(\s+)(Giuseppe\s+Maxia)/$1$y$2$3/'
-CHANGE_VERSION='BEGIN{$V=shift;};s/^(our\s+$VERSION=)([^;]+)/${1}q{$V}/' 
+CHANGE_VERSION='BEGIN{$V=shift;};s/^(our\s+\$VERSION=)([^;]+)/${1}q{$V}/' 
 #set -x
 for TOOL in $TOOLS
 do

@@ -6,19 +6,28 @@ my $TEST_VERSION = $ENV{TEST_VERSION};
 my ($version, $name_version) = get_bare_version($TEST_VERSION);
 my $replication_dir = "rsandbox_$name_version";
 
+my $GTID_OPTION= ' --gtid';
+if ( $ENV{'GTID_FROM_FILE'})
+{
+    $GTID_OPTION='';
+}
+
 ok_exec({
-    command     => "make_replication_sandbox $TEST_VERSION ",
+    command     => "make_replication_sandbox $GTID_OPTION $TEST_VERSION",
     expected    => 'replication directory installed',
     msg         => 'replication directory installed',
 });
 
-ok( (-f "$sandbox_home/$replication_dir/enable_gtid" ), "file enable_gtid found ");
+if ( $ENV{'GTID_FROM_FILE'})
+{
+    ok( (-f "$sandbox_home/$replication_dir/enable_gtid" ), "file enable_gtid found ");
 
-my $result = qx( $sandbox_home/$replication_dir/enable_gtid );
+    my $result = qx( $sandbox_home/$replication_dir/enable_gtid );
 
-ok( $? == 0 , 'enable_gtid ran without errors');
+    ok( $? == 0 , 'enable_gtid ran without errors');
 
-ok( $result && ($result =~ /# option 'gtid_mode=ON' added to \w+ configuration file/), "enable_gtid added options successfully");
+    ok( $result && ($result =~ /# option 'gtid_mode=ON' added to \w+ configuration file/), "enable_gtid added options successfully");
+}
 
 ok_sql({
     path    => "$sandbox_home/$replication_dir/master",
@@ -88,14 +97,18 @@ ok_sql({
 ok_sql({
     path    => "$sandbox_home/$replication_dir/master",
     query   => 'select @@global.gtid_executed',
-    expected => '1111-111111111111:1-2',
+    expected => '1111-111111111111:1-',
     msg      => 'Master has produced a GTID',    
 });
+
+#my $executed_set = `$sandbox_home/$replication_dir/m -BN -e 'select \@\@global.gtid_executed'`;
+#chomp $executed_set;
+my $executed_set = $ENV{SQL_RESULT};
 
 ok_sql({
     path    => "$sandbox_home/$replication_dir/node1",
     query   => 'select @@global.gtid_executed',
-    expected => '1111-111111111111:1-2',
+    expected => $executed_set,
     msg      => 'Slave has retrieved a GTID',    
 });
 

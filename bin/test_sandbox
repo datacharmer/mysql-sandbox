@@ -653,6 +653,7 @@ sub ok_sql {
             $params->{'path'},
             $params->{'query'}, 
             $verbose);
+    $ENV{SQL_RESULT} = $result;
     if ($wanted_result && ref($wanted_result) eq 'SCALAR')  {
         $$wanted_result = $result;
     }
@@ -712,6 +713,7 @@ sub ok_exec {
     if ($verbose) {
         print $result, "\n";
     }
+    $ENV{EXEC_RESULT} = $result;
     if (! ref $params->{'expected'} ) {
         if ($return_code_wanted) {
             return ok($CHILD_ERROR == 0 , $params->{'msg'});
