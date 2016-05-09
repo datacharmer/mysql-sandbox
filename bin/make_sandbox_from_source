@@ -139,10 +139,20 @@ sub get_source_version {
     #
 
     my $version;
+    my $version_file;
     if ( -f 'VERSION' )
     {
-        open my $VFH, q{<}, 'VERSION'
-            or die "can't open VERSION\n";
+        $version_file = 'VERSION';
+    }
+    # when build tree differs from source tree
+    elsif ( -f 'VERSION.dep' )
+    {
+        $version_file = 'VERSION.dep';
+    }
+    if ( $version_file )
+    {
+        open my $VFH, q{<}, $version_file
+            or die "can't open $version_file\n";
         while (my $line = <$VFH>)
         {
             if ($line =~ /MYSQL_VERSION_(?:MAJOR|MINOR|PATCH)=(\d+)/)
@@ -160,13 +170,13 @@ sub get_source_version {
         }
         unless ($version =~ /\d+\.\d+\.\d+/)
         {
-            die "could not find a version number in VERSION ($version)\n";
+            die "could not find a version number in $version_file ($version)\n";
         }
         return $version;
     }
     else
     {
-        print "# There is no VERSION file in this directory.\n# Now trying with Makefile\n" if $MySQL::Sandbox::DEBUG;
+        print "# There is no VERSION or VERSION.dep file in this directory.\n# Now trying with Makefile\n" if $MySQL::Sandbox::DEBUG;
     }
 
 
