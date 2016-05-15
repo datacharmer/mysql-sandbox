@@ -39,6 +39,8 @@ t/18_force_creation.t
 t/19_replication_gtid.t
 t/20_add_option.t
 t/21_replication_gtid_option.t
+t/22_init_exec_sql.t
+t/23_mysqlx_plugin.t
 t/Test_Helper.pm
 t/add_option.sb.pl
 t/check_replication.sb
@@ -47,7 +49,9 @@ t/custom_user_pwd.sb.pl
 t/force.sb.pl
 t/group_port_checking.sb
 t/group_port_checking.sb.pl
+t/init_exec_sql.sb.pl
 t/innodb_plugin_install.sb.pl
+t/mysqlx_plugin.sb.pl
 t/replication_flow.sh
 t/replication_gtid.sb.pl
 t/replication_options.sb.pl
@@ -59,3 +63,5 @@ t/start_restart_arguments.sb
 t/start_restart_arguments.sb.pl
 t/user_privileges.sb
 t/user_privileges.sb.pl
+t/test_init-exec.sh
+

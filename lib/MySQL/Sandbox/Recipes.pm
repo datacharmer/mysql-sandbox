@@ -3,7 +3,7 @@ package MySQL::Sandbox::Recipes;
 use strict;
 use warnings;
 
-our $VERSION=q{3.1.06};
+our $VERSION=q{3.1.07};
 
 1;
 __END__

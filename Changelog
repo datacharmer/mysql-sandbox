@@ -1,3 +1,14 @@
+3.1.07	15-May-2016
+	- Added support for $NOPASSWORD variable in ./use script. When this
+	variable is enabled, the client runs without a password. Useful to call it
+	before grants are loaded.
+	- Added option to install plugin right after the installation
+	  --load_plugin=plugin_name[=filename]
+	- Added options to execute SQL before and after loading grants
+	  --pre_grants_sql --pre_grants_file --post_grants_sql --post_grants_file
+	- Similar options can execute shell commands 
+	  --pre_start_exec --pre_grants_exec --post_grants_exec
+	- Added test cases for the above options
 3.1.06	09-May-2016
 	- Added explicit return code to test_replication script
 	- Enables sbtool to remove incomplete group sandboxes

@@ -80,6 +80,8 @@ if ($with_space)
 }
 
 $msb->{options}{globaltmpdir} = $ENV{TMPDIR};
+$msb->{options}{globaltmpdir} =~ s{/$}{};
+
 
 for my $opt (keys %{$msb->{options}} ) {
     #unless (defined $default_values{$opt} and defined $msb->{options}{$opt} ) {
@@ -129,7 +131,12 @@ if ($msb->{options}{'slaveof'} or $msb->{options}{'master'})
 my $detected_mysql_version = qx($msb->{options}{basedir}/bin/mysql_config --version);
 if ($detected_mysql_version)
 {
+    chomp $detected_mysql_version;
     $msb->{options}{detected_mysql_version} = $detected_mysql_version;
+    my ($major, $minor, $rev) = split_version($detected_mysql_version);
+    $msb->{options}{mysql_version}{major} = $major;
+    $msb->{options}{mysql_version}{minor} = $minor;
+    $msb->{options}{mysql_version}{rev} = $rev;
 }
 else
 {
@@ -140,8 +147,9 @@ if ($msb->{options}{'gtid'})
 {
     my $mysql_version = $msb->{options}{detected_mysql_version};
 
-    my ($major, $minor, $rev) = split_version($mysql_version);
-
+    my $major =  $msb->{options}{mysql_version}{major};
+    my $minor =  $msb->{options}{mysql_version}{minor};
+    my $rev =  $msb->{options}{mysql_version}{rev};
     $mysql_version=sprintf('%d.%d.%d', $major,$minor, $rev);
 
     if ((greater_version($mysql_version, '5.6.9') ) && ($major < 10))  # exclude MariaDB from this feature
@@ -680,7 +688,9 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
     if ($mysql_version)
     {
         chomp $mysql_version;
-        my ($major, $minor, $rev) = split_version($mysql_version);
+        my $major =  $msb->{options}{mysql_version}{major};
+        my $minor =  $msb->{options}{mysql_version}{minor};
+        my $rev =  $msb->{options}{mysql_version}{rev};
         $mysql_version=sprintf('%d.%d.%d', $major,$minor, $rev);
         print "#1 $mysql_version - $major - $minor - $rev - $script\n" if $DEBUG;
         if ((greater_version($mysql_version, '5.7.6') ) && ($major < 10))  # exclude MariaDB from this feature
@@ -834,17 +844,184 @@ if ($msb->{options}{fix_server_uuid} && ( ! $msb->{options}{keep_uuid})) {
     }
     fix_server_uuid( @{ $msb->{options}{fix_server_uuid} } );
 }
+
+sub run_query
+{
+    my ($run_instructions) = @_;
+    for my $key (qw(dir user type))
+    {
+        unless (defined $run_instructions->{$key})
+        {
+            die "# run_query : '$key' field missing in  run_instructions\n";
+        }
+    }
+
+    my $dir  = $run_instructions->{dir} ;
+    my $user = $run_instructions->{user} ;
+    my $type = $run_instructions->{type} ;
+    my $options = $run_instructions->{options} ;
+    my $visual_options = '';
+    if ($run_instructions->{verbose})
+    {
+        $visual_options = '-v -t';
+    }
+    unless ( -x "$dir/use" )
+    {
+        die "# Executable ./use not found in $dir\n"; 
+    }
+    $options = '' unless $options;
+    if ($run_instructions->{skip_password})
+    {
+        $ENV{NOPASSWORD}=1;
+    }
+    if ( $type eq 'file')
+    {
+        my $file  = $run_instructions->{file} 
+            or die "# run_query : 'file' field missing in run_instructions\n";
+        die "# run_query: file '$file' not found " unless -f $file; 
+        system qq( $dir/use $visual_options -u $user $options < $file );
+    }
+    elsif ($type eq 'query')
+    {
+        my $query  = $run_instructions->{query} 
+            or die "# run_query : 'query' field missing in run_instructions\n";
+        my $qfile= "$dir/tmp/qfile.sql";
+        open my $QF , '>' , $qfile
+            or die "# Can't create $qfile\n";
+        print $QF $query;
+        close $QF;
+        system qq( $dir/use $visual_options -u $user $options < $qfile );
+    }
+    else
+    {
+        die "# run_query: unrecognized type '$type'\n";
+    }
+    delete $ENV{NOPASSWORD};
+}
+
+
+sub run_exec_conditionally
+{
+    my ($_msb, $cond_option) = @_;
+    if ($_msb->{options}{$cond_option})
+    {
+        local $ENV{SANDBOX_DIR}   =  $sandbox_directory;
+        local $ENV{BASEDIR}       =  $_msb->{options}{basedir};
+        local $ENV{DB_DATADIR}    =  "$sandbox_directory/data";
+        local $ENV{MY_CNF}        =  "$sandbox_directory/my.sandbox.cnf";
+        local $ENV{DB_PORT}       =  $_msb->{options}{sandbox_port};
+        local $ENV{DB_USER}       =  $_msb->{options}{db_user};
+        local $ENV{DB_PASSWORD}   =  $_msb->{options}{db_password};
+        local $ENV{DB_SOCKET}     =  "$_msb->{options}{globaltmpdir}/mysql_sandbox$_msb->{options}{sandbox_port}.sock";
+        local $ENV{MYSQL_VERSION} =  $detected_mysql_version;
+        local $ENV{MYSQL_MAJOR}   =  $msb->{options}{mysql_version}{major};
+        local $ENV{MYSQL_MINOR}   =  $msb->{options}{mysql_version}{minor};
+        local $ENV{MYSQL_REV}     =  $msb->{options}{mysql_version}{rev};
+        local $ENV{EXEC_STAGE}    =  $cond_option;
+        print qq(# [$cond_option] system "$_msb->{options}{$cond_option}"\n);
+        system "$_msb->{options}{$cond_option}";
+    }
+}
+
+run_exec_conditionally($msb, 'pre_start_exec');
+
 if ($msb->{options}{load_grants}) {
-    print "loading grants\n";
+    print "# Starting server\n";
     system "$sandbox_directory/start"
         and die "can't start server\n";
-    # sleep command replaced by internal timeout in the "start" script
-    # sleep 3;
+
+    ## 
+    # Run pre-grant instructions
+    #
+    # my $verbose_query = $msb->{options}{verbose};
+    my $verbose_query = not $msb->{options}{no_show};
+    if ($msb->{options}{load_plugin})
+    {
+        my $query = $msb->{options}{pre_grants_sql} || '';
+        my @plugins = split /,/, $msb->{options}{load_plugin};
+        for my $plugin (@plugins)
+        {
+            my $plugin_name = $plugin;
+            my $plugin_file = "${plugin}.so";
+            if ($plugin =~ /(\w+)[=:](\S+)/)
+            {
+                $plugin_name = $1;
+                $plugin_file = $2;    
+            }
+            $query .= ";\n" if $query;
+            $query .= "INSTALL PLUGIN $plugin_name soname '$plugin_file';\n";
+            if ($verbose_query)
+            {
+                $query .= "select plugin_name, plugin_version, plugin_status from information_schema.plugins where plugin_name = '$plugin_name';\n";
+            }
+        }
+        if ($query)
+        {
+            $msb->{options}{pre_grants_sql} = $query;
+            print "# Added installation command for plugin 'plugin_name' to pre_grants_sql\n" if $DEBUG;
+        }
+    }
+
+    run_exec_conditionally($msb, 'pre_grants_exec');
+
+    if ($msb->{options}{pre_grants_sql})
+    {
+        run_query({
+                type      => 'query',
+                dir       => $sandbox_directory,
+                user      => 'root',
+                skip_password  => 1,
+                verbose   => $verbose_query,
+                query     => $msb->{options}{pre_grants_sql},
+            });
+    }
+    if ($msb->{options}{pre_grants_file})
+    {
+        run_query({
+                type      => 'file',
+                dir       => $sandbox_directory,
+                user      => 'root',
+                skip_password  => 1,
+                verbose   => $verbose_query,
+                file      => $msb->{options}{pre_grants_file}
+            });
+    }
+ 
+    print "# Loading grants\n";
     system "$sandbox_directory/load_grants"
         and die "can't load grants\n";
     if ($msb->{options}{master}) {
         system "$sandbox_directory/use -e 'reset master'";
     }
+
+    ##
+    # Run post grant instructions
+    #
+    run_exec_conditionally($msb, 'post_grants_exec');
+
+    if ($msb->{options}{post_grants_sql})
+    {
+        run_query({
+                type      => 'query',
+                dir       => $sandbox_directory,
+                user      => 'root',
+                verbose   => $verbose_query,
+                skip_password  => 0,
+                query     => $msb->{options}{post_grants_sql}
+            });
+    }
+    if ($msb->{options}{post_grants_file})
+    {
+        run_query({
+                type      => 'file',
+                dir       => $sandbox_directory,
+                user      => 'root',
+                skip_password  => 0,
+                verbose   => $verbose_query,
+                file      => $msb->{options}{post_grants_file}
+            });
+    }
+ 
     if ($msb->{options}{slaveof}) {
         my $cmt = 'CHANGE MASTER TO ';
         my %cmt_clauses = (

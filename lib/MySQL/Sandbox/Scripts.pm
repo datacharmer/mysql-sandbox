@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION=q{3.1.06};
+our $VERSION=q{3.1.07};
 
 our @MANIFEST = (
 'clear.sh',
@@ -312,16 +312,96 @@ my %parse_options_low_level_make_sandbox = (
     gtid            => {
                                 value => 0,      
                                 parse => 'gtid', 
-                                so    => 127,
+                                so    => 130,
                                 export => 1,
                                 help  => [
                                             'enables GTID for MySQL 5.6.10+'
                                          ]
                             },
+#    general_log      => {
+#                               value => 0,
+#                               parse => 'gl|general_log'  ,              
+#                               so    => 140,
+#                               help  => [
+#                                           'Enables the general log for MYSQL 5.1+',
+#                                        ]
+#                           },
+     pre_start_exec      => {
+                                value => '',      
+                                parse => 'pre_start_exec=s', 
+                                so    => 140,
+                                export => 1,
+                                help  => [
+                                            'Shell command to execute after installation, before the server starts',
+                                         ]
+                           },
+      pre_grants_exec      => {
+                                value => '',      
+                                parse => 'pre_grants_exec=s', 
+                                so    => 150,
+                                export => 1,
+                                help  => [
+                                            'Shell command to execute shortly after installation',
+                                         ]
+                           },
+     post_grants_exec      => {
+                                value => '',      
+                                parse => 'post_grants_exec=s', 
+                                so    => 152,
+                                export => 1,
+                                help  => [
+                                            'Shell command to execute shortly after loading grants',
+                                         ]
+                           },
+     pre_grants_sql      => {
+                                value => '',      
+                                parse => 'pre_grants_sql=s', 
+                                so    => 155,
+                                export => 1,
+                                help  => [
+                                            'SQL command to execute shortly after installation ',
+                                         ]
+                           },
+    post_grants_sql      => {
+                                value => '',      
+                                parse => 'post_grants_sql=s', 
+                                so    => 160,
+                                export => 1,
+                                help  => [
+                                            'SQL command to execute shortly after loading grants ',
+                                         ]
+                            },
+    pre_grants_file      => {
+                                value => '',      
+                                parse => 'pre_grants_file=s', 
+                                so    => 170,
+                                export => 1,
+                                help  => [
+                                            'SQL file to execute shortly after installation ',
+                                         ]
+                            },
+    post_grants_file      => {
+                                value => '',      
+                                parse => 'post_grants_file=s', 
+                                so    => 180,
+                                export => 1,
+                                help  => [
+                                            'SQL file to execute shortly after loading grants ',
+                                         ]
+                            },
+    load_plugin         => {
+                                value => '',      
+                                parse => 'load_plugin=s', 
+                                so    => 190,
+                                export => 1,
+                                help  => [
+                                            'Comma separated list of plugins to install ',
+                                         ]
+                            },
     prompt_prefix           => {
                                 value => 'mysql',      
                                 parse => 'prompt_prefix=s', 
-                                so    => 130,
+                                so    => 200,
                                 export => 1,
                                 help  => [
                                             'prefix to use in CLI prompt (default: mysql)',
@@ -331,7 +411,7 @@ my %parse_options_low_level_make_sandbox = (
     prompt_body          => {
                                 value => q/ [\h] {\u} (\d) > /,      
                                 parse => 'prompt_body=s', 
-                                so    => 135,
+                                so    => 210,
                                 export => 1,
                                 help  => [
                                             'options to use in CLI prompt (default:  [\h] {\u} (\d) > )',
@@ -340,7 +420,7 @@ my %parse_options_low_level_make_sandbox = (
     force                 => {
                                 value => 0,                  
                                 parse => 'force',                      
-                                so    => 140,
+                                so    => 220,
                                 export => 1,
                                 help  => [
                                             'Use this option if you want to overwrite existing directories',
@@ -350,7 +430,7 @@ my %parse_options_low_level_make_sandbox = (
     no_ver_after_name     => {
                                 value => 0,                  
                                 parse => 'no_ver_after_name',                  
-                                so    => 150,
+                                so    => 230,
                                 help  => [
                                             'Do not add version number after sandbox directory name (default: disabled)'
                                          ] 
@@ -358,7 +438,7 @@ my %parse_options_low_level_make_sandbox = (
     verbose               => {
                                 value => 0,                  
                                 parse => 'v|verbose',                  
-                                so    => 160,
+                                so    => 240,
                                 export => 1,
                                 help  => [
                                             'Use this option to see installation progress (default: disabled)'
@@ -367,7 +447,7 @@ my %parse_options_low_level_make_sandbox = (
    load_grants           => {
                                 value => 0,                  
                                 parse => 'load_grants',                  
-                                so    => 170,
+                                so    => 250,
                                 export => 1,
                                 help  => [
                                             'Loads the predefined grants from a SQL file.',
@@ -378,7 +458,7 @@ my %parse_options_low_level_make_sandbox = (
    no_load_grants         => {
                                 value => 0,                  
                                 parse => 'no_load_grants',                  
-                                so    => 175,
+                                so    => 260,
                                 help  => [
                                             'Does not loads the predefined grants from a SQL file.',
                                             '(default: disabled)'
@@ -388,7 +468,7 @@ my %parse_options_low_level_make_sandbox = (
    no_run                 => {
                                 value => 0,                  
                                 parse => 'no_run',                  
-                                so    => 176,
+                                so    => 270,
                                 help  => [
                                             'Stops the server if started with "load_grants".',
                                             '(default: disabled)'
@@ -403,7 +483,7 @@ my %parse_options_low_level_make_sandbox = (
 #    random_password       => {
 #                                value => 0,                  
 #                                parse => 'random_password',                  
-#                                so    => 195,
+#                                so    => 275,
 #                                help  => [
 #                                            'Enables random password generation with MySQL 5.7.4+'
 #                                         ] 
@@ -411,7 +491,7 @@ my %parse_options_low_level_make_sandbox = (
     interactive           => {
                                 value => 0,                  
                                 parse => 't|interactive',                  
-                                so    => 180,
+                                so    => 280,
                                 help  => [
                                             'Use this option to be guided through the installation process (default: disabled)'
                                          ] 
@@ -428,7 +508,7 @@ my %parse_options_low_level_make_sandbox = (
                                 value => 0, 
                                 parse => 'no_confirm',
                                 export => 1,
-                                so    => 180,
+                                so    => 290,
                                 help  => [
                                             'suppress the confirmation request from user',
                                          ],
@@ -436,7 +516,7 @@ my %parse_options_low_level_make_sandbox = (
     no_show               => {
                                 value => 0, 
                                 parse => 'no_show',
-                                so    => 190,
+                                so    => 300,
                                 help  => [
                                             'does not show options or ask confirmation to the user',
                                          ],
@@ -444,7 +524,7 @@ my %parse_options_low_level_make_sandbox = (
     keep_uuid             => {
                                 value => $ENV{KEEP_UUID} || $ENV{keep_uuid} || 0, 
                                 parse => 'keep_uuid',
-                                so    => 195,
+                                so    => 310,
                                 help  => [
                                             'does not modify server UUID in MySQL 5.6+',
                                          ],
@@ -452,7 +532,7 @@ my %parse_options_low_level_make_sandbox = (
     history_dir             => {
                                 value => $ENV{HISTORY_DIR} || $ENV{HISTORYDIR} || '', 
                                 parse => 'history_dir=s',
-                                so    => 197,
+                                so    => 320,
                                 help  => [
                                             'Sets the history directory for mysql client to a given path',
                                          ],
@@ -615,7 +695,16 @@ my %parse_options_replication = (
                                             '(Default: NO )'
                                          ]
                             },
-  
+#    general_log      => {
+#                               value => 0,
+#                               parse => 'gl|general_log'  ,              
+#                               so    => 145,
+#                               help  => [
+#                                           'Enables the general log for MYSQL 5.1+',
+#                                           '(Default: NO )'
+#                                        ]
+#                           },
+   
   
     interactive           => {
                                 value => 0,                  
@@ -1345,9 +1434,16 @@ HISTDIR=_HISTORY_DIR_
 export MYSQL_HISTFILE="$HISTDIR/.mysql_history"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 __SBINSTR_SH__
+MY_CNF=$SBDIR/my.sandbox.cnf
+MY_CNF_NO_PASSWORD=$SBDIR/my.sandbox_np.cnf
+if [ -n "$NOPASSWORD" ]
+then
+    perl -ne 'print unless /^password/' < $MY_CNF > $MY_CNF_NO_PASSWORD
+    MY_CNF=$MY_CNF_NO_PASSWORD
+fi
 if [ -f $PIDFILE ]
 then
-    $MYSQL_EDITOR --defaults-file=$SBDIR/my.sandbox.cnf $MYCLIENT_OPTIONS "$@"
+    $MYSQL_EDITOR --defaults-file=$MY_CNF $MYCLIENT_OPTIONS "$@"
 #else
 #    echo "PID file $PIDFILE not found "
 fi

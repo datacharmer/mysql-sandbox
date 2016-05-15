@@ -436,6 +436,57 @@ And finally, it also does What You Expect when using a tarball instead of a vers
 
 Using a MySQL server has never been easier.
 
+# Custom commands during installation
+
+Starting with version 3.1.07 the installation of each sandbox supports the execution of shell and SQL commands during the installation.
+You can use the following commands:
+
+    ## SQL statements
+    * --pre_grants_sql=query : runs 'query' before loading the grants.
+    * --pre_grants_file=filename : runs SQL file 'filename' before loading the grants.
+    * --post_grants_sql=query : runs 'query' after the loading the grants.
+    * --post_grants_file=filename : runs SQL file 'filename' before loading the grants.
+    * --load_plugin=plugin[:plugin_file_name] : loads the given plugin
+    
+
+The output of the SQL commands is sent to standard output. 
+If the option --no\_show was selected, then the the client is called without options. If --no\_show was not selected (default), then the client is called with -t -v, so that the output is shown in table format.
+
+    ## Shell commands
+    * --pre_start_exec=command  : runs 'command' after the installation, before the server starts
+    * --pre_grants_exec=command : runs 'command' after the server starts, before loading the grants.
+    * --post_grants_exec=command : runs 'command' after the loading the grants.
+
+For each shell call, the following variables are filled:
+
+           SANDBOX_DIR   =  sandbox directory;
+           BASEDIR       =  base directory for the sandbox binaries
+           DB_DATADIR    =  data directory
+           MY_CNF        =  configuration file
+           DB_PORT       =  database port
+           DB_USER       =  database user
+           DB_PASSWORD   =  database password
+           DB_SOCKET     =  database socket
+           MYSQL_VERSION =  MySQL version (e.g. 5.7.12)
+           MYSQL_MAJOR   =  Major part of the version (e.g 5)
+           MYSQL_MINOR   =  Minor part of the version (e.g 7)
+           MYSQL_REV     =  Revision part of the version (e.g 12)
+           EXEC_STAGE    =  Stage of the execution (pre_start_exec, pre_grants_exec, post_grants_exec)
+    
+
+The order of execution during the installation is the following:
+
+    * server installation (mysql_install_db or mysqld --initialize)
+        * pre_start_exec
+    * server start
+        * pre_grants_exec
+        * pre_grants_sql (includes load_plugin calls)
+        * pre_grants_file
+    * load grants
+        * post_grants_exec
+        * post_grants_sql
+        * post_grants_file
+
 # SBTool the Sandbox helper
 
 The Sandbox Helper, `sbtool`, is a tool that allows administrative operations 
