@@ -1,3 +1,9 @@
+3.1.08	04-Jun-2016
+	- Fixed major issue with XPlugin installation. The grants script was
+	  removing the account created by the X-plugin. Now this account is
+	  whitelisted. (https://bugs.mysql.com/bug.php?id=81257)
+	- Fixed minor naming in MANIFEST
+	- Fixed compatibility issues in deploy_to_remote_sandboxes.sh
 3.1.07	15-May-2016
 	- Added support for $NOPASSWORD variable in ./use script. When this
 	variable is enabled, the client runs without a password. Useful to call it

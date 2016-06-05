@@ -14,8 +14,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-[ -z "$MYSQL_VERSION" ] && MYSQL_VERSION=5.5.30
-[ -z "$MYSQL_PORT" ]    && MYSQL_PORT=15530
+[ -z "$MYSQL_VERSION" ] && MYSQL_VERSION=5.7.12
+[ -z "$MYSQL_PORT" ]    && MYSQL_PORT=32001
 [ -z "$SANDBOX_DIR" ]   && SANDBOX_DIR=remote_sb
 
 NODES_LIST=
@@ -128,7 +128,7 @@ BUILD_SB=$HOME/build_sb.sh
 echo "#!/bin/bash" > $BUILD_SB
 echo 'SANDBOX_EXISTS=$(for P in `echo $PATH | tr ":" " "` ; do if [ -f $P/make_sandbox ] ; then echo $P/make_sandbox ; fi; done)' >> $BUILD_SB
 echo 'if [ -z "$SANDBOX_EXISTS" ] ; then hostname; echo "make_sandbox not found in PATH" ; exit 1; fi' >> $BUILD_SB
-MY_TEMPLATE=$my_template$$.cnf
+MY_TEMPLATE=my_template$$.cnf
 if [ -n "$MY_CNF" ]
 then
     if [  ! -f  $MY_CNF ]
@@ -136,7 +136,7 @@ then
         echo "File '$MY_CNF' not found"
         exit 1
     fi
-    cp $MY_CNF $HOME/$MY_TEMPLATE
+    cp $MY_CNF $MY_TEMPLATE
     echo "MY_CNF=\$HOME/$MY_TEMPLATE" >> $BUILD_SB
 fi
 
@@ -155,6 +155,7 @@ echo "   --sandbox_directory=$SANDBOX_DIR  \$SANDBOX_OPTIONS" >> $BUILD_SB
 # echo "if [ -f \$HOME/$MY_TEMPLATE ] ; then rm -f \$HOME/$MY_TEMPLATE ; fi "
 chmod +x $BUILD_SB
 
+BUILD_SB_FN=$(basename $BUILD_SB)
 SERVER_ID_COUNTER=0
 for HOST in  ${NODES[*]}
 do
@@ -163,9 +164,9 @@ do
         ssh $HOST 'if [ ! -d $HOME/opt/mysql ] ; then mkdir -p $HOME/opt/mysql ; fi' 
         scp -p $TARBALL $HOST:~/opt/mysql
    fi
-   scp -p $BUILD_SB $HOST:$BUILD_SB
-   scp -p $HOME/$MY_TEMPLATE $HOST:$MY_TEMPLATE
-   ssh $HOST $BUILD_SB ${SERVER_IDS[$SERVER_ID_COUNTER]}
+   scp -p $BUILD_SB $HOST:/tmp
+   [ -n "$MY_CNF" ] && scp -p $MY_TEMPLATE $HOST:$MY_TEMPLATE
+   ssh $HOST /tmp/$BUILD_SB_FN ${SERVER_IDS[$SERVER_ID_COUNTER]}
    SERVER_ID_COUNTER=$(($SERVER_ID_COUNTER+1))
 done
 

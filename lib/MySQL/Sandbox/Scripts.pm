@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION=q{3.1.07};
+our $VERSION=q{3.1.08};
 
 our @MANIFEST = (
 'clear.sh',
@@ -1665,7 +1665,7 @@ set password='_DBPASSWORD_';
 -- delete from tables_priv;
 -- delete from columns_priv;
 -- delete from db;
-delete from user where user not in ('root', 'mysql.sys');
+delete from user where user not in ('root', 'mysql.sys', 'mysqlxsys');
 
 flush privileges;
 
