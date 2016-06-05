@@ -1,17 +1,16 @@
 #!/bin/bash
-if [ ! -f test_versions.txt ]
-then
-    echo "test_versions.txt not found"
-    exit 1
-fi
-
 echo "" >> results.txt
 echo "## $(date)" >> results.txt
 echo "#" >> results.txt
 [ -z "$SANDBOX_BINARY" ] && SANDBOX_BINARY=$HOME/opt/mysql
 
+if [ ! -f repo_list.pl ]
+then
+    echo "# repo_list.pl not found"
+    exit 1
+fi
 
-for V in $(grep -v '^\s*#' test_versions.txt)   
+for V in $(perl repo_list.pl)   
 do 
     if [ ! -d $SANDBOX_BINARY/$V ]
     then
