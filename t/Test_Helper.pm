@@ -12,6 +12,11 @@ BEGIN {
     if ($^O =~ /^(?:mswin|win)/i) {
         skip_all ('This module is not for Windows');        
     }
+    my $opt_mysql= $ENV{SANDBOX_BINARY} || "$ENV{HOME}/opt/mysql";
+    unless  ( -d  -d $opt_mysql)
+    {
+        skip_all ("This test module requires tarballs extracted in $ENV{HOME}/opt/bin");
+    }
     use MySQL::Sandbox qw/split_version/;
     $ENV{TEST_SANDBOX_HOME}="$ENV{PWD}/t/test_sb";
     $ENV{PERL5LIB}="$ENV{PWD}/lib";

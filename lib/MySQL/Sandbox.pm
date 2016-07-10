@@ -30,7 +30,7 @@ our @EXPORT_OK= qw( is_port_open
                     split_version
                     ) ;
 
-our $VERSION=q{3.1.08};
+our $VERSION=q{3.1.09};
 our $DEBUG;
 
 BEGIN {
@@ -164,7 +164,12 @@ sub get_help {
         $long =~ s/ = s \@? / = name/x;
         $long =~ s/ = i / = number/x;
         $param_str .= q{--} . $long;
-        $param_str .= (q{ } x (40 - length($param_str)) );
+        my $lparam = 40 - length($param_str);
+        if ($lparam < 0)
+        {
+            $lparam = 0;
+        }
+        $param_str .= (q{ } x $lparam );
         my $text_items = $self->{parse_options}->{$op}{help};
         for my $titem (@{$text_items}) {
             $HELP_MSG .= $param_str . $titem . "\n";
@@ -712,7 +717,7 @@ sub exists_in_path {
     my @path_directories = split /:/, $ENV{PATH}; ## no critic
     for my $dir (@path_directories) {
         if ( -x "$dir/$cmd") {
-            return 1;
+            return "$dir/$cmd";
         } 
     }
     return 0;

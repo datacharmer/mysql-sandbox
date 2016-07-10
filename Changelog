@@ -1,3 +1,8 @@
+3.1.09	08-Jul-2016
+	- Added make_sandbox_from_url, which installs a sandbox from the web
+	- Fixed a warning about negative length of options (only fires in recent
+	  versions of Perl)
+	- Cleaned up test execution for environments where it can't run properly.
 3.1.08	04-Jun-2016
 	- Fixed major issue with XPlugin installation. The grants script was
 	  removing the account created by the X-plugin. Now this account is

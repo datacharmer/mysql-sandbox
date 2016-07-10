@@ -1,0 +1,170 @@
+#!/usr/bin/perl
+# make_sandbox_from_installed
+#    The MySQL Sandbox
+#    Copyright (C) 2006-2016 Giuseppe Maxia
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+use strict;
+use warnings;
+use MySQL::Sandbox qw(runs_as_root exists_in_path greater_version);
+my $repository=$ENV{SANDBOX_REPO} || 'http://github.com/datacharmer/mysql-docker-minimal/blob/master/dbdata';
+my $sandbox_binary=$ENV{SANDBOX_BINARY} || "$ENV{HOME}/opt/mysql";
+my $pound_line = '#' x 80;
+my %supported_versions =
+(
+    '5.0'   => ['5.0.96'],
+    '5.1'   => ['5.1.72'],
+    '5.5'   => ['5.5.50'],
+    '5.6'   => ['5.6.31'],
+    '5.7'   => ['5.7.13']
+);
+
+
+runs_as_root();
+# ---------------------------------------------------------------------------------
+# main 
+# ---------------------------------------------------------------------------------
+
+my $remote_version = shift
+    or get_help("version needed");
+if (exists $supported_versions{$remote_version})
+{
+    $remote_version = get_latest($remote_version);
+}
+if ($remote_version =~ /^(-h|--help)$/) 
+{
+    get_help();
+}
+unless ($^O =~ /linux/i)
+{
+    get_help("This operating system ($^O) is not supported");
+}
+
+
+
+my $download_file="$repository/$remote_version.tar.gz";
+
+my $wget =  exists_in_path ('wget');
+unless ($wget )
+{
+    get_help( 'wget was not found in PATH' );
+}
+
+if ( ! -d $sandbox_binary )
+{
+    system "mkdir -p $sandbox_binary";
+    if ($?)
+    {
+        die "Can't create $sandbox_binary ($!)\n";
+    }
+}
+
+if ( ! -d $sandbox_binary )
+{
+    get_help("Unable to use or create $sandbox_binary")
+}
+
+chdir $sandbox_binary;
+
+if ( -d $remote_version)
+{
+    get_help(  "\n$pound_line\n"
+             . "### Version $remote_version already exists in $sandbox_binary\n"
+             . "### Run 'make_sandbox $remote_version' to use it\n"
+             . $pound_line
+    );
+}
+
+my $local_file = "$remote_version.tar.gz";
+print "wget -O $local_file '$download_file?raw=true' \n";
+system "wget -O $local_file '$download_file?raw=true' ";
+if ($?)
+{
+    die "Error downloading $download_file\n";
+}
+
+if ( ! -f $local_file)
+{
+    die "Error downloading $download_file. Can't find '$local_file'\n"; 
+}
+
+system "tar -xzf $local_file";
+if ($?)
+{
+    die "Error extracting from $local_file\n";
+}
+
+if ( ! -d $remote_version)
+{
+    die "Directory $remote_version was not created\n";
+}
+
+$ENV{SANDBOX_BINARY} = $sandbox_binary;
+$ENV{PWD} = $sandbox_binary;
+
+exec "make_sandbox $remote_version @ARGV";
+
+# ---------------------------------------------------------------------------------
+# Functions
+# ---------------------------------------------------------------------------------
+sub get_help
+{
+    my ($msg) = @_;
+
+    print MySQL::Sandbox::credits();
+    if ($msg)
+    {
+        print "### $msg\n";
+    }
+    print<<END_HELP1;
+
+This script tries to create a sandbox using binaries downloaded from the web.
+The success of this scripts depends on good connectivity 
+and availability of downloading tools.
+##########################
+# IT ONLY WORKS ON LINUX
+##########################
+The repository of available binarie is at $repository .
+Supported:
+END_HELP1
+
+    for my $major (sort keys %supported_versions )
+    {
+        print "# $major -> [ @{ [ @{$supported_versions{$major}} ]} ] \n";
+    }
+
+    print<<END_HELP2;
+The binaries are imported into $sandbox_binary .
+
+  make_sandbox_from_url X.X.XX [options]
+
+    where X.X.XX is the version number. 
+    You can then pass any options accepted by make_sandbox.
+END_HELP2
+
+    if ($msg)
+    {
+        exit 1;
+    }
+    else
+    {
+        exit 0;
+    }
+}
+sub get_latest
+{
+    my ($wanted) = @_;
+    my @versions = @{ $supported_versions{$wanted}};
+    return $versions[-1]; 
+}
