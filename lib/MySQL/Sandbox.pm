@@ -30,7 +30,7 @@ our @EXPORT_OK= qw( is_port_open
                     split_version
                     ) ;
 
-our $VERSION=q{3.1.09};
+our $VERSION=q{3.1.10};
 our $DEBUG;
 
 BEGIN {

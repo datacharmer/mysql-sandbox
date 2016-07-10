@@ -6,7 +6,7 @@ BEGIN {
 use strict;
 use warnings;
 use lib './t';
-#use Test_Helper;
+use Test_Helper;
 use Test::More;
 
 BEGIN {
