@@ -19,6 +19,7 @@ WriteMakefile1(
                             'bin/make_sandbox',
                             'bin/make_sandbox_from_source',
                             'bin/make_sandbox_from_installed',
+                            'bin/make_sandbox_from_url',
                             'bin/make_replication_sandbox',
                             'bin/make_multiple_sandbox',
                             'bin/make_multiple_custom_sandbox',

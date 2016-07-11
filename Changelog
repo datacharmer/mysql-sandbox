@@ -1,3 +1,6 @@
+3.1.11	11-Jul-2016
+	- Added make_sandbox_from_url to the installation list
+	- Use https for GitHub URLs (contributed by D. Van Eeden)
 3.1.10	10-Jul-2016
 	- Fixed a test error that made the package not-installable
 3.1.09	08-Jul-2016
