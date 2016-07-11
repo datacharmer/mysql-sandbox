@@ -814,7 +814,7 @@ Version 3.1
 
 Copyright (C) 2006-2016 Giuseppe Maxia
 
-Home Page  http://github.com/datacharmer
+Home Page  https://github.com/datacharmer
 
 # LEGAL NOTICE
 
