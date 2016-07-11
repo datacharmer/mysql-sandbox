@@ -18,7 +18,7 @@
 use strict;
 use warnings;
 use MySQL::Sandbox qw(runs_as_root exists_in_path greater_version);
-my $repository=$ENV{SANDBOX_REPO} || 'http://github.com/datacharmer/mysql-docker-minimal/blob/master/dbdata';
+my $repository=$ENV{SANDBOX_REPO} || 'https://github.com/datacharmer/mysql-docker-minimal/blob/master/dbdata';
 my $sandbox_binary=$ENV{SANDBOX_BINARY} || "$ENV{HOME}/opt/mysql";
 my $pound_line = '#' x 80;
 my %supported_versions =
