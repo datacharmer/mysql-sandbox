@@ -720,7 +720,7 @@ sub exists_in_path {
             return "$dir/$cmd";
         } 
     }
-    return 0;
+    return ;
 }
 
 sub runs_as_root {

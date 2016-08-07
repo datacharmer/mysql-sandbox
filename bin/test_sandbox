@@ -19,7 +19,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
-use MySQL::Sandbox qw(use_env greater_version);
+use MySQL::Sandbox qw(use_env greater_version exists_in_path);
 use English qw( -no_match_vars );
 use Carp;
 
@@ -1468,18 +1468,6 @@ sub how_many_dirs {
         $dir_count++ if -d $_;
     }
     return $dir_count;
-}
-
-sub exists_in_path {
-    my ($fname) = @_;
-    my @paths = split /:/, $ENV{'PATH'};
-    for my $path (@paths) {
-        $path =~ s{/$}{};
-        if ( -f "$path/$fname") {
-            return 1;
-        }
-    }
-    return 0;
 }
 
 sub tprint {
