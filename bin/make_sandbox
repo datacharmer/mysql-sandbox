@@ -19,7 +19,7 @@ use strict;
 use warnings;
 # use Data::Dumper;
 use English qw( -no_match_vars ); 
-use MySQL::Sandbox qw( runs_as_root sbinstr);
+use MySQL::Sandbox qw( runs_as_root sbinstr exists_in_path);
 use Getopt::Long ;
  
 
@@ -58,6 +58,25 @@ my $where_to_install = shift
 my $version;
 
 my ($major, $minor, $release);
+
+if ($where_to_install =~ s{^(URL|WEB|GET|FETCH):}{}i)
+{
+    if ( exists_in_path("make_sandbox_from_url"))
+    {
+        if (@ARGV)
+        {
+            exec ( "make_sandbox_from_url", $where_to_install, '--',  @ARGV) ;
+        }
+        else
+        {
+            exec ( "make_sandbox_from_url", $where_to_install) ;
+        }
+    }
+    elsif ( $where_to_install =~ m{^https://})
+    {
+        die "URL requested, but make_sandbox_from_url not found in PATH"
+    }
+}
 
 $where_to_install =~ s{ / \s* $ }{}x;
 
@@ -263,7 +282,8 @@ sub get_help {
               '*' x $len, "\n";
     }
     print <<SYNTAX;
-usage: ./make_sandbox version [options] {VERSION|tarball_full_name} -- [more options]
+usage: ./make_sandbox full_version [options] {VERSION|tarball_full_name} -- [more options]
+or   : ./make_sandbox GET:short_version -- [options]
 
   --export_binaries    exports the new binary to $binary_base
   --add_prefix=NAME    add given prefix to renamed tarball directory
@@ -273,9 +293,10 @@ SYNTAX
 
     print "You should provide either a version from '$binary_base' \n",
           "or an absolute path to the tarball to extract.\n",
-          "See (below) ./low_level_make_sandbox --help for more detail\n";
-    print "version should be provided as #.#.#\n";
-    exit 1;
+          "See ./low_level_make_sandbox --help for more detail\n";
+    print "full_version should be provided as #.#.#\n";
+    print "short_version should be provided as #.#\n";
+    exit ($msg ? 1 : 0);
     #print q{-} x 50, "\n";
     #exec "$install_dir/low_level_make_sandbox --help ";
 }

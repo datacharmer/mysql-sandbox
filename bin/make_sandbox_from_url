@@ -38,9 +38,27 @@ runs_as_root();
 
 my $remote_version = shift
     or get_help("version needed");
+
 if (exists $supported_versions{$remote_version})
 {
     $remote_version = get_latest($remote_version);
+}
+elsif ($remote_version =~ /^(\d+\.\d+)/)
+{
+    my $short_version = $1;
+    if ((exists $supported_versions{$short_version} ) 
+        && grep { $remote_version eq $_} @{ $supported_versions{$short_version}} )
+    {
+        # Do nothing. The request version exists
+    }
+    else
+    {
+        get_help( "Could not find $remote_version");
+    }
+}
+else
+{
+    get_help( "Unsupported version $remote_version")
 }
 if ($remote_version =~ /^(-h|--help)$/) 
 {
@@ -135,7 +153,7 @@ and availability of downloading tools.
 ##########################
 # IT ONLY WORKS ON LINUX
 ##########################
-The repository of available binarie is at $repository .
+The repository of available binaries is at $repository .
 Supported:
 END_HELP1
 
