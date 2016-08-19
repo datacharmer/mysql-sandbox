@@ -476,7 +476,7 @@ for my $slave (1 .. $msb->{options}{how_many_slaves} ) {
 
     $msb->write_to('initialize_slaves', '>>',  
              qq(echo 'CHANGE MASTER TO )
-           . qq( master_host="127.0.0.1", )
+           . qq( master_host="$msb->{options}{master_ip}", )
            . qq( master_port=$replication_port, )
            . qq( master_user="$MySQL::Sandbox::default_users{'repl_user'}", )
            . qq( master_password="$MySQL::Sandbox::default_users{'repl_password'}" ));

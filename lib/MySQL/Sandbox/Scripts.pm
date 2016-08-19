@@ -634,6 +634,15 @@ my %parse_options_replication = (
                                             '(default: '. $MySQL::Sandbox::default_users{'repl_user'} . ')'
                                          ] 
                             },
+    master_ip           => {
+                                value => '127.0.0.1',
+                                parse => 'master_ip=s',
+                                so    => 95,
+                                help  => [
+                                            'Which IP is used by slaves to connect to the master',
+                                            '(default: 127.0.0.1)'
+                                         ]
+                            },
 
     repl_password           => {
                                 value => $MySQL::Sandbox::default_users{'repl_password'},
