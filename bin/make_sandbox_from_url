@@ -105,8 +105,8 @@ if ( -d $remote_version)
 }
 
 my $local_file = "$remote_version.tar.gz";
-print "wget -O $local_file '$download_file?raw=true' \n";
-system "wget -O $local_file '$download_file?raw=true' ";
+print "wget -nv -O $local_file '$download_file?raw=true' \n";
+system "wget -nv -O $local_file '$download_file?raw=true' ";
 if ($?)
 {
     die "Error downloading $download_file\n";
