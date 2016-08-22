@@ -1,3 +1,5 @@
+3.1.13	21-Aug-2016
+	- added --master_ip to make_replication_sandbox
 3.1.12	07-Aug-2016
 	- added syntax for make_sandbox get:#.# (invokes make_sandbox_from_url)
 	- Added check for wrong requested version in make_sandbox_from_url
