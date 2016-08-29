@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION=q{3.1.13};
+our $VERSION=q{3.2.00};
 
 our @MANIFEST = (
 'clear.sh',
@@ -398,7 +398,25 @@ my %parse_options_low_level_make_sandbox = (
                                             'Comma separated list of plugins to install ',
                                          ]
                             },
-    prompt_prefix           => {
+    plugin_mysqlx       => {
+                                value => undef,      
+                                parse => 'plugin_mysqlx', 
+                                so    => 195,
+                                export => 1,
+                                help  => [
+                                            'Installs MySQLx plugin with an automatic port for X-protocol',
+                                         ]
+                            },
+    mysqlx_port       => {
+                                value => 0,      
+                                parse => 'mysqlx_port=i', 
+                                so    => 196,
+                                export => 1,
+                                help  => [
+                                            'Sets port for X-plugin (requires --plugin_mysqlx)',
+                                         ]
+                            },
+     prompt_prefix           => {
                                 value => 'mysql',      
                                 parse => 'prompt_prefix=s', 
                                 so    => 200,
@@ -1481,12 +1499,32 @@ export LD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$DYLD_LIBRARY_PATH
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 BASEDIR=_BASEDIR_
-mysqlsh \
-    --sqlc \
-    --user=_DBUSER_ \
-    --password=_DBPASSWORD_ \
-    --port=_SERVERPORT_ \
-    --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock "$@"
+mode=$1
+if [ -n "$mode" ]
+then
+    shift
+else
+    mode=--sql
+fi
+case $mode in
+    --sql)
+        mysqlsh \
+            --sqlc \
+            --user=_DBUSER_ \
+            --password=_DBPASSWORD_ \
+            --port=_SERVERPORT_ \
+            --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock "$@"
+            ;;
+    --js)
+        mysqlsh \
+            --user=_DBUSER_ \
+            --password=_DBPASSWORD_ \
+            --port=_MYSQLXPORT_ "$@"
+            ;;
+   *)
+       echo "Syntax: $0 [--js|--sql]"
+       exit 1
+esac
 
 MYSQLSH_SCRIPT
 
@@ -1568,13 +1606,16 @@ rm -f data/*.err-old
 # rm -rf data/test/*
 
 #
-# remove all databases if any
+# remove all databases if any (up to 8.0)
 #
-for D in `ls -d data/*/ | grep -w -v mysql | grep -iv performance_schema | grep -ivw sys` 
-do
-    rm -rf $D
-done
-mkdir data/test
+if [ `perl -le 'print $ARGV[0] lt "8.0" ? "1" : "0" ' "$VERSION"` = "1" ]
+then
+    for D in `ls -d data/*/ | grep -w -v mysql | grep -iv performance_schema | grep -ivw sys` 
+    do
+        rm -rf $D
+    done
+    mkdir data/test
+fi
 
 CLEAR_SCRIPT
     'my.sandbox.cnf'  => <<'MY_SANDBOX_SCRIPT',
@@ -1724,6 +1765,10 @@ then
     echo "grant SELECT on performance_schema.session_variables to _DBUSERREPL_@'_REMOTE_ACCESS_';" >> $SBDIR/grants_5_7_6.mysql
 fi
 if [ "$MAJOR" == "5" -a "$MINOR" == "7" -a $REV -gt 5 ]
+then
+    cp $SBDIR/grants_5_7_6.mysql $SBDIR/grants.mysql
+fi
+if [ "$MAJOR" == "8" ]
 then
     cp $SBDIR/grants_5_7_6.mysql $SBDIR/grants.mysql
 fi

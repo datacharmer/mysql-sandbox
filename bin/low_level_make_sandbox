@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 # low_level_make_sandbox
 #    The MySQL Sandbox
 #    Copyright (C) 2006-2016 Giuseppe Maxia
@@ -17,7 +17,7 @@
 
 use strict;
 use warnings;
-use English qw( -no_match_vars ); 
+use English qw( -no_match_vars );
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case );
 use MySQL::Sandbox qw( find_safe_port_and_directory exists_in_path runs_as_root use_env sbinstr fix_server_uuid greater_version split_version);
@@ -50,11 +50,11 @@ my %user_values;
 #print Dumper \%{$msb->{options}}; exit;
 
 GetOptions (
-    map { $msb->{parse_options}{$_}{parse}, \$msb->{options}{$_} }        
-        grep { $msb->{parse_options}{$_}{parse}}  keys %{$msb->{parse_options}} 
+    map { $msb->{parse_options}{$_}{parse}, \$msb->{options}{$_} }
+        grep { $msb->{parse_options}{$_}{parse}}  keys %{$msb->{parse_options}}
 ) or $msb->get_help();
 
-# 
+#
 # We are not expecting bare arguments
 #
 if (@ARGV){
@@ -90,7 +90,7 @@ for my $opt (keys %{$msb->{options}} ) {
     #    die "undefined option\n";
     #}
     # next unless $default_values{$opt};
-    if ((not defined $default_values{$opt}) 
+    if ((not defined $default_values{$opt})
        or ($default_values{$opt} ne $msb->{options}{$opt} )) {
         $user_values{$opt} = $msb->{options}{$opt};
     }
@@ -102,7 +102,7 @@ $msb->{options}{'my_clause'} = [] unless $msb->{options}{'my_clause'} ;
 
 if ( $msb->{options}{'high_performance'})
 {
-    my @perf_clauses = ( 
+    my @perf_clauses = (
         'innodb-thread-concurrency=0',
         'sync_binlog=0',
         'innodb-log-buffer-size=100M',
@@ -115,17 +115,29 @@ if ( $msb->{options}{'high_performance'})
     );
 
     for my $clause (@perf_clauses)
-    { 
-        unshift @{ $msb->{options}{'my_clause'}},  $clause; 
+    {
+        unshift @{ $msb->{options}{'my_clause'}},  $clause;
     }
 }
 
-if ($msb->{options}{'slaveof'} or $msb->{options}{'master'}) 
+if ($msb->{options}{'slaveof'} or $msb->{options}{'master'})
 {
     for my $clause (('log-bin=mysql-bin', 'server-id=' . $msb->{options}{sandbox_port}, 'relay-log=mysql-relay', 'relay-log-index=mysql-relay' ))
-    { 
-        unshift @{ $msb->{options}{'my_clause'}},  $clause; 
+    {
+        unshift @{ $msb->{options}{'my_clause'}},  $clause;
     }
+}
+
+if ($msb->{options}{plugin_mysqlx})
+{
+    my $mysqlx_port=$msb->{options}{mysqlx_port};
+    if ($mysqlx_port < 1000)
+    {
+        $mysqlx_port=$msb->{options}{sandbox_port} + 10_000;
+    }
+    $msb->{options}{mysqlx_port} = $mysqlx_port;
+    push @{ $msb->{options}{'my_clause'} }, 'plugin_load=mysqlx:mysqlx.so';
+    push @{ $msb->{options}{'my_clause'} }, "mysqlx_port=$mysqlx_port";
 }
 
 my $detected_mysql_version = qx($msb->{options}{basedir}/bin/mysql_config --version);
@@ -143,7 +155,7 @@ else
     die "# Can't get MySQL version from mysql_config\n";
 }
 
-if ($msb->{options}{'gtid'}) 
+if ($msb->{options}{'gtid'})
 {
     my $mysql_version = $msb->{options}{detected_mysql_version};
 
@@ -155,11 +167,11 @@ if ($msb->{options}{'gtid'})
     if ((greater_version($mysql_version, '5.6.9') ) && ($major < 10))  # exclude MariaDB from this feature
     {
 
-        my @clauses = ( "master-info-repository=table ", 
-            "relay-log-info-repository=table", 
-            "gtid_mode=ON", 
+        my @clauses = ( "master-info-repository=table ",
+            "relay-log-info-repository=table",
+            "gtid_mode=ON",
             "enforce-gtid-consistency");
-                    
+
         unless ( grep {/log.bin/}  @{ $msb->{options}{'my_clause'} })
         {
             push @clauses, 'log-bin' ;
@@ -168,13 +180,13 @@ if ($msb->{options}{'gtid'})
         {
             push @clauses, 'server-id=' . $msb->{options}{sandbox_port} ;
         }
-        unless (greater_version($mysql_version, '5.7.9')) 
+        unless (greater_version($mysql_version, '5.7.9'))
         {
             push @clauses , "log-slave-updates";
         }
         for my $clause (@clauses)
         {
-            unshift @{ $msb->{options}{'my_clause'}},  $clause; 
+            unshift @{ $msb->{options}{'my_clause'}},  $clause;
         }
     }
     else
@@ -195,7 +207,7 @@ $msb->{options}{'verbose'} = 1 if $DEBUG;
 
 if ( -f "$ENV{'HOME'}/.msandboxrc") {
     if ( $msb->{options}{'conf_file'}) {
-        # conf file given. Neet to concatenate default file and 
+        # conf file given. Neet to concatenate default file and
         # rc file
         my $tmp_conf_file = "$ENV{TMPDIR}/msandboxrc.cnf";
         my $result = system (qq( cat $ENV{'HOME'}/.msandboxrc $msb->{options}{'conf_file'} > $tmp_conf_file ));
@@ -229,7 +241,7 @@ if ( $msb->{options}{'conf_file'}) {
             # print "++ $msb->{parse_options}{$key}{'value'} \n";
             if ($msb->{parse_options}{$key}{'value'} =~ /^\d+$/) {
                 $value = $msb->{parse_options}{$key}{'value'} ? 0 : 1 ;
-            }    
+            }
         }
         else {
             next;
@@ -243,7 +255,7 @@ if ( $msb->{options}{'conf_file'}) {
         elsif (exists $msb->{options}{$key} ) {
             $value = q{} unless defined $value;
             if ( $value =~ s/^\$//x ) {
-                $value = $ENV{$value}; 
+                $value = $ENV{$value};
             }
             if ( $msb->{parse_options}{ $key }{'parse'} =~ /\@/) {
                 $msb->{options}{ $key } = [ split /\s*;\s*/, $value ];
@@ -261,7 +273,7 @@ if ( $msb->{options}{'conf_file'}) {
 }
 
 
-# 
+#
 # options to skip from the imported my.cnf file
 #
 my %skip_options = (
@@ -297,6 +309,7 @@ my %replace_options = (
     _HOME_DIR_          => 'upper_directory',
     _SANDBOXDIR_        => 'sandbox_directory',
     _SERVERPORT_        => 'sandbox_port',
+    _MYSQLXPORT_        => 'mysqlx_port',
     _MORE_OPTIONS_      => 'more_options',
     _MYSQL_PROMPT_      => 'mysql_prompt',
     _MYSQLDSAFE_        => 'mysqld_safe',
@@ -314,10 +327,10 @@ $msb->{options}{msb_version} = $MySQL::Sandbox::VERSION;
 if ($msb->{options}{db_user} =~ /\@/) {
     my ($user, $host) = split /\@/, $msb->{options}{db_user};
     $msb->{options}{db_user} = $user;
-    $msb->{options}{remote_access} = $host; 
+    $msb->{options}{remote_access} = $host;
 }
 
-if ($OSNAME =~ /darwin/) 
+if ($OSNAME =~ /darwin/)
 {
     $msb->{options}{lower_case_table_names} = 2;
 }
@@ -328,18 +341,18 @@ else
 
 
 if (
-       ($msb->{options}{remote_access} eq $MySQL::Sandbox::default_users{remote_access}) 
+       ($msb->{options}{remote_access} eq $MySQL::Sandbox::default_users{remote_access})
     && ($msb->{options}{bind_address} eq '127.0.0.1')
-    ) 
+    )
 {
     # Do nothing.
     # Make sure that we honor the defaults
     #
 }
 elsif (
-       ($msb->{options}{remote_access} ne $MySQL::Sandbox::default_users{remote_access}) 
+       ($msb->{options}{remote_access} ne $MySQL::Sandbox::default_users{remote_access})
     && ($msb->{options}{bind_address} ne '127.0.0.1')
-    ) 
+    )
 {
     # Do nothing.
     # Both defaults were changed.
@@ -347,18 +360,18 @@ elsif (
     #
 }
 elsif (
-       ($msb->{options}{remote_access} ne $MySQL::Sandbox::default_users{remote_access}) 
-    && ($msb->{options}{remote_access} ne '127.0.0.1') 
+       ($msb->{options}{remote_access} ne $MySQL::Sandbox::default_users{remote_access})
+    && ($msb->{options}{remote_access} ne '127.0.0.1')
     && ($msb->{options}{bind_address} eq '127.0.0.1')
-    ) 
+    )
 {
     # remote_access changed. Make sure that we can access the server
     $msb->{options}{bind_address} = '0.0.0.0';
 }
 elsif (
-       ($msb->{options}{bind_address} ne '0.0.0.0') 
+       ($msb->{options}{bind_address} ne '0.0.0.0')
     && ($msb->{options}{remote_access} ne '%')
-    ) 
+    )
 {
     # Customized bind address
     # We adjust the remote access to match it
@@ -375,19 +388,19 @@ for my $opt (qw(db_user remote_access ro_user rw_user repl_user db_password repl
 }
 
 unless (
-        ($msb->{options}{'sandbox_port'} =~ /^ \d{3,} $ /x)  
+        ($msb->{options}{'sandbox_port'} =~ /^ \d{3,} $ /x)
         && ($msb->{options}{'sandbox_port'} > 1024 )
         && ($msb->{options}{'sandbox_port'} <= 64000)) {
     $msb->get_help( "sandbox_port option must be a port number between 1025 and 64000 (currently requested $msb->{options}{'sandbox_port'} ) \n");
 }
 
 if ($msb->{options}{check_port} and (! $msb->{options}{no_check_port}) ) {
-    
-    ( $msb->{options}{'sandbox_port'}, 
-      $msb->{options}{'sandbox_directory'}) = 
-        find_safe_port_and_directory( 
-                    $msb->{options}{'sandbox_port'}, 
-                    $msb->{options}{'sandbox_directory'}, 
+
+    ( $msb->{options}{'sandbox_port'},
+      $msb->{options}{'sandbox_directory'}) =
+        find_safe_port_and_directory(
+                    $msb->{options}{'sandbox_port'},
+                    $msb->{options}{'sandbox_directory'},
                     $msb->{options}{'upper_directory'}) ;
 }
 
@@ -395,7 +408,7 @@ if ($msb->{options}{datadir_from} eq 'archive') {
     print "You have chosen to install with the 'archive' method.\n";
     print "This option is now DEPRECATED.\n";
     print "It will be removed soon. Use the 'script' method instead\n";
-    
+
     #chdir $sandbox_directory;
     #system "tar -xzf $curdir/datadir.$msb->{options}{'install_version'}.tar.gz ";
     #chdir $curdir;
@@ -405,6 +418,7 @@ if ($msb->{options}{datadir_from} eq 'script' and  (not $msb->{options}{no_load_
     $msb->{options}{load_grants} = 1;
 }
 
+
 if ( @{ $msb->{options}{'my_clause'} } ) {
     $msb->{options}{'more_options'} .= qq(#\n# additional options passed through 'my_clause' \n#\n);
     for my $clause ( @{ $msb->{options}{'my_clause'} }) {
@@ -412,9 +426,9 @@ if ( @{ $msb->{options}{'my_clause'} } ) {
         if ($clause =~ /server.id=(\d+)/)
         {
             my $sid=$1;
-            $msb->{options}{fix_server_uuid} = [ $sid,  
-                $msb->{options}{install_version}, 
-                $msb->{options}{sandbox_port}, 
+            $msb->{options}{fix_server_uuid} = [ $sid,
+                $msb->{options}{install_version},
+                $msb->{options}{sandbox_port},
                 "$msb->{options}{upper_directory}/$msb->{options}{sandbox_directory}"];
         }
     }
@@ -430,10 +444,10 @@ if ($msb->{options}{my_file} ) {
     if ( -f $fname ) {
         $msb->{options}{more_options} .= get_more_options($fname);
     }
-    elsif ( -f $extended_fname ) { 
+    elsif ( -f $extended_fname ) {
         $msb->{options}{more_options} .= get_more_options($extended_fname);
     }
-    elsif ( -f $share_extended_fname ) { 
+    elsif ( -f $share_extended_fname ) {
         $msb->{options}{more_options} .= get_more_options($share_extended_fname);
     }
     else {
@@ -455,7 +469,7 @@ for my $cmd ( ($bash, 'tar', 'gzip') ) {
     }
 }
 
-my $bin_bash = `which $bash`; ## no critic
+my $bin_bash = exists_in_path($bash);
 if ((! $bin_bash) or ( $bin_bash =~ /^no/i) ) {
     die "can't find the 'bash' shell\n";
 }
@@ -463,7 +477,7 @@ if ((! $bin_bash) or ( $bin_bash =~ /^no/i) ) {
 chomp $bin_bash;
 $msb->{options}{'binbash'} = $bin_bash;
 
-my $bin_perl = `which perl`; ## no critic
+my $bin_perl = exists_in_path('perl');
 if ((! $bin_perl) or ( $bin_perl =~ /^no/i) ) {
     die "can't find the 'perl' interpreter\n";
 }
@@ -481,7 +495,7 @@ unless (grep {$_ eq $msb->{options}{'install_version'} } @supported_versions ) {
 }
 
 #
-# 
+#
 #
 # print "<<$msb->{options}{ 'install_version' }>>\n";
 if ($msb->{options}{ 'install_version' } ge '5.5' ) {
@@ -494,13 +508,13 @@ else
 
 my $sb_datadir = qq($msb->{options}{upper_directory}/$msb->{options}{sandbox_directory}/data);
 if ($msb->{options}{ 'install_version' } ge '5.1' ) {
-    $msb->{options}{'slow_query_log'} = 
+    $msb->{options}{'slow_query_log'} =
           qq(slow-query-log = on\n)
         . qq(# slow-query-log-file=$sb_datadir/msandbox-slow.log);
-    $msb->{options}{'general_log'} = 
+    $msb->{options}{'general_log'} =
           qq(general-log = on\n)
         . qq(# general-log-file=$sb_datadir/msandbox-general.log);
-} 
+}
 else {
     $msb->{options}{'slow_query_log'} = qq(log-slow-queries = $sb_datadir/msandbox-slow.log);
     $msb->{options}{'general_log'} = qq(log = $sb_datadir/msandbox-general.log) ;
@@ -509,7 +523,7 @@ else {
 if ($msb->{options}{ 'install_version' } eq '3.23' ) {
     $msb->{options}{'mysql_prompt'} = q{};
     $msb->{options}{'mysqld_safe'} = q{safe_mysqld};
-} 
+}
 else {
     $msb->{options}{'mysql_prompt'} = q/prompt=/ . $msb->{options}{prompt_prefix} . $msb->{options}{prompt_body};
     $msb->{options}{'mysql_prompt'} =~ s/'//g;
@@ -520,17 +534,17 @@ else {
 
 if ( $msb->{options}{'sandbox_directory'} ) {
     if ($msb->{options}{'sandbox_directory'} =~ m{/} ) {
-        die "<sandbox_directory> can't be a full path. " 
+        die "<sandbox_directory> can't be a full path. "
             . "It's only the name of the directory "
             . "to create inside $msb->{options}{'upper_directory'}\n";
     }
     unless ( $msb->{options}{ 'no_ver_after_name' } ) {
         my $ver = $msb->{options}{ 'install_version' };
         # $ver =~ tr/./_/d; ## no critic
-        $ver =~ s/\./_/g; 
+        $ver =~ s/\./_/g;
         unless ($msb->{options}{ 'sandbox_directory'} =~ /$ver$/) {
             $msb->{options}{'sandbox_directory'} .= $ver;
-            $msb->{options}{ 'no_ver_after_name' } = 1; # 1.6 it will prevent 
+            $msb->{options}{ 'no_ver_after_name' } = 1; # 1.6 it will prevent
                                                  # side effects when loading
                                                  # options from defaults file
         }
@@ -554,11 +568,11 @@ if ($msb->{options}{no_show}) {
 
 unless ($msb->{options}{no_show}) {
     for my $key (
-                sort { $msb->{parse_options}{$a}{so} <=> $msb->{parse_options}{$b}{so} } 
+                sort { $msb->{parse_options}{$a}{so} <=> $msb->{parse_options}{$b}{so} }
                 grep { $msb->{parse_options}{$_}{parse}}  keys %{$msb->{parse_options}} ) {
         next if grep { $key eq $_ } qw/more_options help interactive conf_file no_confirm /;
         my $is_array = ref($msb->{options}{$key}) && ref($msb->{options}{$key}) eq 'ARRAY';
-        printf "%-30s = %s\n", $key, $is_array ? join q{ ; }, 
+        printf "%-30s = %s\n", $key, $is_array ? join q{ ; },
             @{ $msb->{options}{$key} } : ($msb->{options}{$key} || '');
         next unless $msb->{options}{$key};
         next if $msb->{options}{$key} =~ /^ \s* $/x;
@@ -712,10 +726,10 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
     {
         die "Can't determine MySQL version\n";
     }
-    
+
     if ($script =~ /mysql_install_db/)
     {
-        unless ( -x $script ) 
+        unless ( -x $script )
         {
             if ( -e $script ) {
                 die "$script is not executable\n";
@@ -723,10 +737,10 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
             $script = sprintf '%s/bin/mysql_install_db', $msb->{options}{basedir} ;
         }
     }
-    if ( -x $script ) 
+    if ( -x $script )
     {
-        #my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data --tmpdir=%s/tmp %s', 
-        my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data %s', 
+        #my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data --tmpdir=%s/tmp %s',
+        my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data %s',
             $script,
             $msb->{options}{operating_system_user},
             $msb->{options}{basedir},
@@ -749,7 +763,7 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         }
         $result = '' unless defined $result;
         my $abort_msg  = "error while creating grant tables\n$result\n";
-        if ($result && ($result =~ /\berror\b/i)) 
+        if ($result && ($result =~ /\berror\b/i))
         {
             # We look for the word 'error' in the output
             while ($result =~ /(.*\berror\b.*)/ig)
@@ -765,7 +779,7 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
                     # otherwise, we mark this operation as an error
                     $will_abort++;
                 }
-            } 
+            }
         }
         if ($DEBUG)
         {
@@ -781,14 +795,15 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         for my $table_name (qw(user db tables_priv columns_priv)) {
             my $frm =   "$sandbox_directory/data/mysql/$table_name.frm";
             my $myd =   "$sandbox_directory/data/mysql/$table_name.MYD";
-            if ( (-f $frm ) or ( -f $myd) )
+            my $ibd =   "$sandbox_directory/data/mysql/$table_name.ibd";
+            if ( (-f $frm ) or ( -f $myd)  or ( -f $ibd ) )
             {
                 # do nothing
                 print "Table $table_name found\n" if $DEBUG;
             }
             else
             {
-                die "table $table_name not installed\n";
+                die "Table $table_name not found\n";
             }
         }
         for my $logfile (qw(ib_logfile0 ib_logfile1))
@@ -822,7 +837,7 @@ elsif ($msb->{options}{datadir_from} =~ /dir: (.+) /x ) {
             else {
                 mkdir $sandbox_datadir
                     or die "error creating $sandbox_datadir ($!)\n";
-            } 
+            }
             system sprintf 'cp %s %s/* %s/', $msb->{options}{'verbose'} ? q{-vr} : q{-r},  $origin, $sandbox_datadir;
         }
         else {
@@ -840,7 +855,7 @@ else {
 if ($msb->{options}{fix_server_uuid} && ( ! $msb->{options}{keep_uuid})) {
     if ( $DEBUG )
     {
-        print Dumper $msb->{options}{fix_server_uuid};
+        print Data::Dumper->Dump([ $msb->{options}{fix_server_uuid}], ['options_fix_server_uuid']);
     }
     fix_server_uuid( @{ $msb->{options}{fix_server_uuid} } );
 }
@@ -867,7 +882,7 @@ sub run_query
     }
     unless ( -x "$dir/use" )
     {
-        die "# Executable ./use not found in $dir\n"; 
+        die "# Executable ./use not found in $dir\n";
     }
     $options = '' unless $options;
     if ($run_instructions->{skip_password})
@@ -876,14 +891,14 @@ sub run_query
     }
     if ( $type eq 'file')
     {
-        my $file  = $run_instructions->{file} 
+        my $file  = $run_instructions->{file}
             or die "# run_query : 'file' field missing in run_instructions\n";
-        die "# run_query: file '$file' not found " unless -f $file; 
+        die "# run_query: file '$file' not found " unless -f $file;
         system qq( $dir/use $visual_options -u $user $options < $file );
     }
     elsif ($type eq 'query')
     {
-        my $query  = $run_instructions->{query} 
+        my $query  = $run_instructions->{query}
             or die "# run_query : 'query' field missing in run_instructions\n";
         my $qfile= "$dir/tmp/qfile.sql";
         open my $QF , '>' , $qfile
@@ -930,7 +945,7 @@ if ($msb->{options}{load_grants}) {
     system "$sandbox_directory/start"
         and die "can't start server\n";
 
-    ## 
+    ##
     # Run pre-grant instructions
     #
     # my $verbose_query = $msb->{options}{verbose};
@@ -946,7 +961,7 @@ if ($msb->{options}{load_grants}) {
             if ($plugin =~ /(\w+)[=:](\S+)/)
             {
                 $plugin_name = $1;
-                $plugin_file = $2;    
+                $plugin_file = $2;
             }
             $query .= ";\n" if $query;
             $query .= "INSTALL PLUGIN $plugin_name soname '$plugin_file';\n";
@@ -986,7 +1001,7 @@ if ($msb->{options}{load_grants}) {
                 file      => $msb->{options}{pre_grants_file}
             });
     }
- 
+
     print "# Loading grants\n";
     system "$sandbox_directory/load_grants"
         and die "can't load grants\n";
@@ -1021,7 +1036,7 @@ if ($msb->{options}{load_grants}) {
                 file      => $msb->{options}{post_grants_file}
             });
     }
- 
+
     if ($msb->{options}{slaveof}) {
         my $cmt = 'CHANGE MASTER TO ';
         my %cmt_clauses = (
@@ -1042,7 +1057,7 @@ if ($msb->{options}{load_grants}) {
         my $count =0;
         for my $clause (keys %apply_clauses) {
             if ($count) {
-                $cmt .= ','; 
+                $cmt .= ',';
             }
             else {
                 $count++;
@@ -1060,13 +1075,17 @@ if ($msb->{options}{load_grants}) {
     }
 }
 
-print 
-      # "installation options saved to current_options.conf.\n",    
+print
+      # "installation options saved to current_options.conf.\n",
       #"To repeat this installation with the same options,\n",
       #"use $PROGRAM_NAME --conf_file=current_options.conf\n",
       #('-' x 40), "\n",
       "Your sandbox server was installed in ", use_env($sandbox_directory), "\n";
       sbinstr( "sandbox installed in " . use_env($sandbox_directory));
+if ($msb->{options}{plugin_mysqlx})
+{
+    print "# mysqlx plugin installed, listening to port # $msb->{options}{mysqlx_port}\n"
+}
 
 sub quote_clause {
     my ($string) = @_;
@@ -1093,7 +1112,7 @@ sub copy_and_replace {
     #    while (<$FROM>) {
     #        for my $key ( keys %replace_options) {
     #            s/ $key /$msb->{options}{$replace_options{$key}}/xg;
-    #        }        
+    #        }
     #        $scripts_in_code{$filename} .= $_ ;
     #    }
     #    close $FROM;
@@ -1101,9 +1120,9 @@ sub copy_and_replace {
     open my $TO, q{>}, $newname
         or die "error creating $newname ($ERRNO)\n";
     print "copying $filename into $destination_dir\n" if $DEBUG;
-    my $script_content = $scripts_in_code{$filename} 
+    my $script_content = $scripts_in_code{$filename}
         or die "invalid script content for <$filename>\n";
-    
+
     $script_content =~ s/__LICENSE__/$license_text/;
     my $SBINSTR_SH_TEXT = $MySQL::Sandbox::SBINSTR_SH_TEXT;
 
@@ -1111,16 +1130,16 @@ sub copy_and_replace {
 
     for my $key ( keys %replace_options) {
         my $new_value = $msb->{options}{$replace_options{$key}};
-        if (    ($key eq '_DBUSER_') 
+        if (    ($key eq '_DBUSER_')
             and ($destination_filename =~ /my\.sandbox.cnf/)) {
-            $new_value =~ s/\@.*//g; 
+            $new_value =~ s/\@.*//g;
         }
         unless (defined $new_value)
         {
             die "can't find a value for '$key'\n";
         }
         $script_content =~ s/ $key /$new_value/xg;
-    }        
+    }
     print $TO $script_content;
     close $TO;
     if ($newname =~ / \. (?: sh | pl ) $ /x) {
@@ -1157,14 +1176,14 @@ sub get_more_options {
             last if m/ ^ \s* \[ /x;
 
             my ($var) = m/^ \s* (\S+) \s* = /x;
-            next if ( $var && exists ($skip_options{$var} )); 
+            next if ( $var && exists ($skip_options{$var} ));
             $text .= $_;
         }
         else {
             $start = m/ ^ \[mysqld\] /x;
         }
     }
-    close $MYFILE; 
+    close $MYFILE;
     return $text;
 }
 
@@ -1176,8 +1195,8 @@ sub select_interactively {
           "* To go to the previous item, enter 'back'\n",
           "* To quit the installation without any action, enter 'quit'\n\n";
 
-    my @options_list = 
-                sort { $msb->{parse_options}{$a}{'so'} <=> $msb->{parse_options}{$b}{'so'} } 
+    my @options_list =
+                sort { $msb->{parse_options}{$a}{'so'} <=> $msb->{parse_options}{$b}{'so'} }
                 grep { $_ !~ /(?:interactive|help|no_check_port|no_load_grants)/}
                 grep { $msb->{parse_options}{$_}{'parse'}}  keys %{$msb->{parse_options}}  ;
 
@@ -1230,9 +1249,9 @@ sub select_interactively {
                 $msb->{options}{$op} = $chosen;
             }
             else {
-                print q{*} x 65, 
-                      "\n" , 
-                      "**** option $op requires a numeric value\n" , 
+                print q{*} x 65,
+                      "\n" ,
+                      "**** option $op requires a numeric value\n" ,
                        q{*} x 65,
                        "\n";
                 redo OPTION_CHOICE;
@@ -1257,7 +1276,7 @@ sub check_sandbox_dir {
     if (! -d $sandboxdir) {
         mkdir $sandboxdir;
         if ( $CHILD_ERROR) {
-            die ("can't set sandbox directory $sandboxdir ($CHILD_ERROR)\n");    
+            die ("can't set sandbox directory $sandboxdir ($CHILD_ERROR)\n");
         }
     }
 }
@@ -1266,12 +1285,12 @@ sub check_tmp_dir {
     my $tmpdir = $ENV{'TMPDIR'} || $ENV{'TEMPDIR'};
     # print ">>$tmpdir\n";
     if (! -d $tmpdir) {
-        die ("can't find tmp directory $tmpdir\n");    
+        die ("can't find tmp directory $tmpdir\n");
     }
 }
 
 sub set_sandbox_dir_scripts {
-    my $sandboxdir = $ENV{'SANDBOX_HOME'} 
+    my $sandboxdir = $ENV{'SANDBOX_HOME'}
         or return;
     if ( $ENV{'SANDBOX_HOME'} eq $ENV{'HOME'} ) {
         return;

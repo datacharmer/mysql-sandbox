@@ -1,3 +1,10 @@
+3.2.00	28-Aug-2016
+	- Add compatibility with MySQL 8.0.0
+	- Adapt tests to use MySQL 8.0.0
+	- Added options:
+		- plugin_mysqlx : installs the X-plugin permanently
+		- mysqlx_port : with the above option, sets the X-plugin port
+	- Changed mysqlsh script to use --sql or --js options.
 3.1.13	21-Aug-2016
 	- added --master_ip to make_replication_sandbox
 3.1.12	07-Aug-2016

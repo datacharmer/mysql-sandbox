@@ -30,7 +30,7 @@ our @EXPORT_OK= qw( is_port_open
                     split_version
                     ) ;
 
-our $VERSION=q{3.1.13};
+our $VERSION=q{3.2.00};
 our $DEBUG;
 
 BEGIN {
@@ -68,7 +68,7 @@ BEGIN {
 }
 
 my @supported_versions = qw( 3.23 4.0 4.1 5.0 5.1 5.2 5.3 5.4 
-    5.5 5.6 5.7 5.8 6.0 10.0 10.1 );
+    5.5 5.6 5.7 5.8 6.0 8.0 10.0 10.1 );
 
 our $sandbox_options_file    = "my.sandbox.cnf";
 # our $sandbox_current_options = "current_options.conf";
@@ -289,7 +289,7 @@ sub fix_server_uuid
     if ($version =~ /(\d+)\.(\d+)/)
     {
         my ($major, $minor ) = ($1, $2);
-        unless (($major == 5) && ($minor >=6))
+        unless ( ($major == 8) or ( ($major == 5) && ($minor >=6)) )
         {
             return;
         }
@@ -339,6 +339,7 @@ sub fix_server_uuid
     print $FH "server-uuid=$new_uuid\n";
     close $FH;
     chdir $current_dir;
+    print "New UUID=$new_uuid\n" if $DEBUG;
 }
 
 sub validate_json_object {

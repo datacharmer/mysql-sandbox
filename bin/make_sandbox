@@ -189,7 +189,7 @@ elsif  ( $where_to_install =~ m{^(/.+)/(?:\d+\.)?($prefix_regex\D+(\d+)\.(\d+)\.
         my $which_tar;
         my $tar_found = 0;
         for my $tar_exec (@recognized_tar_executables) {
-            $which_tar = qx(which $tar_exec);
+            $which_tar = exists_in_path($tar_exec);
             if ((!$which_tar) or ($which_tar =~ /^no/i)) {
                 next
             }
@@ -198,7 +198,7 @@ elsif  ( $where_to_install =~ m{^(/.+)/(?:\d+\.)?($prefix_regex\D+(\d+)\.(\d+)\.
             }
         }
         unless ($tar_found ) {
-            $which_tar = qx(which tar );
+            $which_tar = exists_in_path( 'tar' );
             if ((!$which_tar) or ($which_tar =~ /^no/i)) {
                 $which_tar = undef;
             }

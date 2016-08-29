@@ -438,14 +438,14 @@ $msb->write_to('check_slaves', '>>', 'echo "master"');
 $msb->write_to('check_slaves', '>>', $replication_directory . '/master/use -BN -e'
             . qq( "select CONCAT('port: ', \@\@port) AS port" ));
 $msb->write_to('check_slaves', '>>', $replication_directory . '/master/use -e'
-            . qq( 'show master status\\G' | grep "File\\|Position" ));
+            . qq( 'show master status\\G' | grep "File\\|Position\\|Executed" ));
 $msb->write_to('check_slaves', '>>', 'for NNUM in ' . $slave_list );
 $msb->write_to('check_slaves', '>>', 'do' );
 $msb->write_to('check_slaves', '>>', '  echo "slave # $NNUM"');
 $msb->write_to('check_slaves', '>>', '  ' . $replication_directory . '/node$NNUM/use -BN -e'
             . qq( "select CONCAT('port: ', \@\@port) AS port" ));
 $msb->write_to('check_slaves', '>>', '  ' . $replication_directory . '/node$NNUM/use -e'
-            . qq( 'show slave status\\G' | grep "\\(Running:\\|Master_Log_Pos\\|\\<Master_Log_File\\)") );
+            . qq( 'show slave status\\G' | grep "\\(Running:\\|Master_Log_Pos\\|\\<Master_Log_File\\|Retrieved\\|Executed\\)") );
 $msb->write_to('check_slaves', '>>', 'done ' );
 chmod 0755, 'check_slaves';
 
