@@ -938,7 +938,7 @@ sub run_tuning_test {
     }
     my ($bare_version, $version) = get_bare_version($ver);
 
-    if (($bare_version =~ /^5\.([567])/ ) || ($bare_version =~ /^10/ )) {
+    if (($bare_version =~ /^5\.([567])/ ) || ($bare_version =~ /^8/ ) || ($bare_version =~ /^10/ )) {
          for my $i ( 1 .. 6) { 
             print "ok - skipped (this test is not available in MySQL $bare_version)\n";
          }

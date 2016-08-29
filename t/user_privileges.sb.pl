@@ -12,6 +12,8 @@ my $number_of_users = 8;
 if ( (($major ==5) &&  ($minor > 7) )
         or 
     ( ($major ==5) && ($minor == 7) && ($rev > 5) ) 
+        or 
+    ( ($major ==8) && ($minor == 0) ) 
    )
 # Starting with MySQL 5.7.6, the 'password' column in the user table is gone
 # There is , instead, a column named 'authentication_string'
@@ -22,6 +24,8 @@ if ( (($major ==5) &&  ($minor > 7) )
 if ( (($major ==5) &&  ($minor > 7) )
         or 
     ( ($major ==5) && ($minor == 7) && ($rev > 8) ) 
+        or 
+    ( ($major ==8) && ($minor == 0) ) 
    )
 # Starting with MySQL 5.7.9 we have the mysql.sys user created by default.
 {

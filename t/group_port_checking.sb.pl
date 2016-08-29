@@ -4,10 +4,14 @@
 my $TEST_VERSION = $ENV{TEST_VERSION};
 my ($bare_version, $version) = get_bare_version ($TEST_VERSION);
 my $SANDBOX_HOME= $ENV{SANDBOX_HOME} || "$ENV{HOME}/sandboxes";
-
+my $custom_port=11000;
+my $custom_port1= $custom_port + 1;
+my $custom_port2= $custom_port + 2;
+my $custom_port5= $custom_port + 5;
+my $custom_port6= $custom_port + 6;
 
 ok_exec ({
-command     => "make_multiple_sandbox --sandbox_base_port=8000 $TEST_VERSION",
+command     => "make_multiple_sandbox --sandbox_base_port=$custom_port $TEST_VERSION",
 expected    => "group directory installed",
 msg         => "group 1 started",
 });
@@ -15,19 +19,19 @@ msg         => "group 1 started",
 ok_sql({
 path        => "$SANDBOX_HOME/multi_msb_$version/node1",
 query       => "show variables like 'port'",
-expected    => "8001",
+expected    => "$custom_port1",
 msg         => "right port on node1",
 });
 
 ok_sql({
 path        => "$SANDBOX_HOME/multi_msb_$version/node2",
 query       => "show variables like 'port'",
-expected    => "8002",
+expected    => "$custom_port2",
 msg         => "right port on node2",
 });
 
 ok_exec ({
-command     => "make_multiple_sandbox --sandbox_base_port=8000 --group_directory=gsb --check_base_port $TEST_VERSION",
+command     => "make_multiple_sandbox --sandbox_base_port=$custom_port --group_directory=gsb --check_base_port $TEST_VERSION",
 expected    => "group directory installed",
 msg         => "group 2 started",
 });
@@ -35,14 +39,14 @@ msg         => "group 2 started",
 ok_sql({
 path        => "$SANDBOX_HOME/gsb/node1",
 query       => "show variables like 'port'",
-expected    => "8005",
+expected    => "$custom_port5",
 msg         => "right port on node1 (after check)",
 });
 
 ok_sql({
 path        => "$SANDBOX_HOME/gsb/node2",
 query       => "show variables like 'port'",
-expected    => "8006",
+expected    => "$custom_port6",
 msg         => "right port on node2 (after check)",
 });
 
@@ -109,4 +113,3 @@ command     => "sbtool -o delete -s $SANDBOX_HOME/gsb/",
 expected    => "has been removed",
 msg         => "group 2 stopped and removed",
 });
-

@@ -5,9 +5,10 @@ my $TEST_VERSION = $ENV{TEST_VERSION};
 my ($bare_version, $version) = get_bare_version ($TEST_VERSION);
 my $SANDBOX_HOME= $ENV{SANDBOX_HOME} || "$ENV{HOME}/sandboxes";
 
+my $custom_port = 9000;
 
 ok_exec({
-command     => "make_sandbox $TEST_VERSION -- --sandbox_port=8000 --no_confirm",
+command     => "make_sandbox $TEST_VERSION -- --sandbox_port=$custom_port --no_confirm",
 expected    => 'sandbox server started',
 msg         => 'server 1 started',
 });
@@ -20,13 +21,13 @@ msg         => 'db1 schema was created',
 });
 
 ok_exec({
-command     => "make_sandbox $TEST_VERSION -- --sandbox_port=8000 --no_confirm 2>&1 || echo 1",
+command     => "make_sandbox $TEST_VERSION -- --sandbox_port=$custom_port --no_confirm 2>&1 || echo 1",
 expected    => [ 'already exists', 'not specified', 'Installation halted' ],
 msg         => 'Server installation denied without --force',
 });
 
 ok_exec({
-command     => "make_sandbox $TEST_VERSION -- --sandbox_port=8000 --no_confirm --force",
+command     => "make_sandbox $TEST_VERSION -- --sandbox_port=$custom_port --no_confirm --force",
 expected    => 'sandbox server started',
 msg         => 'Same sandbox installation with --force is accepted',
 });
@@ -34,7 +35,7 @@ msg         => 'Same sandbox installation with --force is accepted',
 ok_sql({
 path        => "$SANDBOX_HOME/msb_${version}/",
 query       => "show variables like 'port'",
-expected    => '8000',
+expected    => "$custom_port",
 msg         => 'right port on server 1',
 });
 

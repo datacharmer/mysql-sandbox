@@ -9,6 +9,8 @@
 my $TEST_VERSION = $ENV{TEST_VERSION};
 my ($version, $name_version, $major, $minor, $rev) = get_bare_version($TEST_VERSION);
 my $replication_dir = "rsandbox_$name_version";
+my $custom_port = 11000;
+my $custom_port1 = $custom_port + 1;
 
 my $check_uuid =0;
 if ( ($major ==5) &&  ($minor >= 6) )
@@ -84,13 +86,13 @@ my $master_extra_options='';
 #    $master_extra_options .= ' -c show_compatibility_56=on '
 #}
 ok_exec({
-    command     => "make_sandbox $TEST_VERSION -- --master --sandbox_directory=msb_master --sandbox_port=8000 --no_confirm $master_extra_options",
+    command     => "make_sandbox $TEST_VERSION -- --master --sandbox_directory=msb_master --sandbox_port=$custom_port --no_confirm $master_extra_options",
     expected    => 'sandbox server started',
     msg         => 'sandbox master installed',
 });
 sleep 2;
 ok_exec({
-    command     => "make_sandbox $TEST_VERSION -- --no_confirm --sandbox_port=8001 --sandbox_directory=msb_slave --slaveof='master_port=8000' ",
+    command     => "make_sandbox $TEST_VERSION -- --no_confirm --sandbox_port=$custom_port1 --sandbox_directory=msb_slave --slaveof='master_port=$custom_port' ",
     expected    => 'sandbox server started',
     msg         => 'sandbox master installed',
 });
@@ -104,7 +106,7 @@ ok_sql({
 ok_sql({
     path    => "$sandbox_home/msb_master/",
     query   => "show variables like 'server_id'",
-    expected => '8000',
+    expected => $custom_port,
     msg      => 'master server ID',    
 });
 
@@ -113,7 +115,7 @@ if ($check_uuid)
     ok_sql({
         path    => "$sandbox_home/msb_master/",
         query   => "show variables like 'server_uuid'",
-        expected => '8000',
+        expected => $custom_port,
         msg      => 'master server UUID',
     });
 }
@@ -125,7 +127,7 @@ else
 ok_sql({
     path    => "$sandbox_home/msb_slave/",
     query   => "show variables like 'server_id'",
-    expected => '8001',
+    expected => $custom_port1,
     msg      => 'slave server ID',    
 });
 
@@ -152,7 +154,7 @@ ok_exec( {
 # testing --high_performance
 #
 ok_exec({
-    command     => "make_sandbox $TEST_VERSION -- --high_performance --sandbox_directory=msb_hp --sandbox_port=8000 --no_confirm",
+    command     => "make_sandbox $TEST_VERSION -- --high_performance --sandbox_directory=msb_hp --sandbox_port=$custom_port --no_confirm",
     expected    => 'sandbox server started',
     msg         => 'sandbox hp installed',
 });

@@ -11,6 +11,8 @@ my $additional_5_7_options='';
 if ( (($major ==5) &&  ($minor > 7) )
         or 
     ( ($major ==5) && ($minor == 7) && ($rev >= 8) ) 
+        or 
+    ( ($major ==8) && ($minor == 0) ) 
    )
 {
     # $additional_5_7_options = "--node_options=' -c show_compatibility_56=on'";

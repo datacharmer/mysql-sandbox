@@ -48,7 +48,6 @@ t/check_replication.sb
 t/check_single_server.sb
 t/custom_user_pwd.sb.pl
 t/force.sb.pl
-t/group_port_checking.sb
 t/group_port_checking.sb.pl
 t/init_exec_sql.sb.pl
 t/innodb_plugin_install.sb.pl
@@ -58,11 +57,7 @@ t/replication_gtid.sb.pl
 t/replication_options.sb.pl
 t/replication_parameters.sb.pl
 t/semi_synch_plugin_install.sb.pl
-t/single_port_checking.sb
 t/single_port_checking.sb.pl
-t/start_restart_arguments.sb
 t/start_restart_arguments.sb.pl
-t/user_privileges.sb
 t/user_privileges.sb.pl
 t/test_init_exec.sh
-

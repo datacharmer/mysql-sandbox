@@ -10,7 +10,9 @@ then
     exit 1
 fi
 
-for V in $(perl repo_list.pl)   
+[ -z "$REPO_LIST" ] && REPO_LIST=$(perl repo_list.pl)
+
+for V in $REPO_LIST
 do 
     if [ ! -d $SANDBOX_BINARY/$V ]
     then
