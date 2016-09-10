@@ -28,10 +28,6 @@ my $DEBUG = $MySQL::Sandbox::DEBUG;
 #my $install_dir;
 #$install_dir = $PROGRAM_NAME;
 #$install_dir =~ s{/\w+(\.pl)?$}{};
-if ($ENV{HOME} =~ / /)
-{
-    die "# The variable \$HOME contains spaces. Please fix this problem before continuing\n";
-}
 my $msb = MySQL::Sandbox->new();
 
 runs_as_root();
@@ -118,6 +114,16 @@ if ( $msb->{options}{'high_performance'})
     {
         unshift @{ $msb->{options}{'my_clause'}},  $clause;
     }
+}
+
+if ($msb->{options}{check_port} and (! $msb->{options}{no_check_port}) ) {
+
+    ( $msb->{options}{'sandbox_port'},
+      $msb->{options}{'sandbox_directory'}) =
+        find_safe_port_and_directory(
+                    $msb->{options}{'sandbox_port'},
+                    $msb->{options}{'sandbox_directory'},
+                    $msb->{options}{'upper_directory'}) ;
 }
 
 if ($msb->{options}{'slaveof'} or $msb->{options}{'master'})
@@ -392,16 +398,6 @@ unless (
         && ($msb->{options}{'sandbox_port'} > 1024 )
         && ($msb->{options}{'sandbox_port'} <= 64000)) {
     $msb->get_help( "sandbox_port option must be a port number between 1025 and 64000 (currently requested $msb->{options}{'sandbox_port'} ) \n");
-}
-
-if ($msb->{options}{check_port} and (! $msb->{options}{no_check_port}) ) {
-
-    ( $msb->{options}{'sandbox_port'},
-      $msb->{options}{'sandbox_directory'}) =
-        find_safe_port_and_directory(
-                    $msb->{options}{'sandbox_port'},
-                    $msb->{options}{'sandbox_directory'},
-                    $msb->{options}{'upper_directory'}) ;
 }
 
 if ($msb->{options}{datadir_from} eq 'archive') {

@@ -35,9 +35,15 @@ our $DEBUG;
 
 BEGIN {
     $DEBUG = $ENV{'SBDEBUG'} || $ENV{'SBVERBOSE'} || 0;
-    unless ($ENV{HOME}) {
-        die "This module is not meant for an operating system\n"
-            . "that does not recognize \$HOME\n";
+    for my $var (qw( HOME USER PWD ))
+    {
+        unless ($ENV{$var}) {
+        die "The variable \$$var is undefined - aborting\n";
+        }
+    }
+    if ($ENV{HOME} =~ /\s/)
+    {
+        die "# The variable \$HOME contains spaces. Please fix this problem before continuing\n(HOME='$ENV{HOME}')\n";
     }
     unless ( $ENV{SANDBOX_HOME} ) { 
         $ENV{SANDBOX_HOME} = "$ENV{HOME}/sandboxes";
