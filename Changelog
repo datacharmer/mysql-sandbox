@@ -1,7 +1,8 @@
 3.2.01	10-Sep-2016
 	- Added early check for USER, HOME, and PWD variables.
-	- Addes early check for spaces in HOME variable.
+	- Added early check for spaces in HOME variable.
 	- Fixed wrong server_id when using both --slaveof and --check_port
+	- Added test for server_id with --check_port
 3.2.00	28-Aug-2016
 	- Add compatibility with MySQL 8.0.0
 	- Adapt tests to use MySQL 8.0.0
