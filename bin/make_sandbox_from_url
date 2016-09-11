@@ -25,12 +25,11 @@ my %supported_versions =
 (
     '5.0'   => ['5.0.96'],
     '5.1'   => ['5.1.72'],
-    '5.5'   => ['5.5.50', '5.5.51' ],
-    '5.6'   => ['5.6.31', '5.6.32' ],
-    '5.7'   => ['5.7.13', '5.7.14' ]
-#     '5.8'   => ['8.0.00' ]
+    '5.5'   => ['5.5.51', '5.5.52' ],
+    '5.6'   => ['5.6.32', '5.6.33' ],
+    '5.7'   => ['5.7.14', '5.7.15' ],
+    '8.0'   => ['8.0.0' ]
 );
-
 
 runs_as_root();
 # ---------------------------------------------------------------------------------
@@ -39,6 +38,20 @@ runs_as_root();
 
 my $remote_version = shift
     or get_help("version needed");
+
+my $wget =  exists_in_path ('wget');
+unless ($wget )
+{
+    get_help( 'wget was not found in PATH' );
+}
+
+unless ($^O =~ /linux/i)
+{
+    get_help("This operating system ($^O) is not supported");
+}
+
+
+%supported_versions = update_supported_versions();
 
 if (exists $supported_versions{$remote_version})
 {
@@ -65,20 +78,8 @@ if ($remote_version =~ /^(-h|--help)$/)
 {
     get_help();
 }
-unless ($^O =~ /linux/i)
-{
-    get_help("This operating system ($^O) is not supported");
-}
-
-
 
 my $download_file="$repository/$remote_version.tar.gz";
-
-my $wget =  exists_in_path ('wget');
-unless ($wget )
-{
-    get_help( 'wget was not found in PATH' );
-}
 
 if ( ! -d $sandbox_binary )
 {
@@ -187,3 +188,47 @@ sub get_latest
     my @versions = @{ $supported_versions{$wanted}};
     return $versions[-1]; 
 }
+
+sub update_supported_versions
+{
+    my $catalog = "$repository/available.txt";
+    my $return_self =0;
+    unless ($ENV{GETLOCAL} )
+    {
+        system "wget -nv -O /tmp/available.txt $catalog ";
+        if ($?)
+        {
+            warn "Error downloading $catalog\n";
+            $return_self =1;
+        }
+    }
+    if ( ! -f '/tmp/available.txt' )
+    {
+        warn "Error downloading $catalog. Can't find 'available.txt'\n"; 
+        $return_self = 1;
+    }
+    if ($return_self)
+    {
+        return %supported_versions;
+    }
+
+    open my $FH , '<', '/tmp/available.txt'
+        or die "Error opening /tmp/available.txt\n";
+    my %latest_versions;
+    while (my $line = readline($FH))
+    {
+        chomp $line;
+        next if $line =~ /^\s*$/;
+        next if $line =~ /^\s*#/;
+        if ($line =~ /(\S+)\s*=\s*(.*)/)
+        {
+            my $key = $1;
+            my $value = $2;
+            my @value_list = split ' ', $value;
+            $latest_versions{$key} = \@value_list;
+        }
+    }
+    close $FH;
+    return %latest_versions;
+}
+
