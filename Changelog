@@ -1,3 +1,5 @@
+3.2.02	12-Sep-2016
+	- Fixed download parameter for make_sandbox_from_url
 3.2.01	10-Sep-2016
 	- Added early check for USER, HOME, and PWD variables.
 	- Added early check for spaces in HOME variable.

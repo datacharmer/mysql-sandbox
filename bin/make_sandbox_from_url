@@ -195,7 +195,7 @@ sub update_supported_versions
     my $return_self =0;
     unless ($ENV{GETLOCAL} )
     {
-        system "wget -nv -O /tmp/available.txt $catalog ";
+        system "wget -nv -O /tmp/available.txt '$catalog?raw=true' ";
         if ($?)
         {
             warn "Error downloading $catalog\n";
