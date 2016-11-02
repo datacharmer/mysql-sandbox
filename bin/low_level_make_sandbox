@@ -735,8 +735,31 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
     }
     if ( -x $script )
     {
+        my $init_defaults='--no-defaults';
+        my $init_options='';
+        if ($msb->{options}{init_options})
+        {
+            $init_options="$msb->{options}{init_options}";
+        }
+        if ($msb->{options}{init_my_cnf} && $msb->{options}{init_use_cnf})
+        {
+            die "Only one of --init_use_cnf or --init_my_cnf can be used\n";
+        }
+        elsif ($msb->{options}{init_my_cnf})
+        {
+            $init_defaults="--defaults-file=$sandbox_directory/my.sandbox.cnf";
+        }
+        elsif ($msb->{options}{init_use_cnf})
+        {
+            my $init_file=$msb->{options}{init_use_cnf};
+            unless (-f $init_file)
+            {
+                die "File $init_file not found\n";
+            }
+            $init_defaults="--defaults-file=$init_file";
+        }
         #my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data --tmpdir=%s/tmp %s',
-        my $cmd = sprintf '%s --no-defaults --user=%s --basedir=%s --datadir=%s/data %s',
+        my $cmd = sprintf "%s $init_defaults --user=%s --basedir=%s --datadir=%s/data %s $init_options",
             $script,
             $msb->{options}{operating_system_user},
             $msb->{options}{basedir},

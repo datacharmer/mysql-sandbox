@@ -1,3 +1,9 @@
+3.2.03	02-Nov-2016
+	- Added option --init_option to add options at initialization time.
+	- Added option --init_my_cnf to load $sandbox_dir/my.sandbox.cnf during
+	initialization instead of --no-defaults.
+	- Added option --init_use_cnf to load a custom options file during
+	initialization instead of --no-defaults.
 3.2.02	12-Sep-2016
 	- Fixed download parameter for make_sandbox_from_url
 3.2.01	10-Sep-2016

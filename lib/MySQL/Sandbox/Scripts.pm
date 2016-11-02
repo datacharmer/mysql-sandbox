@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION=q{3.2.02};
+our $VERSION=q{3.2.03};
 
 our @MANIFEST = (
 'clear.sh',
@@ -272,11 +272,42 @@ my %parse_options_low_level_make_sandbox = (
     my_clause             => {
                                 value => '',      
                                 parse => 'c|my_clause=s@', 
-                                so    => 120,
+                                so    => 115,
                                 export => 1,
                                 help  => [
                                             'option to be inserted in a my.cnf file',
                                             'it may be used several times',
+                                         ]
+                            },
+   init_options           => {
+                                value => $ENV{INIT_OPTIONS} || '',      
+                                parse => 'init_options=s', 
+                                so    => 118,
+                                export => 1,
+                                help  => [
+                                            'options to be used during initialization ',
+                                            '(by either mysql_install_db or mysqld --initialize.)'
+                                         ]
+                            },
+   init_my_cnf        => {
+                                value => $ENV{INIT_MY_CNF} ||  '',      
+                                parse => 'init_my_cnf', 
+                                so    => 120,
+                                export => 1,
+                                help  => [
+                                            'If set, it uses my.sandbox.cnf at initialization',
+                                            'instead of --no-defaults.',
+                                            'WARNING! it may lead to initialization failures'
+                                         ]
+                            },
+   init_use_cnf        => {
+                                value => $ENV{INIT_USE_CNF} ||  '',      
+                                parse => 'init_use_cnf=s', 
+                                so    => 122,
+                                export => 1,
+                                help  => [
+                                            'Indicates an options file to load during initialization',
+                                            'instead of --no-defaults.'
                                          ]
                             },
     master            => {
