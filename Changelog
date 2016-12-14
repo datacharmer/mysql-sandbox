@@ -1,3 +1,5 @@
+3.2.04	14-Dec-2016
+	- Fixed intolerant behavior of mysqld_safe introduced in MySQL 5.7.17.
 3.2.03	02-Nov-2016
 	- Added option --init_option to add options at initialization time.
 	- Added option --init_my_cnf to load $sandbox_dir/my.sandbox.cnf during

@@ -1241,16 +1241,16 @@ __LICENSE__
 BASEDIR='_BASEDIR_'
 export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
-MYSQLD_SAFE="$BASEDIR/bin/_MYSQLDSAFE_"
+MYSQLD_SAFE="bin/_MYSQLDSAFE_"
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 __SBINSTR_SH__
-if [ ! -f $MYSQLD_SAFE ]
+if [ ! -f $BASEDIR/$MYSQLD_SAFE ]
 then
     echo "mysqld_safe not found in $BASEDIR/bin/"
     exit 1
 fi
-MYSQLD_SAFE_OK=`sh -n $MYSQLD_SAFE 2>&1`
+MYSQLD_SAFE_OK=`sh -n $BASEDIR/$MYSQLD_SAFE 2>&1`
 if [ "$MYSQLD_SAFE_OK" == "" ]
 then
     if [ "$SBDEBUG" == "2" ] 
