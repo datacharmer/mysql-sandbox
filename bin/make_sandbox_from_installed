@@ -94,7 +94,9 @@ for my $prefix (@prefixes) {
     }
     if ( glob("$prefix/lib/mysql/libmysqlclient*") 
        or glob( "$prefix/lib/libmysqlclient*")
-       or glob( "$prefix/lib64/libmysqlclient*")  ) {
+       or glob( "$prefix/lib64/libmysqlclient*")
+       or glob( "$prefix/lib/i386-linux-gnu/libmysqlclient*")
+       or glob( "$prefix/lib/x86_64-linux-gnu/libmysqlclient*")  ) {
         $found_libraries =1;
     }
 }
