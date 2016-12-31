@@ -1,3 +1,6 @@
+3.2.05	31-Dec-2016
+	- Merged Dennis Becker improved search for libraries in make_sandbox_from_installed
+	- Added version 10.2 among the supported ones
 3.2.04	14-Dec-2016
 	- Fixed intolerant behavior of mysqld_safe introduced in MySQL 5.7.17.
 3.2.03	02-Nov-2016
