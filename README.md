@@ -1,6 +1,6 @@
 # NAME
 
-MySQL::Sandbox - Quickly installs one or more MySQL servers in the same host, either standalone or in groups
+MySQL::Sandbox - Quickly installs one or more MySQL or MariaDB servers in the same host, either standalone or in groups
 
 # SYNOPSIS
 
@@ -16,15 +16,15 @@ MySQL::Sandbox - Quickly installs one or more MySQL servers in the same host, ei
 # PURPOSE
 
 This package is a sandbox for testing features under any version of
-MySQL from 3.23 to 5.x (and MariaDB 10).
+MySQL from 3.23 to 8.x, and any version of MariaDB.
 
 It will install one node under your home directory, and it will
 provide some useful commands to start, use and stop this sandbox.
 
-With this package you can play with new MySQL releases without need 
-of using other computers. The server installed in the sandbox use 
-non-standard data directory, ports and sockets, so they won't 
-interfere with existing MYSQL installations.
+With this package you can play with new MySQL or MariaDB releases without 
+needing to use other computers. The servers installed in the sandbox use 
+non-standard data directories, ports and sockets, so they won't 
+interfere with existing MySQL or MariaDB installations.
 
 # INSTALLATION
 
@@ -58,7 +58,7 @@ See also under ["TESTING"](#testing) for more options before running 'make test'
 The easiest way to make a sandbox is 
 
 1. download the sandbox package and install it as instructed above
-2. download a MySQL binary tarball
+2. download a MySQL or MariaDB binary tarball
 3. run this command
 
         $ make_sandbox  /path/to/mysql-X.X.XX-osinfo.tar.gz
@@ -251,7 +251,7 @@ figure, to avoid clashing with single installations.
 
 MySQL Sandbox uses a fairly reasonable system of default ports that 
 guarantees the usage of unused ports most of the times. 
-If you are creating many sandbozes, however, especially if you want
+If you are creating many sandboxes, however, especially if you want
 several sandboxes using the same versions, collisions may happen.
 In these cases, you may ask for a port check before installing, thus 
 making sure that your sandbox is really not conflicting with anything.
@@ -434,7 +434,7 @@ And finally, it also does What You Expect when using a tarball instead of a vers
     $ msb m mysql-5.1.35-YOUR_OS.tar.gz
     # creates and uses a multiple sandbox from this tarball
 
-Using a MySQL server has never been easier.
+Using a MySQL or MariaDB server has never been easier.
 
 # Custom commands during installation
 
@@ -467,7 +467,7 @@ For each shell call, the following variables are filled:
            DB_USER       =  database user
            DB_PASSWORD   =  database password
            DB_SOCKET     =  database socket
-           MYSQL_VERSION =  MySQL version (e.g. 5.7.12)
+           MYSQL_VERSION =  MySQL or MariaDB version (e.g. 5.7.12)
            MYSQL_MAJOR   =  Major part of the version (e.g 5)
            MYSQL_MINOR   =  Minor part of the version (e.g 7)
            MYSQL_REV     =  Revision part of the version (e.g 12)
@@ -781,7 +781,7 @@ To be identified as a Perl script, the user defined test must have the extension
 
 - get\_bare\_version()
 
-    This function accepts one parameter, which can be either a MySQL tarball name or a version, and returns the bare version found in the input string.
+    This function accepts one parameter, which can be either a MySQL or MariaDB tarball name or a version, and returns the bare version found in the input string.
     If called in list mode, it returns also a normalized version string with dots replaced by underscores.
 
         my $version = get_bare_version('5.1.30'); 
@@ -804,7 +804,7 @@ To be identified as a Perl script, the user defined test must have the extension
 To use this package you need at least the following:
 
 - Linux or Mac OSX operating system (it may work in other \*NIX OSs, but has not been tested)
-- A binary tarball of MySQL 3.23 or later
+- A binary tarball of MySQL 3.23 or later, or any version of MariaDB
 - Perl 5.8.1 or later 
 - Bash shell
 
