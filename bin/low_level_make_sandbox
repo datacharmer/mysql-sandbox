@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # low_level_make_sandbox
 #    The MySQL Sandbox
-#    Copyright (C) 2006-2016 Giuseppe Maxia
+#    Copyright (C) 2006-2017 Giuseppe Maxia
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -736,7 +736,7 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
     if ( -x $script )
     {
         my $init_defaults='--no-defaults';
-        my $init_options='';
+        my $init_options=" --tmpdir=$sandbox_directory/tmp ";
         if ($msb->{options}{init_options})
         {
             $init_options="$msb->{options}{init_options}";

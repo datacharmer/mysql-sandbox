@@ -1,3 +1,9 @@
+3.2.06	16-Apr-2017
+	- Added tmpdir option to mysql_install_db and 'mysqld --initialize' 
+	- Cleanup and test improvement (add option to skip tarball tests)
+	- Changed description in MySQL::Sandbox.pm to include MariaDB when needed
+	- Added MariaDB 10.3 to allowed versions (untested, as I could not find
+	  binaries)
 3.2.05	31-Dec-2016
 	- Merged Dennis Becker improved search for libraries in make_sandbox_from_installed
 	- Added version 10.2 among the supported ones

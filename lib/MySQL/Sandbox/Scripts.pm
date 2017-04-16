@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION=q{3.2.05};
+our $VERSION=q{3.2.06};
 
 our @MANIFEST = (
 'clear.sh',
@@ -2473,7 +2473,7 @@ ADD_OPTION
 
 my $license_text = <<'LICENSE';
 #    The MySQL Sandbox
-#    Copyright (C) 2006-2016 Giuseppe Maxia
+#    Copyright (C) 2006-2017 Giuseppe Maxia
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -2621,13 +2621,13 @@ For a reference manual, see L<MySQL::Sandbox>. For a cookbook, see L<MySQL::Sand
 
 Version 3.1
 
-Copyright (C) 2006-2016 Giuseppe Maxia
+Copyright (C) 2006-2017 Giuseppe Maxia
 
 Home Page  https://github.com/datacharmer
 
 =head1 LEGAL NOTICE
 
-   Copyright 2006-2016 Giuseppe Maxia
+   Copyright 2006-2017 Giuseppe Maxia
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

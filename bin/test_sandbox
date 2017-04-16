@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # test_sandbox
 #    The MySQL Sandbox
-#    Copyright (C) 2006-2016 Giuseppe Maxia
+#    Copyright (C) 2006-2017 Giuseppe Maxia
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@ use Carp;
 
 my $DEBUG = $MySQL::Sandbox::DEBUG;
 
-for my $prog (qw( make_sandbox 
-                make_replication_sandbox 
-                make_multiple_sandbox 
+for my $prog (qw( make_sandbox
+                make_replication_sandbox
+                make_multiple_sandbox
                 make_multiple_custom_sandbox
                 sbtool ) ) {
     unless ( exists_in_path ($prog) ) {
         die "script <$prog> not found\n";
-    } 
+    }
 }
 
 sub tprint;
@@ -50,21 +50,22 @@ if ($@) {
 # defaults
 #
 # my @versions = ( '5.0.51', '5.0.64', '5.1.23', '5.1.24', '5.1.25', '5.1.26', '6.0.6' );
-my @versions = ( '5.0.86', '5.1.43');
+my @versions = ( '5.0.91', '5.1.72');
 my $verbose = $DEBUG || $ENV{'VERBOSE'} || 0;
 
 my %tests = (
-    tarball     => 1,
-    single      => 1,
-    replication => 1,
-    circular    => 1,
-    multiple    => 1,
-    custom      => 1,
-    tuning      => 1,
-    sbtool      => 0,
-    smoke       => 0,
+    tarball     => 1,  # 70
+    single      => 1,  # 29
+    replication => 1,  # 31
+    circular    => 1,  # 28
+    multiple    => 1,  # 26
+    custom      => 1,  # 22
+    tuning      => 1,  #  6
+    sbtool      => 0,  # 34
+    smoke       => 0,  # 19
     user        => 0,
 );
+my %skip_tests = () ;
 
 my %expected_scripts = (
     single =>  {
@@ -72,17 +73,17 @@ my %expected_scripts = (
         texts       => [qw( grants.mysql my.sandbox.cnf connection.json default_connection.json README)],
     },
     replication => {
-        executables => 
+        executables =>
             [qw(start_all stop_all clear_all send_kill_all status_all check_slaves restart_all use_all initialize_slaves m s1 s2 )],
         texts       => [qw(connection.json default_connection.json README)],
     },
     multiple_custom => {
-        executables => 
+        executables =>
             [qw(start_all stop_all clear_all send_kill_all status_all restart_all use_all n1 )],
         texts       => [qw(connection.json default_connection.json README)],
     },
     multiple => {
-        executables => 
+        executables =>
             [qw(start_all stop_all clear_all send_kill_all status_all restart_all use_all n1 n2 n3 )],
         texts       => [qw(connection.json default_connection.json README)],
     },
@@ -96,13 +97,14 @@ my %expected_scripts = (
 
 # my %custom_tests = ();
 
-my ($user_tests, $user_versions, $user_defined_test, $get_help, $preserve_tests, );
+my ($user_tests, $user_versions, $user_defined_test, $get_help, $preserve_tests, $skip_tests);
 
 
-GetOptions( 
+GetOptions(
    "tarball|versions=s" => \$user_versions,
-   "tests=s"    => \$user_tests, 
-   "user_test=s"=> \$user_defined_test, 
+   "tests=s"    => \$user_tests,
+   "skip_tests=s" => \$skip_tests,
+   "user_test=s"=> \$user_defined_test,
    "verbose"    => \$verbose,
    "preserve_tests" => \$preserve_tests,
    "help|h"     => \$get_help,
@@ -115,11 +117,11 @@ if ($user_versions) {
     die "at least one version is required\n" unless @new_versions;
     @versions =();
     # ensuring that each version is used only once.
-    @new_versions = 
+    @new_versions =
         map     { $_->[0] } # sorting with the Schwartzian Transform
         sort    { $a->[1] cmp $b->[1] }
-        map     { /(\d+)\.(\d+)\.(\d+)/; 
-                    [ $_, sprintf('%02d-%02d-%02d',$1,$2,$3)] } 
+        map     { /(\d+)\.(\d+)\.(\d+)/;
+                    [ $_, sprintf('%02d-%02d-%02d',$1,$2,$3)] }
         keys    %{{ map { $_, 1} @new_versions }};
     for my $ver (@new_versions) {
             push @versions, $ver;
@@ -127,8 +129,8 @@ if ($user_versions) {
 }
 for my $ver (@versions) {
     $ver =~ s/^~/$ENV{'HOME'}/;
-    unless (( -d "/opt/mysql/$ver") 
-            or ( -d "$ENV{'HOME'}/opt/mysql/$ver") 
+    unless (( -d "/opt/mysql/$ver")
+            or ( -d "$ENV{'HOME'}/opt/mysql/$ver")
             or ( -f $ver )) {
         print "version $ver not found in either /opt/mysql or $ENV{'HOME'}/opt/mysql\n";
         die "use --versions to list the versions you want to test\n";
@@ -137,6 +139,17 @@ for my $ver (@versions) {
 
 if ($user_defined_test and !$user_tests) {
     $user_tests = 'user';
+}
+
+if ($skip_tests) {
+    my @tests_to_skip = grep {$_} split /,/, $skip_tests;
+    for my $st (@tests_to_skip)
+    {
+        if ($tests{$st})
+        {
+            $tests{$st} = 0;
+        }
+    }
 }
 
 if ($user_tests) {
@@ -183,7 +196,7 @@ if ( -x $sh_stop_all ) {
     system("$sh_stop_all > /dev/null 2>&1");
 }
 
-# 
+#
 # setting the current sandbox directory for this test
 #
 $sandbox_home = $ENV{'TEST_SANDBOX_HOME'} || "$ENV{'HOME'}/test_sb";
@@ -197,7 +210,7 @@ if ($tests{'smoke'} and $tests{'sbtool'}) {
     die "test <smoke> and test <sbtool> should not run together\n";
 }
 
-# 
+#
 # cleaning up the test directory if exists
 #
 if ( -x $sh_stop_all ) {
@@ -210,8 +223,8 @@ if ( -x $sh_stop_all ) {
 #
 my $how_many_mysqld = get_number_of_processes('mysqld');
 my $how_many_mysqld_safe = get_number_of_processes('mysqld_safe');
-tprintf "** currently there are (%d) mysqld processes and (%d) mysqld_safe processes\n", 
-    $how_many_mysqld, 
+tprintf "** currently there are (%d) mysqld processes and (%d) mysqld_safe processes\n",
+    $how_many_mysqld,
     $how_many_mysqld_safe;
 
 #
@@ -249,7 +262,7 @@ if ($tests{'custom'}) {
 
 if ($tests{'user'}) {
     die "test file required\n" unless $user_defined_test;
-    run_user_defined_test($user_defined_test);    
+    run_user_defined_test($user_defined_test);
 }
 
 my $summaries  = 0;
@@ -271,7 +284,7 @@ if ($tests{'tuning'}) {
 if ($tests{'smoke'}) {
     for my $ver ( @versions ) {
         if (-f "$sandbox_home/stop_all") {
-            system qq("$sandbox_home/stop_all > /dev/null 2>&1"); 
+            system qq("$sandbox_home/stop_all > /dev/null 2>&1");
             system qq(rm -rf $sandbox_home/*) ;
         }
         run_smoke_test($ver);
@@ -301,12 +314,12 @@ if ($test_results{'failed'}) {
     exit 1;
 }
 
-# 
+#
 # ROUTINES
 #
- 
-# 
-# get_exec_result 
+
+#
+# get_exec_result
 #
 # runs a shell command and returns the output
 #
@@ -320,7 +333,7 @@ sub get_exec_result {
 }
 
 sub get_exec_result_qx {
-    my ($cmd) = @_; 
+    my ($cmd) = @_;
     print "qx(shell) $cmd\n" if $verbose;
     my $output = qx($cmd 2>/tmp/err$$);
     if ($?) {
@@ -349,7 +362,7 @@ sub get_exec_result_qx {
 }
 
 sub get_exec_result_open3 {
-    my ($cmd) = @_; 
+    my ($cmd) = @_;
     print "o3(shell) $cmd\n" if $verbose;
     my ($out, $in, $err) = (undef, undef, 1);
     my $result = open3($in, $out, $err, $cmd );
@@ -400,7 +413,7 @@ sub get_sql_result {
     }
 }
 
- 
+
 #
 # get_number_of_processes
 #
@@ -427,7 +440,7 @@ my $HELP = <<"HELP";
 test for MySQL Sandbox
 usage: $0 [options]
     --versions=version1[,version2,version3]
-      uses specific versions for testing. 
+      uses specific versions for testing.
       currently: (@{[join ",", @versions]})
 
     --tarball=/path/to/tarball
@@ -438,11 +451,11 @@ usage: $0 [options]
       currently: (@{[join ",", grep {$tests{$_}} keys %tests]})
 
     --user_test=filename
-      executes user defined tests from given file 
+      executes user defined tests from given file
       (implies --tests=user)
 
     --preserve_tests
-      does not remove sandboxes at the end of the suite. 
+      does not remove sandboxes at the end of the suite.
 
     --verbose
       shows the commands executed during tests
@@ -492,7 +505,7 @@ sub check_sandbox_files
     for my $text_script (@{$expected_scripts{$sandbox_type}{texts} })
     {
         my $filename = "$sandbox_path/$text_script";
-        
+
         ok( -f $filename, "text script $text_script file found");
         if ($filename =~ /\.json$/)
         {
@@ -501,7 +514,7 @@ sub check_sandbox_files
             {
                 ok( 1, " - skipped $filename validation");
             }
-            else 
+            else
             {
                 ok($is_json, "JSON validation $filename");
             }
@@ -520,9 +533,9 @@ sub check_sandbox_files
             or die "Can't open $trace_file ($!)\n";
         my @lines = <$FH>;
         my $text = "@lines";
-        close $FH;  
+        close $FH;
         ok (($text =~ $expected_tool) || 0, "tool $expected_tool found in $trace_file");
-    } 
+    }
 }
 
 sub run_tarball_test{
@@ -587,7 +600,7 @@ sub run_tarball_test{
             $prefix_option= "--add_prefix=$prefix";
         }
         ok_exec( {
-                command  => "make_sandbox $prefix_option $tardir/$pattern -- --no_confirm", 
+                command  => "make_sandbox $prefix_option $tardir/$pattern -- --no_confirm",
                 expected => 'sandbox server started',
                 msg      => "single tarball SB ($bare_version) started"
                 });
@@ -595,13 +608,13 @@ sub run_tarball_test{
         ok(-d "$sandbox_home/msb_$version", "$sandbox_home/$version was created") or exit 1;
         # check_sandbox_files( 'single', "$sandbox_home/msb_$version");
         ok_sql( {
-                path     => "$sandbox_home/msb_$version", 
+                path     => "$sandbox_home/msb_$version",
                 query    => 'select version(), @@server_id',
                 expected => $bare_version,
                 msg      => "single tarball SB version ($bare_version) SQL"
                 });
         ok_exec( {
-                command  => "sbtool -o delete -s $sandbox_home/msb_$version", 
+                command  => "sbtool -o delete -s $sandbox_home/msb_$version",
                 expected => 'has been removed',
                 msg      => "single tarball SB ($bare_version) removed"
                 }) or exit 1;
@@ -618,7 +631,7 @@ sub run_single_test {
     my $save_trace_install = $ENV{TRACE_INSTALL};
     $ENV{TRACE_INSTALL} = 1;
     ok_exec( {
-            command  => "make_sandbox $ver -- --no_confirm", 
+            command  => "make_sandbox $ver -- --no_confirm",
             expected => 'sandbox server started',
             msg      => "single SB ($bare_version) started"
             });
@@ -626,18 +639,18 @@ sub run_single_test {
     $ENV{TRACE_INSTALL} = $save_trace_install;
     ok( -f "$sandbox_home/plugin.conf", "plugin template file found");
     ok_exec( {
-            command  => "perl -c $sandbox_home/plugin.conf > /dev/null 2>&1", 
+            command  => "perl -c $sandbox_home/plugin.conf > /dev/null 2>&1",
             expected => 'ok',
             msg      => "plugin template compiles OK"
             });
      ok_sql( {
-            path     => "$sandbox_home/msb_$version", 
+            path     => "$sandbox_home/msb_$version",
             query    => 'select version(), @@server_id',
             expected => $bare_version,
             msg      => "single SB ($bare_version) SQL"
             });
     get_sql_result(
-            "$sandbox_home/msb_$version", 
+            "$sandbox_home/msb_$version",
             'create database \`a-a\`', # Bug#278394 - this will fail on 'clear' if not fixed
             $verbose );
 }
@@ -651,7 +664,7 @@ sub ok_sql {
     }
     my $result = get_sql_result(
             $params->{'path'},
-            $params->{'query'}, 
+            $params->{'query'},
             $verbose);
     $ENV{SQL_RESULT} = $result;
     if ($wanted_result && ref($wanted_result) eq 'SCALAR')  {
@@ -696,7 +709,7 @@ sub ok_exec {
         }
     }
     my $return_code_wanted = 0;
-    
+
     if (ref $params->{'expected'}) {
         $return_code_wanted = grep { /^ok$/i} @{ $params->{'expected'}};
     }
@@ -730,7 +743,7 @@ sub ok_exec {
         for my $expected (@{$params->{'expected'}}) {
             $count++;
             if ($expected =~ /^ok$/i) {
-                ok( $CHILD_ERROR == 0 , 
+                ok( $CHILD_ERROR == 0 ,
                     $params->{'msg'} . "-[$count]");
             }
             elsif ($expected =~ s/^\!//) {
@@ -761,7 +774,7 @@ sub run_replication_test {
              expected => [ $bare_version, '\b1\s*$'],
              msg => "replication SB master ($bare_version) SQL - version - server_id"
             });
-    
+
     sleep 1;
 
     for my $node (1, 2) {
@@ -771,13 +784,13 @@ sub run_replication_test {
              msg => "replication SB slave$node ($bare_version) SQL - version - server_id"
             });
     }
- 
+
     ok_sql ({ path => "$sandbox_home/rsandbox_$version/master",
              query => q{drop table if exists test.t1; create table test.t1 (id int); show tables from test},
              expected => 't1',
              msg => "replication SB - table created on master"
             });
- 
+
     for my $node (1, 2) {
         ok_sql ({ path => "$sandbox_home/rsandbox_$version/node$node",
                  query => q{show tables from test},
@@ -789,7 +802,7 @@ sub run_replication_test {
 
 sub run_circular_test {
     my ($ver, $version, $bare_version) = @_;
-    
+
     ok_exec({ command  => "make_replication_sandbox --how_many_slaves=3 --topology=circular $ver",
               expected => '!not started yet',
               msg      => "circular replication sandbox ($bare_version) started",
@@ -799,7 +812,7 @@ sub run_circular_test {
     for my $node ( 1 .. 3) {
         ok_sql ({ path     => "$sandbox_home/rcsandbox_$version/node$node",
                   query    => 'show slave status\G',
-                  expected => [ 'IO_Running.+Yes', 'SQL_Running.+Yes' ], 
+                  expected => [ 'IO_Running.+Yes', 'SQL_Running.+Yes' ],
                   msg      => "circular replication SB node$node ($bare_version) SQL - Running"
             }
         );
@@ -819,7 +832,7 @@ sub run_multiple_test {
     for my $node (1 .. 3 ) {
 
         ok_sql({ path  => "$sandbox_home/multi_msb_$version/node$node",
-                 query => 'select version(), @@server_id', 
+                 query => 'select version(), @@server_id',
                  expected => [ $bare_version, '\b10' . $node . '\s*$' ],
                  msg      => "multiple SB node $node ($bare_version) SQL - version - server_id"
                 });
@@ -831,13 +844,13 @@ sub run_mcustom_test {
     my $gdname = 'multi_cmsb_' . get_bare_version($versions[0]) ;
     #$custom_dir =~ s/ /-/g;
     #$custom_dir =~ s/\./_/g;
-    # $DEBUG=2; $verbose=2; 
+    # $DEBUG=2; $verbose=2;
     $gdname =~ s/\./_/g;
     my $custom_dir = "$sandbox_home/$gdname";
     ok_exec({ command => "make_multiple_custom_sandbox --group_directory=$gdname @versions ",
               expected => [
-                    '!not started yet', 
-                    "group directory installed in " . use_env($custom_dir) 
+                    '!not started yet',
+                    "group directory installed in " . use_env($custom_dir)
                     ],
               msg      => "custom sandbox ( ". use_env($custom_dir)." ) started"
             });
@@ -865,21 +878,21 @@ sub run_summary_tests {
     my $new_mysqld_procs = get_number_of_processes('mysqld');
     my $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
 
-    tprintf "** created (%d) mysqld processes and (%d) mysqld_safe processes\n", 
-        $new_mysqld_procs - $how_many_mysqld, 
+    tprintf "** created (%d) mysqld processes and (%d) mysqld_safe processes\n",
+        $new_mysqld_procs - $how_many_mysqld,
         $new_mysqld_safe_procs - $how_many_mysqld_safe;
 
-    my $instances = 
-               (  1 * $tests{'single'}          # single 
+    my $instances =
+               (  1 * $tests{'single'}          # single
                 + 3 * $tests{'replication'}     # replicated
                 + 3 * $tests{'circular'}        # circular
                 + 3 * $tests{'multiple'}        # multiple
               );
-    my $expected_processes = 
+    my $expected_processes =
                 $instances * scalar(@versions)
                 + (scalar(@versions) * $tests{'custom'})  ; # custom counts only once
 
-    ok( $expected_processes == ($new_mysqld_safe_procs - $how_many_mysqld_safe), 
+    ok( $expected_processes == ($new_mysqld_safe_procs - $how_many_mysqld_safe),
             "expected processes ($expected_processes)" );
 
     tprint "** stopping all - please wait\n";
@@ -888,8 +901,8 @@ sub run_summary_tests {
     $new_mysqld_procs = get_number_of_processes('mysqld');
     $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
 
-    tprintf "** (%d) mysqld processes and (%d) mysqld_safe processes\n", 
-        $new_mysqld_procs - $how_many_mysqld, 
+    tprintf "** (%d) mysqld processes and (%d) mysqld_safe processes\n",
+        $new_mysqld_procs - $how_many_mysqld,
         $new_mysqld_safe_procs - $how_many_mysqld_safe;
     ok( ($new_mysqld_safe_procs - $how_many_mysqld_safe ) == 0,
             'expected processes (0)' );
@@ -899,25 +912,25 @@ sub run_summary_tests {
 
     $new_mysqld_procs = get_number_of_processes('mysqld');
     $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
-    tprintf "** created (%d) mysqld processes and (%d) mysqld_safe processes\n", 
-        $new_mysqld_procs - $how_many_mysqld, 
+    tprintf "** created (%d) mysqld processes and (%d) mysqld_safe processes\n",
+        $new_mysqld_procs - $how_many_mysqld,
         $new_mysqld_safe_procs - $how_many_mysqld_safe;
 
-    ok( $expected_processes == ($new_mysqld_safe_procs - $how_many_mysqld_safe), 
+    ok( $expected_processes == ($new_mysqld_safe_procs - $how_many_mysqld_safe),
             "expected processes ($expected_processes)" );
 
-    unless ($ENV{'PRESERVE_TESTS'} or $preserve_tests) { 
+    unless ($ENV{'PRESERVE_TESTS'} or $preserve_tests) {
         tprint "** cleaning up - please wait\n";
         my $clear_all = get_exec_result("$sandbox_home/clear_all");
 
         $new_mysqld_procs = get_number_of_processes('mysqld');
         $new_mysqld_safe_procs = get_number_of_processes('mysqld_safe');
 
-        tprintf "** (%d) mysqld processes and (%d) mysqld_safe processes\n", 
-            $new_mysqld_procs - $how_many_mysqld, 
+        tprintf "** (%d) mysqld processes and (%d) mysqld_safe processes\n",
+            $new_mysqld_procs - $how_many_mysqld,
             $new_mysqld_safe_procs - $how_many_mysqld_safe;
         ok( ($new_mysqld_safe_procs - $how_many_mysqld_safe ) == 0,
-            'expected processes (0)' ) 
+            'expected processes (0)' )
             or die "can't continue without a clean environment\n";
 
         system qq(rm -rf $sandbox_home/*) ;
@@ -939,7 +952,7 @@ sub run_tuning_test {
     my ($bare_version, $version) = get_bare_version($ver);
 
     if (($bare_version =~ /^5\.([567])/ ) || ($bare_version =~ /^8/ ) || ($bare_version =~ /^10/ )) {
-         for my $i ( 1 .. 6) { 
+         for my $i ( 1 .. 6) {
             print "ok - skipped (this test is not available in MySQL $bare_version)\n";
          }
          return;
@@ -955,7 +968,7 @@ sub run_tuning_test {
              expected => '!innodb\s*yes',
              msg      => "single SB with option skip-innodb ($bare_version) SQL"
             });
-     
+
     ok_sql({  path => "$sandbox_home/msb_$version",
               query => q(show variables like 'SQL_MODE'),
               expected => 'STRICT_ALL_TABLES',
@@ -1018,7 +1031,7 @@ sub run_smoke_test {
         my $bindir = $1;
         if ( -d "$bindir/$bare_version" ) {
             system "rm -rf $bindir/$bare_version";
-        } 
+        }
     }
 
     my $previous_mysqld = get_number_of_processes('mysqld');
@@ -1036,7 +1049,7 @@ sub run_smoke_test {
     ok($first_mysqld > $previous_mysqld, 'mysqld started') ;
 
     my $sql_result = get_sql_result(
-            "$sandbox_home/msb_$version", 
+            "$sandbox_home/msb_$version",
             q{show variables like 'pid_file'},
             $verbose);
     my $pid_file ;
@@ -1076,7 +1089,7 @@ sub run_smoke_test {
     while ((!$pid_ts2) or ($pid_ts2 eq $pid_ts1)) {
         $counter++;
         tprint ">> waiting for mysqld to restart ($counter)\n";
-        sleep 1; 
+        sleep 1;
         $pid_ts2 = get_pid($pid_file);
         if ($counter > $timeout) {
             die "error recovering killed process\n";
@@ -1106,20 +1119,20 @@ sub run_smoke_test {
 
     chomp $visual_version;
     $sql_result = get_sql_result(
-            "$sandbox_home/msb_$version", 
+            "$sandbox_home/msb_$version",
             'select @@version_comment limit 1',
             $verbose );
     my $visual_comment = $sql_result;
     chomp $visual_comment;
 
     $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
+           "$sandbox_home/msb_$version",
             'HELP SELECT',
             $verbose );
     # print "HELP: $sql_result\n";
-    ok( $sql_result && (! ( $sql_result =~ /nothing\s*found/i)), 
+    ok( $sql_result && (! ( $sql_result =~ /nothing\s*found/i)),
             "single SB ($bare_version) HELP tables filled " );
-     
+
     ok_sql ({ path      => "$sandbox_home/msb_$version",
               query     => q(create database install_test; show databases like 'install_test'),
               expected  => 'install_test',
@@ -1138,7 +1151,7 @@ sub run_smoke_test {
     );
 
     for my $test_engine (@test_engines) {
-        my $major_version = 0; 
+        my $major_version = 0;
         if ($version =~ /(\d+)/) {
             $major_version = $1;
         }
@@ -1148,11 +1161,11 @@ sub run_smoke_test {
         my $engine = $test_engine->{'engine'};
 
         ok_sql ({ path      => "$sandbox_home/msb_$version",
-              query     => 
+              query     =>
                 qq{drop table if exists install_test.testib;
-                create table install_test.testib ( 
-                id int UNSIGNED NOT NULL AUTO_INCREMENT , 
-                nr int UNSIGNED NOT NULL , 
+                create table install_test.testib (
+                id int UNSIGNED NOT NULL AUTO_INCREMENT ,
+                nr int UNSIGNED NOT NULL ,
                 PRIMARY KEY ( id)
                 ) engine=$engine; show tables from install_test },
               expected  => 'testib',
@@ -1206,7 +1219,7 @@ sub run_smoke_test {
               msg       => "tables in install_test "
             });
     $sql_result = get_sql_result(
-           "$sandbox_home/msb_$version", 
+           "$sandbox_home/msb_$version",
             q{ drop database install_test;},
             $verbose);
     my $sandbox_dirs = how_many_dirs("$sandbox_home/msb_$version/data");
@@ -1223,7 +1236,7 @@ sub run_smoke_test {
     {
         $expected_dirs = 3;
     }
-    
+
     #ok($sandbox_dirs == ((($bare_version ge '5.5') or ($bare_version =~ /^10/)) ? 3 : 2) , "single SB ($bare_version) - effective clean up ");
     ok($sandbox_dirs ==  $expected_dirs, "single SB ($bare_version) - effective clean up ");
 
@@ -1234,7 +1247,7 @@ sub run_smoke_test {
         if ( -d "$bindir/$bare_version" ) {
             system "rm -rf $bindir/$bare_version";
             system "rm -rf $sandbox_home/msb_$version";
-        } 
+        }
     }
 
     tprint "\n[VISUAL IDENTIFICATION]\n";
@@ -1246,18 +1259,18 @@ sub run_smoke_test {
 sub run_sbtool_test {
     my ($ver) = @_;
 
-    # 
+    #
     # preparing sandboxes
     #
     my $first_sandbox = get_exec_result(
-            "make_sandbox $ver -- --no_confirm --sandbox_port=5100 --sandbox_directory=first_sb", 
+            "make_sandbox $ver -- --no_confirm --sandbox_port=5100 --sandbox_directory=first_sb",
             $verbose);
     ok( $first_sandbox =~ /sandbox server started/,
             "first SB (5100) started" );
 
 
     my $second_sandbox = get_exec_result(
-            "make_sandbox $ver -- --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb", 
+            "make_sandbox $ver -- --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb",
             $verbose);
     ok( $second_sandbox =~ /sandbox server started/,
             "second SB (5200) started" );
@@ -1276,15 +1289,15 @@ sub run_sbtool_test {
 
     $first_sandbox = get_exec_result("$sandbox_home/first_sb/start");
     ok( $first_sandbox =~ /sandbox server started/, "moved back sandbox started");
-    
+
     #
     # sbtool -o copy
     #
     my $sql_result = get_sql_result(
             "$sandbox_home/first_sb",
            q{drop table if exists test.t1; create table test.t1 (id int); show tables from test},
-          $verbose); 
-    ok( ($sql_result =~ /t1/) , 
+          $verbose);
+    ok( ($sql_result =~ /t1/) ,
             "first SB - table created" );
 
     my $copy_sandbox = get_exec_result("sbtool -o copy -s $sandbox_home/first_sb -d $sandbox_home/second_sb");
@@ -1296,11 +1309,11 @@ sub run_sbtool_test {
     $sql_result = get_sql_result(
             "$sandbox_home/second_sb",
            q{show tables from test},
-          $verbose); 
-    ok( ($sql_result =~ /t1/) , 
+          $verbose);
+    ok( ($sql_result =~ /t1/) ,
             "second SB - table copied" );
 
-    # 
+    #
     # sbtool -o ports
     #
     my $get_ports = get_exec_result("sbtool -o ports");
@@ -1314,7 +1327,7 @@ sub run_sbtool_test {
     eval "$get_ports";
     ok ( $ports && !$ports->{'5100'} && $ports->{'5200'}, 'get ports (perl format)');
 
-    # 
+    #
     # sbtool -o info
     #
     my $get_info = get_exec_result("sbtool -o info");
@@ -1323,12 +1336,12 @@ sub run_sbtool_test {
     ok($all_info && $all_info->{'5100'}{'opt'}{'port'} == 5100, 'get info 1');
     ok($all_info && $all_info->{'5200'}{'opt'}{'port'} == 5200, 'get info 2');
 
-    # 
-    # sbtool -o port 
+    #
+    # sbtool -o port
     # (change port)
     #
     my $change_ports = get_exec_result("sbtool -o port --new_port=9000 -s $sandbox_home/first_sb");
-    
+
     ok( $change_ports =~ /The old scripts have been saved/, 'port changed to first SB');
 
     $change_ports = get_exec_result("$sandbox_home/first_sb/start");
@@ -1337,7 +1350,7 @@ sub run_sbtool_test {
     $sql_result = get_sql_result( "$sandbox_home/first_sb", q{show variables like 'port'});
     ok($sql_result =~ /\b9000\b/, 'wanted port assigned to first SB');
 
-    # 
+    #
     # sbtool -o range
     #
     my $ports_range = get_exec_result("sbtool -o range");
@@ -1346,8 +1359,8 @@ sub run_sbtool_test {
     ok ($ports_range =~ /5201/, 'ports range 2');
     system("$sandbox_home/stop_all > /dev/null 2>&1");
     system("$sandbox_home/second_sb/start > /dev/null 2>&1");
-    
-    # 
+
+    #
     # sbtool -o delete
     #
     my $delete_sandbox = get_exec_result("sbtool -o delete -s $sandbox_home/first_sb");
@@ -1356,12 +1369,12 @@ sub run_sbtool_test {
     ok($delete_sandbox =~ /has been removed/, 'delete active sandbox');
 
     $second_sandbox = get_exec_result(
-            "make_sandbox $ver -- --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb", 
+            "make_sandbox $ver -- --no_confirm --sandbox_port=5200 --sandbox_directory=second_sb",
             $verbose);
     ok( $second_sandbox =~ /sandbox server started/,
             "second SB (5200) started" );
 
-    # 
+    #
     # sbtool -o preserve
     #
     my $preserve_sandbox = get_exec_result("sbtool -o preserve -s $sandbox_home/second_sb");
@@ -1375,11 +1388,11 @@ sub run_sbtool_test {
     $delete_sandbox = get_exec_result("sbtool -o delete -s $sandbox_home/second_sb");
     ok($delete_sandbox =~ /has been removed/, 'deleting unpreserved sandbox');
 
-    # 
+    #
     # sbtool -o tree
     #
     my $group_sandbox = get_exec_result(
-            "make_multiple_sandbox --group_directory=tree_sb --how_many_nodes=9 $ver", 
+            "make_multiple_sandbox --group_directory=tree_sb --how_many_nodes=9 $ver",
             $verbose);
 
     ok( $group_sandbox =~ /installing node 9/,
@@ -1391,7 +1404,7 @@ sub run_sbtool_test {
     # workaround for MySQL 5.7.7 behavioral change with relay nodes
     #$sql_result = get_exec_result(
     #        "$sandbox_home/tree_sb/use_all 'reset master'",
-    #      $verbose); 
+    #      $verbose);
 
     my $tree_sandbox = get_exec_result("sbtool -o tree --tree_dir=$sandbox_home/tree_sb"
             . " --tree_nodes='1-2 3 4-5 6|7|8 9'" );
@@ -1402,17 +1415,17 @@ sub run_sbtool_test {
     $sql_result = get_sql_result(
             "$sandbox_home/tree_sb/node1",
            q{drop table if exists test.t1; create table test.t1 (id int); show tables from test},
-          $verbose); 
-    ok( ($sql_result =~ /t1/) , 
+          $verbose);
+    ok( ($sql_result =~ /t1/) ,
             "tree SB - table created" );
 
     sleep 1;
     $sql_result = get_sql_result(
             "$sandbox_home/tree_sb/node8",
            q{show tables from test},
-          $verbose); 
+          $verbose);
     #print "$sql_result\n";
-    ok( ($sql_result =~ /t1/) , 
+    ok( ($sql_result =~ /t1/) ,
             "tree SB - table replicated to level 3" );
 
     system("$sandbox_home/send_kill_all > /dev/null 2>&1");
@@ -1455,7 +1468,7 @@ sub get_pid_timestamp {
 
     my @stats = stat $pidfile
         or return 0;
-    #    or die "can't get timestamp for file $pidfile ($!)\n";    
+    #    or die "can't get timestamp for file $pidfile ($!)\n";
     return $stats[8];
 }
 
@@ -1533,7 +1546,7 @@ sub run_user_defined_test {
                 for my $key (keys %{ $test->[1] } ) {
                     tprintf "%20s => %s\n", $key, $test->[1]{$key};
                 }
-                die "incomplete test. Missing required <$req> label\n";        
+                die "incomplete test. Missing required <$req> label\n";
             }
         }
     }
@@ -1553,7 +1566,7 @@ sub run_user_defined_test {
                      expected => $rec->{expected},
                       msg     => $rec->{msg},
                     });
-        
+
         }
         else {
             die "unhandled test <$test->[0]>\n";
@@ -1574,6 +1587,6 @@ sub run_user_defined_perl_test {
     eval $test_contents;
     if ($@) {
         die "failed test $test_file\n$@\n";
-    } 
+    }
 }
 
