@@ -247,7 +247,7 @@ sub credits {
     my ($self) = @_;
     my $CREDITS = 
           qq(    The MySQL Sandbox,  version $VERSION\n) 
-        . qq(    (C) 2006-2016 Giuseppe Maxia\n);
+        . qq(    (C) 2006-2017 Giuseppe Maxia\n);
     return $CREDITS;
 }
 
@@ -788,7 +788,7 @@ __END__
 
 =head1 NAME
 
-MySQL::Sandbox - Quickly installs one or more MySQL servers in the same host, either standalone or in groups
+MySQL::Sandbox - Quickly installs one or more MySQL servers (or forks) in the same host, either standalone or in groups
 
 =head1 SYNOPSIS
 
@@ -804,13 +804,13 @@ MySQL::Sandbox - Quickly installs one or more MySQL servers in the same host, ei
 =head1 PURPOSE
 
 This package is a sandbox for testing features under any version of
-MySQL from 3.23 to 5.x (and MariaDB 10).
+MySQL from 3.23 to 8.0 (and any version of MariaDB.)
 
 It will install one node under your home directory, and it will
 provide some useful commands to start, use and stop this sandbox.
 
-With this package you can play with new MySQL releases without need 
-of using other computers. The server installed in the sandbox use 
+With this package you can play with new MySQL releases without needing
+to use other computers. The server installed in the sandbox use 
 non-standard data directory, ports and sockets, so they won't 
 interfere with existing MYSQL installations.
 
@@ -877,7 +877,7 @@ It's as easy as making a single sandbox
 
    $ make_replication_sandbox /path/to/mysql-X.X.XX-osinfo.tar.gz
 
-This will create a new instance of one master  and two slaves
+This will create a new instance of one master and two slaves
 
    under $SANDBOX_HOME/rsandbox_X_X_XX
 
@@ -1078,7 +1078,7 @@ figure, to avoid clashing with single installations.
 
 MySQL Sandbox uses a fairly reasonable system of default ports that 
 guarantees the usage of unused ports most of the times. 
-If you are creating many sandbozes, however, especially if you want
+If you are creating many sandboxes, however, especially if you want
 several sandboxes using the same versions, collisions may happen.
 In these cases, you may ask for a port check before installing, thus 
 making sure that your sandbox is really not conflicting with anything.
@@ -1663,13 +1663,13 @@ Bash shell
 
 Version 3.1
 
-Copyright (C) 2006-2016 Giuseppe Maxia
+Copyright (C) 2006-2017 Giuseppe Maxia
 
 Home Page  https://github.com/datacharmer
 
 =head1 LEGAL NOTICE
 
-   Copyright 2006-2016 Giuseppe Maxia
+   Copyright 2006-2017 Giuseppe Maxia
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
