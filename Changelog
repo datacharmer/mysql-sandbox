@@ -1,3 +1,6 @@
+3.2.07	21-Apr-2017
+	- Changed detection of USER variable to pass tests in unfriendly
+	  environments
 3.2.06	16-Apr-2017
 	- Added tmpdir option to mysql_install_db and 'mysqld --initialize' 
 	- Cleanup and test improvement (add option to skip tarball tests)

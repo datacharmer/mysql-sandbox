@@ -30,11 +30,17 @@ our @EXPORT_OK= qw( is_port_open
                     split_version
                     ) ;
 
-our $VERSION=q{3.2.06};
+our $VERSION=q{3.2.07};
 our $DEBUG;
 
 BEGIN {
     $DEBUG = $ENV{'SBDEBUG'} || $ENV{'SBVERBOSE'} || 0;
+    if (! $ENV{'USER'})
+    {
+        my $user = qx/whoami/;
+        chomp $user;
+        $ENV{'USER'} = $user;
+    }
     for my $var (qw( HOME USER PWD ))
     {
         unless ($ENV{$var}) {
