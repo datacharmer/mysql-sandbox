@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION=q{3.2.07};
+our $VERSION=q{3.2.08};
 
 our @MANIFEST = (
 'clear.sh',
@@ -447,6 +447,26 @@ my %parse_options_low_level_make_sandbox = (
                                             'Sets port for X-plugin (requires --plugin_mysqlx)',
                                          ]
                             },
+    custom_mysqld => {
+                                value => $ENV{'CUSTOM_MYSQLD'},      
+                                parse => 'custom_mysqld', 
+                                so    => 198,
+                                export => 1,
+                                help  => [
+                                            'uses alternative mysqld ',
+                                            '(must be in the same directory as the regular mysqld)'
+                                         ]
+                            },
+     expose_dd_tables => {
+                                value => $ENV{'EXPOSE_DD_TABLES'},      
+                                parse => 'expose_dd_tables', 
+                                so    => 197,
+                                export => 1,
+                                help  => [
+                                            'Exposed MySQL 8.0.x data dictionary tables',
+                                         ]
+                            },
+ 
      prompt_prefix           => {
                                 value => 'mysql',      
                                 parse => 'prompt_prefix=s', 
@@ -1244,6 +1264,11 @@ export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
 MYSQLD_SAFE="bin/_MYSQLDSAFE_"
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
+CUSTOM_MYSQLD=_CUSTOM_MYSQLD_
+if [ -n "$CUSTOM_MYSQLD" ]
+then
+    CUSTOM_MYSQLD="--mysqld=$CUSTOM_MYSQLD"
+fi
 __SBINSTR_SH__
 if [ ! -f $BASEDIR/$MYSQLD_SAFE ]
 then
@@ -1286,9 +1311,9 @@ else
     cd $BASEDIR
     if [ "$SBDEBUG" = "" ]
     then
-        $MYSQLD_SAFE --defaults-file=$SBDIR/my.sandbox.cnf $@ > /dev/null 2>&1 &
+        $MYSQLD_SAFE --defaults-file=$SBDIR/my.sandbox.cnf $CUSTOM_MYSQLD $@ > /dev/null 2>&1 &
     else
-        $MYSQLD_SAFE --defaults-file=$SBDIR/my.sandbox.cnf $@ > "$SBDIR/start.log" 2>&1 &
+        $MYSQLD_SAFE --defaults-file=$SBDIR/my.sandbox.cnf $CUSTOM_MYSQLD $@ > "$SBDIR/start.log" 2>&1 &
     fi
     cd $CURDIR
     ATTEMPTS=1

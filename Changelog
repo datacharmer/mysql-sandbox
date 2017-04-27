@@ -1,3 +1,6 @@
+3.2.08	27-Apr-2017
+	- Added option --expose_dd_tables to show and use MySQL 8.0
+	  data dictionary hidden tables.
 3.2.07	21-Apr-2017
 	- Changed detection of USER variable to pass tests in unfriendly
 	  environments

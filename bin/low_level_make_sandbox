@@ -161,6 +161,34 @@ else
     die "# Can't get MySQL version from mysql_config\n";
 }
 
+$msb->{options}{custom_mysqld} = '';
+if ($msb->{options}{expose_dd_tables})
+{
+    my $mysql_version = $msb->{options}{detected_mysql_version};
+    my ( $major, undef, undef) = split_version($mysql_version);
+    if ( $major != '8')
+    {
+        die "The option 'expose_dd_tables' can only be used with version 8\n";
+    }
+    my $executable = sprintf '%s/bin/mysqld-debug', $msb->{options}{basedir} ;
+    unless ( -x $executable)
+    {
+        die "mysqld-debug not found in $msb->{options}{basedir}/bin\n"
+    }
+    $msb->{options}{custom_mysqld} = 'mysqld-debug';
+    unless ($msb->{options}{post_grants_sql}) 
+    {
+        $msb->{options}{post_grants_sql} = ''; 
+    }
+
+    $msb->{options}{post_grants_sql} = 
+            "set persist debug='+d,skip_dd_table_access_check';
+            create table sys.dd_hidden_tables select id, name, schema_id from mysql.tables where hidden=1;
+            update mysql.tables set hidden=0 where hidden=1;
+            "
+            . $msb->{options}{post_grants_sql}; 
+}
+
 if ($msb->{options}{'gtid'})
 {
     my $mysql_version = $msb->{options}{detected_mysql_version};
@@ -326,6 +354,7 @@ my %replace_options = (
     _MSB_VERSION_       =>  'msb_version',
     _LOWER_CASE_TABLE_NAMES_ => 'lower_case_table_names',
     _HISTORY_DIR_       => 'history_dir',
+    _CUSTOM_MYSQLD_     => 'custom_mysqld',
 );
 
 $msb->{options}{msb_version} = $MySQL::Sandbox::VERSION;
