@@ -42,6 +42,7 @@ t/20_add_option.t
 t/21_replication_gtid_option.t
 t/22_init_exec_sql.t
 t/23_mysqlx_plugin.t
+t/24_dd_expose.t
 t/Test_Helper.pm
 t/add_option.sb.pl
 t/check_replication.sb
@@ -61,3 +62,4 @@ t/single_port_checking.sb.pl
 t/start_restart_arguments.sb.pl
 t/user_privileges.sb.pl
 t/test_init_exec.sh
+t/dd_expose.sb.pl
