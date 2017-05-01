@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION=q{3.2.08};
+our $VERSION=q{3.2.09};
 
 our @MANIFEST = (
 'clear.sh',
@@ -1988,6 +1988,7 @@ PROXY_START_SCRIPT
 #!_BINBASH_
 __LICENSE__
 
+cd $(dirname $0)
 __SBINSTR_SH__
 OLD_PORT=_SERVERPORT_
 

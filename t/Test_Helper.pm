@@ -37,7 +37,7 @@ use strict;
 use warnings;
 use base qw( Exporter);
 our @ISA= qw(Exporter);
-our @EXPORT_OK= qw( test_sandbox find_plugindir skip_all confirm_version);
+our @EXPORT_OK= qw( test_sandbox find_plugindir skip_all confirm_version skip_version);
 our @EXPORT = @EXPORT_OK;
 
 #sub get_version_parts
@@ -54,6 +54,15 @@ our @EXPORT = @EXPORT_OK;
 #    }
 #}
 
+sub skip_version 
+{
+    my ($version, $reason) = @_;
+    warn "# skipping version $version for this test. $reason\n";
+    print "1..1\n";
+    print "ok 1 # $reason\n";
+    exit
+}
+
 sub confirm_version
 {
     my ($min_version, $max_version) = @_;
@@ -66,10 +75,7 @@ sub confirm_version
     my $compare_max  = sprintf("%05d-%05d-%05d", $major2, $minor2, $rev2);
     unless (($compare_test ge $compare_min) && ($compare_test le $compare_max))
     {
-        warn "# Skipping version $test_version for this test. It is not in the required range ($min_version - $max_version)\n";
-        print "1..1\n";
-        print "ok 1 # Test version $test_version is not in the required range for this test ($min_version - $max_version)\n";
-        exit;
+        skip_version( $test_version, "It is not in the required range ($min_version - $max_version)");
     }
 }
 
