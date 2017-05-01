@@ -1993,10 +1993,23 @@ OLD_PORT=_SERVERPORT_
 
 if [ "$1" = "" ]
 then
-    echo "new port required"
+    echo "New port required as argument."
     exit
 else
-    NEW_PORT=$1
+    ONLY_DIGITS_REGEX="^[[:digit:]]+$"
+    if [[ $1 =~ ${ONLY_DIGITS_REGEX} ]]
+    then
+        if [[ $1 -ge 1 ]] && [[ $1 -le 65535 ]]
+        then
+            NEW_PORT=$1
+        else
+            echo "New port must be a valid port number in the 1-65535 range."
+            exit
+        fi
+    else
+        echo "New port must contain only digits (unsigned integer)."
+        exit
+    fi
 fi
 
 if [ $OLD_PORT = $NEW_PORT ]
