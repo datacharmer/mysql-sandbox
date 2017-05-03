@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION=q{3.2.09};
+our $VERSION=q{3.2.10};
 
 our @MANIFEST = (
 'clear.sh',
@@ -448,8 +448,8 @@ my %parse_options_low_level_make_sandbox = (
                                          ]
                             },
     custom_mysqld => {
-                                value => $ENV{'CUSTOM_MYSQLD'},      
-                                parse => 'custom_mysqld', 
+                                value => $ENV{'CUSTOM_MYSQLD'} || '' , 
+                                parse => 'custom_mysqld=s', 
                                 so    => 198,
                                 export => 1,
                                 help  => [

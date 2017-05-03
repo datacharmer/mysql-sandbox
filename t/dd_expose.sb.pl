@@ -13,8 +13,10 @@ sub test_run
 {
     my ($tests) = @_;
     ok_exec({
-        command     =>  "make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=$install_dir --expose_dd_tables "
-                       . "--sandbox_port=$install_port ",
+        command     =>  "make_sandbox $TEST_VERSION -- "
+                       . "--no_confirm --sandbox_directory=$install_dir"
+                       . "  --expose_dd_tables "
+                       . " --sandbox_port=$install_port ",
         expected    => 'sandbox server started' ,
         msg         => 'sandbox server started',
     });
@@ -52,7 +54,9 @@ my @tests = (
         msg  => 'table "mysql.tables" is readable'
     },
     {
-        query   => "select count(*) from mysql.tables where name='dd_hidden_tables' and schema_id = (select id from mysql.schemata where name='sys')",
+        query   =>   "select count(*) from mysql.tables "
+                   . " where name='dd_hidden_tables' "
+                   . " and schema_id = (select id from mysql.schemata where name='sys')",
         expected => '1',
         msg  => 'table "sys.dd_hidden_tables" exists'
     }

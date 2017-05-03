@@ -1,3 +1,5 @@
+3.2.10	03-May-2017
+	- Fixed error in --custom_mysqld handling
 3.2.09	01-May-2017
 	- Merged Guriandoro's change to check port numbers in change_ports
 	- Added change directory command to change_ports

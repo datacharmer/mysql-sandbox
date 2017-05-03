@@ -161,7 +161,6 @@ else
     die "# Can't get MySQL version from mysql_config\n";
 }
 
-$msb->{options}{custom_mysqld} = '';
 if ($msb->{options}{expose_dd_tables})
 {
     my $mysql_version = $msb->{options}{detected_mysql_version};
