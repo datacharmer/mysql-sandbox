@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION=q{3.2.10};
+our $VERSION=q{3.2.11};
 
 our @MANIFEST = (
 'clear.sh',
@@ -1568,8 +1568,7 @@ case $mode in
             --sqlc \
             --user=_DBUSER_ \
             --password=_DBPASSWORD_ \
-            --port=_SERVERPORT_ \
-            --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock "$@"
+            --port=_SERVERPORT_  "$@"
             ;;
     --js)
         mysqlsh \
