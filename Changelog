@@ -1,3 +1,5 @@
+3.2.12	18-Jul-2017
+	- Changed initial check for system tables: MySQL 8.0.2 has a tablespace instead
 3.2.11	16-Jul-2017
 	- Removed "--socket" from mysqlsh script
 3.2.10	03-May-2017

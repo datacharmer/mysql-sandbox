@@ -29,7 +29,8 @@ for my $dir (@dirs)
     my ($major, $minor, $rev) = dir_split($dir);    
     next unless $major;
     #next if ($major =~ /^full_/);
-    unless ($major =~ /^(?:ps|ma)/ or $major =~ /^[1-9]/)
+    # unless ($major =~ /^(?:ps|ma)/ or $major =~ /^[1-9]/)
+    unless ($major =~ /^[1-9]/)
     {
         next;   
     }

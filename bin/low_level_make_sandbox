@@ -839,18 +839,33 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         {
             die $abort_msg;
         }
-        for my $table_name (qw(user db tables_priv columns_priv)) {
-            my $frm =   "$sandbox_directory/data/mysql/$table_name.frm";
-            my $myd =   "$sandbox_directory/data/mysql/$table_name.MYD";
-            my $ibd =   "$sandbox_directory/data/mysql/$table_name.ibd";
-            if ( (-f $frm ) or ( -f $myd)  or ( -f $ibd ) )
+        if (greater_version($msb->{options}{detected_mysql_version},'8.0.1') and $msb->{options}{mysql_version}{major} < 10)
+        {
+            my $ibd =   "$sandbox_directory/data/mysql.ibd";
+            if ( -f $ibd)
             {
-                # do nothing
-                print "Table $table_name found\n" if $DEBUG;
+                print "Table $ibd found\n" if $DEBUG;
             }
             else
             {
-                die "Table $table_name not found\n";
+                die "Table $ibd not found\n";
+            }
+        }
+        else
+        {
+            for my $table_name (qw(user db tables_priv columns_priv)) {
+                my $frm =   "$sandbox_directory/data/mysql/$table_name.frm";
+                my $myd =   "$sandbox_directory/data/mysql/$table_name.MYD";
+                my $ibd =   "$sandbox_directory/data/mysql/$table_name.ibd";
+                if ( (-f $frm ) or ( -f $myd)  or ( -f $ibd ) )
+                {
+                    # do nothing
+                    print "Table $table_name found\n" if $DEBUG;
+                }
+                else
+                {
+                    die "Table $table_name not found\n";
+                }
             }
         }
         for my $logfile (qw(ib_logfile0 ib_logfile1))
