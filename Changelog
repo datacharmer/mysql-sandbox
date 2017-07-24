@@ -1,3 +1,5 @@
+3.2.13	24-Jul-2017
+	- Updated --expose_dd_tables procedure to deal with DD changes in 8.0.2
 3.2.12	18-Jul-2017
 	- Changed initial check for system tables: MySQL 8.0.2 has a tablespace instead
 3.2.11	16-Jul-2017

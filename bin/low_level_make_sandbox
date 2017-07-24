@@ -180,10 +180,15 @@ if ($msb->{options}{expose_dd_tables})
         $msb->{options}{post_grants_sql} = ''; 
     }
 
+    # In MySQL 8.0.2 the "hidden" column was changed from integer (0=visible, 1=hidden)
+    # to an ENUM (System, Visible, SE, DDL)
     $msb->{options}{post_grants_sql} = 
             "set persist debug='+d,skip_dd_table_access_check';
-            create table sys.dd_hidden_tables select id, name, schema_id from mysql.tables where hidden=1;
-            update mysql.tables set hidden=0 where hidden=1;
+            set \@col_type=(select c.type from mysql.columns c inner join mysql.tables t where t.id=table_id and t.name='tables' and c.name='hidden');
+            set \@visible=(if(\@col_type = 'MYSQL_TYPE_ENUM', 'Visible', '0'));
+            set \@hidden=(if(\@col_type = 'MYSQL_TYPE_ENUM', 'System', '1'));
+            create table sys.dd_hidden_tables select id, name, schema_id from mysql.tables where hidden=\@hidden;
+            update mysql.tables set hidden=\@visible where hidden=\@hidden and schema_id = 1;
             "
             . $msb->{options}{post_grants_sql}; 
 }

@@ -25,6 +25,7 @@ do
     if [ "$?" != "0" ] ; then continue ; fi
     make 
     if [ "$?" != "0" ] ; then continue ; fi
+    date
     TEST_VERSION=$V make test 
     EC=$? 
     echo "`date` - $V - $EC" >> results.txt   
