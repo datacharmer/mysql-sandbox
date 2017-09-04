@@ -1807,9 +1807,17 @@ SBDIR=_HOME_DIR_/_SANDBOXDIR_
 BASEDIR='_BASEDIR_'
 export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
-MYSQL="$BASEDIR/bin/mysql --no-defaults --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock --port=_SERVERPORT_"
+CLI_VERSION=`$BASEDIR/bin/mysql --no-defaults --version | sed 's/^.*mysql[ ]*Ver.*\([0-9]\{1\}\.[0-9]\{1,2\}\.[0-9]\{1,2\}\).*$/\1/'`
+CLI_MAJOR=$(echo $CLI_VERSION | tr '.' ' ' | awk '{print $1}')
+CLI_MINOR=$(echo $CLI_VERSION | tr '.' ' ' | awk '{print $2}')
+if [ $CLI_MAJOR -eq 5 -a $CLI_MINOR -lt 6 ] || [ $CLI_MAJOR -lt 5 ]
+then
+    MYSQL="$BASEDIR/bin/mysql --no-defaults --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock --port=_SERVERPORT_"
+else
+    MYSQL="$BASEDIR/bin/mysql --no-defaults --login-path=# --socket=_GLOBALTMPDIR_/mysql_sandbox_SERVERPORT_.sock --port=_SERVERPORT_"
+fi
 # START UGLY WORKAROUND for grants syntax changes in 5.7.6
-VERSION=`$MYSQL -u root -BN -e 'select version()' | perl -ne 'print $1 if /(\d+\.\d+\.\d+)/'`
+VERSION=`$MYSQL -u root --skip-password -BN -e 'select version()' | perl -ne 'print $1 if /(\d+\.\d+\.\d+)/'`
 MAJOR=$(echo $VERSION | tr '.' ' ' | awk '{print $1}')
 MINOR=$(echo $VERSION | tr '.' ' ' | awk '{print $2}')
 REV=$(echo $VERSION | tr '.' ' ' | awk '{print $3}')
@@ -1830,7 +1838,7 @@ fi
 # END UGLY WORKAROUND
 VERBOSE_SQL=''
 [ -n "$SBDEBUG" ] && VERBOSE_SQL=-v
-$MYSQL -u root $VERBOSE_SQL < $SBDIR/grants.mysql
+$MYSQL -u root --skip-password $VERBOSE_SQL < $SBDIR/grants.mysql 2
 # echo "source $SBDIR/grants.mysql" | $SBDIR/use -u root --password= 
 # $SBDIR/my sqldump _EVENTS_OPTIONS_ mysql > $SBDIR/rescue_mysql_dump.sql
 LOAD_GRANTS_SCRIPT
