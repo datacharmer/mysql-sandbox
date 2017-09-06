@@ -1,3 +1,7 @@
+3.2.14	05-Sep-2017
+	- Added a conditional delay in ./use, as a temporary workaround for
+	  changed replication defaults in MySQL 8.0.x.
+	- Added a global check to stop operations if ~/.mylogin.cnf is detected
 3.2.13	24-Jul-2017
 	- Updated --expose_dd_tables procedure to deal with DD changes in 8.0.2
 3.2.12	18-Jul-2017

@@ -11,6 +11,7 @@ use base qw( Exporter);
 our @ISA= qw(Exporter);
 our @EXPORT_OK= qw( is_port_open
                     runs_as_root
+                    mylogin_cnf_exists
                     exists_in_path
                     is_a_sandbox
                     find_safe_port_and_directory
@@ -30,7 +31,7 @@ our @EXPORT_OK= qw( is_port_open
                     split_version
                     ) ;
 
-our $VERSION=q{3.2.13};
+our $VERSION=q{3.2.14};
 our $DEBUG;
 
 BEGIN {
@@ -744,6 +745,21 @@ sub runs_as_root {
                 . "If you know what you are doing and want to\n "
                 . "run as root nonetheless, please set the environment\n"
                 . "variable 'SANDBOX_AS_ROOT' to a nonzero value\n";
+        }
+    }
+}
+
+sub mylogin_cnf_exists {
+    my $mylogin_cnf = "$ENV{HOME}/.mylogin.cnf";
+    if ( -r $mylogin_cnf) {
+        unless ($ENV{IGNORE_MYLOGIN_CNF}) {
+            die   "MySQL Sandbox does not work with \$HOME/.mylogin.cnf,\n"
+                . "which is a file created by mysql_config_editor.\n"
+                . "Either remove the file or make it not readable by the current user.\n"
+                . "If you know what you are doing, you can skip this check by\n"
+                . "setting the variable IGNORE_MYLOGIN_CNF to a nonzero value.\n"
+                . "Be aware that having \$HOME/.mylogin.cnf can disrupt MySQL-Sandbox.\n"
+                . "Use it at your own risk.\n"
         }
     }
 }

@@ -17,11 +17,12 @@ our @EXPORT_OK = qw(
     );
 our @EXPORT = @EXPORT_OK;
 
-our $VERSION=q{3.2.13};
+our $VERSION=q{3.2.14};
 
 our @MANIFEST = (
 'clear.sh',
 'my.sandbox.cnf',
+'sb_include.sh',
 'start.sh',
 'status.sh',
 'msb.sh',
@@ -1346,6 +1347,23 @@ else
 fi
 
 START_SCRIPT
+    'sb_include.sh' => <<'SB_INCLUDE_SCRIPT',
+if [ -r $HOME/.mylogin.cnf ]
+then
+    if [ -z "$IGNORE_MYLOGIN_CNF" ]
+    then
+        echo "MySQL Sandbox does not work with \$HOME/.mylogin.cnf,"
+        echo "which is a file created by mysql_config_editor."
+        echo "Either remove the file or make it not readable by the current user."
+        echo "If you know what you are doing, you can skip this check by"
+        echo "setting the variable IGNORE_MYLOGIN_CNF to a nonzero value."
+        echo "Be aware that having \$HOME/.mylogin.cnf can disrupt MySQL-Sandbox."
+        echo "Use it at your own risk.\n"
+        exit 1
+    fi
+fi
+
+SB_INCLUDE_SCRIPT
 
     'status.sh' => <<'STATUS_SCRIPT',
 #!_BINBASH_
@@ -1353,7 +1371,7 @@ __LICENSE__
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 __SBINSTR_SH__
-
+source $SBDIR/sb_include
 node_status=off
 exit_code=1
 if [ -f $PIDFILE ]
@@ -1385,6 +1403,7 @@ RESTART_SCRIPT
 #!_BINBASH_
 __LICENSE__
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+source $SBDIR/sb_include
 BASEDIR=_BASEDIR_
 export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
@@ -1428,6 +1447,7 @@ STOP_SCRIPT
 #!_BINBASH_
 __LICENSE__
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+#source $SBDIR/sb_include
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 TIMEOUT=30
 __SBINSTR_SH__
@@ -1500,6 +1520,8 @@ __LICENSE__
 export LD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$DYLD_LIBRARY_PATH
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+[ -n "$TEST_REPL_DELAY" -a -f $SBDIR/data/mysql-relay.index ] && sleep $TEST_REPL_DELAY
+source $SBDIR/sb_include
 BASEDIR=_BASEDIR_
 [ -z "$MYSQL_EDITOR" ] && MYSQL_EDITOR="$BASEDIR/bin/mysql"
 if [ ! -x $MYSQL_EDITOR ]
@@ -1538,6 +1560,7 @@ __LICENSE__
 export LD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$DYLD_LIBRARY_PATH
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+source $SBDIR/sb_include
 BASEDIR=_BASEDIR_
 mycli --user=_DBUSER_ \
     --pass=_DBPASSWORD_ \
@@ -1554,6 +1577,7 @@ __LICENSE__
 export LD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=_BASEDIR_/lib:_BASEDIR_/lib/mysql:$DYLD_LIBRARY_PATH
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+source $SBDIR/sb_include
 BASEDIR=_BASEDIR_
 mode=$1
 if [ -n "$mode" ]
@@ -1588,6 +1612,7 @@ MYSQLSH_SCRIPT
 #!_BINBASH_
 __LICENSE__
 SBDIR="_HOME_DIR_/_SANDBOXDIR_"
+#source $SBDIR/sb_include
 cd $SBDIR
 PIDFILE="$SBDIR/data/mysql_sandbox_SERVERPORT_.pid"
 __SBINSTR_SH__
@@ -1804,6 +1829,7 @@ GRANTS_MYSQL_5_7_6
 #!_BINBASH_
 __LICENSE__
 SBDIR=_HOME_DIR_/_SANDBOXDIR_
+source $SBDIR/sb_include
 BASEDIR='_BASEDIR_'
 export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$BASEDIR_/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
@@ -1922,6 +1948,7 @@ fi
 __SBINSTR_SH__
 
 SBDIR=_HOME_DIR_/_SANDBOXDIR_
+source $SBDIR/sb_include
 BASEDIR=_BASEDIR_
 export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/lib/mysql:$DYLD_LIBRARY_PATH
