@@ -31,6 +31,15 @@ BEGIN {
         }
     }
     $test_version = $ENV{TEST_VERSION} ;
+    my ($major, $minor, $rev) = split_version($test_version);
+    my $compare_test = sprintf("%05d-%05d-%05d", $major,  $minor,  $rev);
+    my $ver_8_0_3 = sprintf("%05d-%05d-%05d", 8, 0, 3);
+    # Adds delay to 8.0.3+
+    if ( ( $major != 10 ) && ($compare_test ge $ver_8_0_3) )
+    {
+       $ENV{TEST_REPL_DELAY} = 2;
+    }
+
 };
 
 use strict;
@@ -66,7 +75,6 @@ sub skip_version
 sub confirm_version
 {
     my ($min_version, $max_version) = @_;
-    my $will_skip =0;
     my ($major, $minor, $rev) = split_version($test_version);
     my ($major1, $minor1, $rev1) = split_version($min_version);
     my ($major2, $minor2, $rev2) = split_version($max_version);

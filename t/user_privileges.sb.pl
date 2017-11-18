@@ -32,6 +32,22 @@ if ( (($major ==5) &&  ($minor > 7) )
    $number_of_users = 9;
 }
 
+if (
+    ( ($major ==5) && ($minor == 7) && ($rev >= 19))
+     or
+    ( ($major ==8) && ($minor == 0) && ($rev >= 3))
+   )
+# Starting with MySQL 5.7.19 we have the mysql.session user created by default.
+{
+   $number_of_users = 10;
+}
+
+# Starting with MySQL 8.0.4 we have also users mysql.session and
+# mysql.infoschema created by default.
+if  (($major ==8) &&  ($minor == 0)  && ($rev > 3))
+{
+    $number_of_users = 11;
+}
 ok_exec({
 command  => "make_sandbox $TEST_VERSION -- --no_confirm --sandbox_directory=msb_XXXX",
 expected => "sandbox server started",

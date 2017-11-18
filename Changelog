@@ -1,3 +1,6 @@
+3.2.15	18-Nov-2017
+	- Changed grants to support new users in 5.7.19 and 8.0.4
+	- Improved tests to deal with new default users
 3.2.14	05-Sep-2017
 	- Added a conditional delay in ./use, as a temporary workaround for
 	  changed replication defaults in MySQL 8.0.x.
