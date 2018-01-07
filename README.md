@@ -812,13 +812,13 @@ To use this package you need at least the following:
 
 Version 3.1
 
-Copyright (C) 2006-2017 Giuseppe Maxia
+Copyright (C) 2006-2018 Giuseppe Maxia
 
 Home Page  https://github.com/datacharmer
 
 # LEGAL NOTICE
 
-    Copyright 2006-2017 Giuseppe Maxia
+    Copyright 2006-2018 Giuseppe Maxia
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

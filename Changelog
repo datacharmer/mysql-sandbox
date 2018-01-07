@@ -1,3 +1,8 @@
+3.2.16	04-Jan-2018
+	- Added backward compatibility options for authentication plugin in MySQL 8.0.4.
+	The default authentication was changed from mysql_native_password to 
+	caching_sha2_password
+	To keep the new default, use --keep_auth_plugin.
 3.2.15	18-Nov-2017
 	- Changed grants to support new users in 5.7.19 and 8.0.4
 	- Improved tests to deal with new default users

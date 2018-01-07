@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # low_level_make_sandbox
 #    The MySQL Sandbox
-#    Copyright (C) 2006-2017 Giuseppe Maxia
+#    Copyright (C) 2006-2018 Giuseppe Maxia
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -448,6 +448,20 @@ if ($msb->{options}{datadir_from} eq 'script' and  (not $msb->{options}{no_load_
     $msb->{options}{load_grants} = 1;
 }
 
+# In MySQL 8.0.8+, the default authentication was changed from mysql_native_password to 
+# caching_sha2_password
+# The following code will restore the backward compatibility default.
+# To keep the new default, use --keep_auth_plugin
+if (greater_version($msb->{options}{detected_mysql_version},'8.0.3') 
+        and $msb->{options}{mysql_version}{major} < 10)
+{
+    unless ( $msb->{options}{keep_auth_plugin}) 
+    {
+        push @{$msb->{options}{my_clause}},  "default_authentication_plugin=mysql_native_password";
+        $msb->{options}{init_options}  = "" unless $msb->{options}{init_options};
+        $msb->{options}{init_options} .= " --default_authentication_plugin=mysql_native_password";
+    }
+}
 
 if ( @{ $msb->{options}{'my_clause'} } ) {
     $msb->{options}{'more_options'} .= qq(#\n# additional options passed through 'my_clause' \n#\n);
@@ -773,7 +787,7 @@ if ($msb->{options}{datadir_from} eq 'script' ) {
         my $init_options=" --tmpdir=$sandbox_directory/tmp ";
         if ($msb->{options}{init_options})
         {
-            $init_options="$msb->{options}{init_options}";
+            $init_options .= " $msb->{options}{init_options}";
         }
         if ($msb->{options}{init_my_cnf} && $msb->{options}{init_use_cnf})
         {
