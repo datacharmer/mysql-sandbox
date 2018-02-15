@@ -1,3 +1,8 @@
+# Project being replaced
+
+**WARNING**: This project will be soon replaced by [dbdeployer](https://github.com/datacharmer/dbdeployer), which is currently being finalized. It can already support most of MySQL-Sandbox features, plus a few new ones, and it will soon replace MySQL-Sandbox completely. 
+In the near future, this project will be supported only with bug fixes, but the development of new feature and the support for newer versions of MySQL will only continue in **dbdeployer**. 
+
 # NAME
 
 MySQL::Sandbox - Quickly installs one or more MySQL servers (or forks) in the same host, either standalone or in groups
