@@ -85,7 +85,7 @@ Make the sandbox
 
     make_sandbox /path/to/mysql-X.X.X-Your_Operating_System.tar.gz
 
-Notice that this command will expand the tarball into a directory C<X.X.X>, located in the same path where tghe tarball is. If you want to expand in a centralized directory, see the next recipe.
+Notice that this command will expand the tarball into a directory C<X.X.X>, located in the same path where the tarball is. If you want to expand in a centralized directory, see the next recipe.
 
 If you have already a centralized repository for your binaries (see next recipe), then you can create a sandbox even more easily:
 
@@ -250,7 +250,7 @@ WARNING! No confirmation is asked! The data will be gone in 1 second.
 =head2 Copying sandbox contents to another
 
 Using 'sbtool', the Sandbox helper, this task is easy to perform.
-You need two sandboxes. This command cannnot copy to an arbitrary directory, but only to an existing sandbox.
+You need two sandboxes. This command cannot copy to an arbitrary directory, but only to an existing sandbox.
 The first sandbox is where the data is stored. You need to use the C<--source_dir> option (or C<-s> for short). The second directory, identified with C<--dest_dir>, (or C<-d>) is the place where the data is copied. 
 WARNING! the destination data is overwritten!
 This command skips binary logs, relay logs, and general logs.
