@@ -29,9 +29,10 @@ our @EXPORT_OK= qw( is_port_open
                     fix_server_uuid
                     greater_version
                     split_version
+                    deprecation_notice
                     ) ;
 
-our $VERSION=q{3.2.16};
+our $VERSION=q{3.2.17};
 our $DEBUG;
 
 BEGIN {
@@ -158,6 +159,17 @@ sub find_safe_port_and_directory {
     return ($chosen_port, $chosen_dir);
 }
 
+sub deprecation_notice {
+    print "#############################################################################\n";
+    print "#                             IMPORTANT NOTICE                              #\n";
+    print "# ------------------------------------------------------------------------- #\n";
+    print "# MySQL-Sandbox is NOT MAINTAINED anymore.                                  #\n";
+    print "# It may fail on recent MySQL versions.                                     #\n";
+    print "# You should use **dbdeployer** (https://github.com/datacharmer/dbdeployer) #\n";
+    print "#############################################################################\n";
+    print "\n";
+}
+
 sub get_help {
     my ($self, $msg) = @_;
     if ($msg) {
@@ -236,7 +248,7 @@ sub get_help {
             . "          version number.\n\n"
             . $HELP_MSG;
    } 
-    
+   deprecation_notice();
    print $self->credits(),
           "syntax: $PROGRAM_NAME [options] $target \n", 
           $HELP_MSG,
@@ -247,7 +259,8 @@ sub get_help {
           #"\nExample:\n",
           #"     $PROGRAM_NAME --my_file=large --sandbox_directory=my_sandbox\n\n";
 
-    exit(1);
+   deprecation_notice();
+   exit(1);
 }
 
 sub credits {
@@ -822,6 +835,11 @@ MySQL::Sandbox - Quickly installs one or more MySQL servers (or forks) in the sa
  make_sandbox $SANDBOX_BINARY/VERSION
 
  make_sandbox VERSION
+
+=head1 WARNING
+
+This project is replaced by L<dbdeployer|https://github.com/datacharmer/dbdeployer>, which is now GA. It can already support almost all MySQL-Sandbox features, plus a few new ones. In the near future, this project will be supported only with bug fixes, but the development of new feature and the support for newer versions of MySQL will only continue in dbdeployer.
+
 
 =head1 PURPOSE
 

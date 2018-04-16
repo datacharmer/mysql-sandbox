@@ -33,6 +33,7 @@ use MySQL::Sandbox qw(
                 get_ranges
                 get_option_file_contents
                 sbinstr
+                deprecation_notice
                 get_sb_info);
 
 use MySQL::Sandbox::Scripts;
@@ -161,6 +162,7 @@ else {
 sub get_help {
     my ($msg) = @_;
     print MySQL::Sandbox::credits();
+    deprecation_notice();
     if ($msg) {
         print '*' x 50;
         print "\n", $msg, "\n";

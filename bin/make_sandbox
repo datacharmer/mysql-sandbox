@@ -19,7 +19,7 @@ use strict;
 use warnings;
 # use Data::Dumper;
 use English qw( -no_match_vars ); 
-use MySQL::Sandbox qw( runs_as_root sbinstr exists_in_path);
+use MySQL::Sandbox qw( runs_as_root sbinstr exists_in_path deprecation_notice);
 use Getopt::Long ;
  
 
@@ -281,6 +281,7 @@ sub get_help {
               $msg,
               '*' x $len, "\n";
     }
+    deprecation_notice();
     print <<SYNTAX;
 usage: ./make_sandbox full_version [options] {VERSION|tarball_full_name} -- [more options]
 or   : ./make_sandbox GET:short_version -- [options]

@@ -1,3 +1,5 @@
+3.2.17	16-Apr-2018
+	- Added deprecation notice for MySQL-Sandbox.
 3.2.16	04-Jan-2018
 	- Added backward compatibility options for authentication plugin in MySQL 8.0.4.
 	The default authentication was changed from mysql_native_password to 
