@@ -8,7 +8,8 @@ assignees: ''
 ---
 
 ** NOTICE THAT MySQL-Sandbox IS UNMAINTAINED **
-** See if [dbdeployer](https://github.com/datacharmer/dbdeployer) solves your problem **
+This project is replaced by dbdeployer (https://github.com/datacharmer/dbdeployer), which is now GA. It can already support almost all MySQL-Sandbox features, plus a few new ones. In the near future, this project will be supported only with bug fixes, but the development of new feature and the support for newer versions of MySQL will only continue in dbdeployer.
+** =================================================**
 
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
