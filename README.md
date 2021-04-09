@@ -15,7 +15,7 @@ MySQL::Sandbox - Quickly installs one or more MySQL servers (or forks) in the sa
 
 # WARNING
 
-This project is replaced by [dbdeployer](https://github.com/datacharmer/dbdeployer), which is now GA. It can already support almost all MySQL-Sandbox features, plus a few new ones. In the near future, this project will be supported only with bug fixes, but the development of new feature and the support for newer versions of MySQL will only continue in dbdeployer.
+This project is replaced by [dbdeployer](https://github.com/datacharmer/dbdeployer), which is now GA. It can already support all MySQL-Sandbox features, plus many new ones. This project is now archived and will not be updated.
 
 # PURPOSE
 
